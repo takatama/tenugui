@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
-
 export interface Item {
   id: string;
   name: string;
@@ -37,11 +35,34 @@ export async function createItem(
   const items = await getItems(kv);
 
   const newItem: Item = {
-    id: uuidv4(),
+    id: crypto.randomUUID(),
     name: data.name,
     imageUrl: data.imageUrl,
   };
   items.push(newItem);
   await kv.put("items", JSON.stringify(items));
   return newItem;
+}
+
+/**
+ * 指定されたIDの手ぬぐいを削除する関数
+ * @param kv KVNamespace
+ * @param itemId 削除する手ぬぐいのID
+ * @returns 削除が成功したかどうか
+ */
+export async function deleteItem(
+  kv: KVNamespace,
+  itemId: string
+): Promise<boolean> {
+  const items = await getItems(kv);
+  const initialLength = items.length;
+  const filteredItems = items.filter((item) => item.id !== itemId);
+
+  if (filteredItems.length === initialLength) {
+    // アイテムが見つからなかった場合
+    return false;
+  }
+
+  await kv.put("items", JSON.stringify(filteredItems));
+  return true;
 }
