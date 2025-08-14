@@ -22,73 +22,75 @@ export function TagSelection({
   onKeyPress,
 }: TagSelectionProps) {
   return (
-    <>
-      {/* 既存タグ表示セクション */}
-      {existingTags.length > 0 && (
-        <div>
-          <label className="block font-medium text-gray-700 mb-2">
-            既存のタグから選択
-          </label>
-          <div className="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-3 bg-gray-50">
-            <div className="flex flex-wrap gap-1">
-              {existingTags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => onTagToggle(tag)}
-                  className={`px-2 py-1 rounded-full text-xs cursor-pointer transition-colors ${
-                    selectedTags.has(tag)
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-          <p className="mt-1 text-sm text-gray-500">
-            過去に使用したタグから選択できます
-          </p>
-        </div>
-      )}
-
-      {/* 新しいタグを手動で追加 */}
+    <div className="space-y-4">
+      {/* タグ選択・追加エリア */}
       <div>
         <label className="block font-medium text-gray-700 mb-2">
-          新しいタグを追加
+          タグを選択または追加
         </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newTagInput}
-            onChange={(e) => onNewTagInputChange(e.target.value)}
-            onKeyPress={onKeyPress}
-            placeholder="新しいタグを入力..."
-            className="flex-1 border border-gray-300 rounded-md shadow-sm p-2 text-sm"
-          />
-          <button
-            type="button"
-            onClick={onAddNewTag}
-            disabled={
-              !newTagInput.trim() || selectedTags.has(newTagInput.trim())
-            }
-            className="bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
-          >
-            追加
-          </button>
+        
+        {/* 既存タグ + 新規追加を同じエリアに */}
+        <div className="border border-gray-300 rounded-md p-3 bg-gray-50 space-y-3">
+          {/* 既存タグ */}
+          {existingTags.length > 0 && (
+            <div>
+              <div className="text-xs text-gray-600 mb-2">既存のタグ</div>
+              <div className="flex flex-wrap gap-1">
+                {existingTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => onTagToggle(tag)}
+                    className={`px-2 py-1 rounded-full text-xs cursor-pointer transition-colors ${
+                      selectedTags.has(tag)
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* 新規タグ追加（コンパクト版） */}
+          <div>
+            <div className="text-xs text-gray-600 mb-2">新しいタグを追加</div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newTagInput}
+                onChange={(e) => onNewTagInputChange(e.target.value)}
+                onKeyPress={onKeyPress}
+                placeholder="新しいタグ..."
+                className="flex-1 border border-gray-300 rounded-md shadow-sm px-2 py-1 text-sm"
+              />
+              <button
+                type="button"
+                onClick={onAddNewTag}
+                disabled={
+                  !newTagInput.trim() || selectedTags.has(newTagInput.trim())
+                }
+                className="bg-blue-600 text-white font-medium py-1 px-3 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+              >
+                +
+              </button>
+            </div>
+          </div>
         </div>
-        <p className="mt-1 text-sm text-gray-500">
-          Enterキーを押すか「追加」ボタンをクリックして新しいタグを追加できます
+        
+        <p className="mt-1 text-xs text-gray-500">
+          既存タグをクリックして選択、または新しいタグを入力してEnterキーまたは「+」ボタンで追加
         </p>
       </div>
 
-      {/* 選択されたタグ表示 */}
+      {/* 選択されたタグ表示（コンパクト版） */}
       <div>
-        <label htmlFor="tags" className="block font-medium text-gray-700">
-          選択されたタグ
+        <label htmlFor="tags" className="block font-medium text-gray-700 mb-2">
+          選択中のタグ
         </label>
-        <div className="mt-1 min-h-[42px] block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50">
+        <div className="min-h-[40px] block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white">
           {selectedTags.size > 0 ? (
             <div className="flex flex-wrap gap-1">
               {Array.from(selectedTags).map((tag) => (
@@ -100,7 +102,7 @@ export function TagSelection({
                   <button
                     type="button"
                     onClick={() => onTagToggle(tag)}
-                    className="text-blue-600 hover:text-blue-800 ml-1"
+                    className="text-blue-600 hover:text-blue-800 ml-1 text-xs"
                   >
                     ×
                   </button>
@@ -108,16 +110,11 @@ export function TagSelection({
               ))}
             </div>
           ) : (
-            <span className="text-gray-500 text-sm">
-              既存タグまたはAI分析結果からタグを選択してください
-            </span>
+            <span className="text-gray-400 text-sm">タグが選択されていません</span>
           )}
         </div>
         <input type="hidden" name="tags" value={tags} />
-        <p className="mt-1 text-sm text-gray-500">
-          既存タグまたはAI分析結果のタグをクリックして選択してください。選択したタグは×ボタンで削除できます。
-        </p>
       </div>
-    </>
+    </div>
   );
 }
