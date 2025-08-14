@@ -37,6 +37,7 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const name = formData.get("name");
   const imageUrl = formData.get("imageUrl");
+  const productUrl = formData.get("productUrl");
   const tagsString = formData.get("tags");
   const memo = formData.get("memo");
 
@@ -49,6 +50,11 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
     throw new Error("Invalid form data");
   }
 
+  // productUrlは空文字列の場合はundefinedとして扱う
+  const productUrlValue = typeof productUrl === "string" && productUrl.trim() !== "" 
+    ? productUrl.trim() 
+    : undefined;
+
   // タグ文字列をカンマで分割し、前後の空白を除去
   const tags = tagsString
     .split(",")
@@ -58,6 +64,7 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
   const updatedItem = await updateItem(kv, itemId, {
     name,
     imageUrl,
+    productUrl: productUrlValue,
     tags,
     memo,
   });
@@ -135,6 +142,32 @@ export default function EditItem() {
             name="imageUrl"
             defaultValue={item.imageUrl}
             required
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              border: "1px solid #d1d5db",
+              borderRadius: "0.375rem",
+              fontSize: "1rem",
+            }}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="productUrl"
+            style={{
+              display: "block",
+              marginBottom: "0.5rem",
+              fontWeight: "bold",
+            }}
+          >
+            商品URL
+          </label>
+          <input
+            type="url"
+            id="productUrl"
+            name="productUrl"
+            defaultValue={item.productUrl || ""}
             style={{
               width: "100%",
               padding: "0.75rem",

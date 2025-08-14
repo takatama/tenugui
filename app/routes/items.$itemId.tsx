@@ -98,6 +98,24 @@ export default function ItemDetail() {
         </div>
       )}
 
+      {item.productUrl && (
+        <div style={{ marginTop: "1.5rem" }}>
+          <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>商品URL:</h3>
+          <a
+            href={item.productUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#2563eb",
+              textDecoration: "underline",
+              fontSize: "1rem",
+            }}
+          >
+            商品ページを開く
+          </a>
+        </div>
+      )}
+
       {item.memo && (
         <div style={{ marginTop: "1.5rem" }}>
           <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>メモ:</h3>

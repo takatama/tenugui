@@ -6,6 +6,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const name = formData.get("name");
   const imageUrl = formData.get("imageUrl");
+  const productUrl = formData.get("productUrl");
   const tagsString = formData.get("tags");
   const memo = formData.get("memo");
 
@@ -18,13 +19,18 @@ export async function action({ context, request }: ActionFunctionArgs) {
     throw new Error("Invalid form data");
   }
 
+  // productUrlは空文字列の場合はundefinedとして扱う
+  const productUrlValue = typeof productUrl === "string" && productUrl.trim() !== "" 
+    ? productUrl.trim() 
+    : undefined;
+
   // タグ文字列をカンマで分割し、前後の空白を除去
   const tags = tagsString
     .split(",")
     .map((tag) => tag.trim())
     .filter((tag) => tag.length > 0);
 
-  const newItem = await createItem(kv, { name, imageUrl, tags, memo });
+  const newItem = await createItem(kv, { name, imageUrl, productUrl: productUrlValue, tags, memo });
   return redirect(`/items/${newItem.id}`);
 }
 
@@ -55,6 +61,17 @@ export default function NewItem() {
             id="imageUrl"
             name="imageUrl"
             required
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          />
+        </div>
+        <div>
+          <label htmlFor="productUrl" className="block font-medium text-gray-700">
+            商品URL
+          </label>
+          <input
+            type="url"
+            id="productUrl"
+            name="productUrl"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           />
         </div>

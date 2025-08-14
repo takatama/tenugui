@@ -2,6 +2,7 @@ export interface Item {
   id: string;
   name: string;
   imageUrl: string;
+  productUrl?: string;
   tags: string[];
   memo: string;
 }
@@ -43,7 +44,7 @@ export async function getAllItems(kv: KVNamespace): Promise<Item[]> {
  */
 export async function createItem(
   kv: KVNamespace,
-  data: { name: string; imageUrl: string; tags: string[]; memo: string }
+  data: { name: string; imageUrl: string; productUrl?: string; tags: string[]; memo: string }
 ): Promise<Item> {
   const items = await getAllItemsFromKV(kv);
 
@@ -51,6 +52,7 @@ export async function createItem(
     id: crypto.randomUUID(),
     name: data.name,
     imageUrl: data.imageUrl,
+    productUrl: data.productUrl,
     tags: data.tags,
     memo: data.memo,
   };
@@ -92,7 +94,7 @@ export async function deleteItem(
 export async function updateItem(
   kv: KVNamespace,
   itemId: string,
-  data: { name: string; imageUrl: string; tags: string[]; memo: string }
+  data: { name: string; imageUrl: string; productUrl?: string; tags: string[]; memo: string }
 ): Promise<Item | undefined> {
   const items = await getAllItemsFromKV(kv);
   const itemIndex = items.findIndex((item) => item.id === itemId);
@@ -106,6 +108,7 @@ export async function updateItem(
     ...items[itemIndex],
     name: data.name,
     imageUrl: data.imageUrl,
+    productUrl: data.productUrl,
     tags: data.tags,
     memo: data.memo,
   };
