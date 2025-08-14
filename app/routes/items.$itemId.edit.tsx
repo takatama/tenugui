@@ -40,11 +40,12 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
 
   const result = await parseFormData(request);
 
-  const { name, imageUrl, tags, memo } = result;
+  const { name, imageUrl, productUrl, tags, memo } = result;
 
   const updatedItem = {
     name,
     imageUrl,
+    productUrl,
     tags,
     memo,
   };
