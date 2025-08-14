@@ -1,5 +1,7 @@
+import { v4 as uuidv4 } from "uuid";
+
 export interface Item {
-  id: number;
+  id: string;
   name: string;
   imageUrl: string;
 }
@@ -17,7 +19,7 @@ export async function getItems(kv: KVNamespace): Promise<Item[]> {
  */
 export async function getItemById(
   kv: KVNamespace,
-  itemId: number
+  itemId: string
 ): Promise<Item | undefined> {
   const items = await getItems(kv);
   return items.find((item) => item.id === itemId);
@@ -35,7 +37,7 @@ export async function createItem(
   const items = await getItems(kv);
 
   const newItem: Item = {
-    id: items.reduce((maxId, item) => Math.max(item.id, maxId), 0) + 1,
+    id: uuidv4(),
     name: data.name,
     imageUrl: data.imageUrl,
   };
