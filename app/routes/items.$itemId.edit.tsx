@@ -5,8 +5,9 @@ import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from "react-router-dom";
-import { getItemById, updateItem, type Item } from "../data/items";
-import { useState } from "react";
+import { getItemById, updateItem, getAllTags, type Item } from "../data/items";
+import { useEditItemForm } from "../hooks/useEditItemForm";
+import { TagSelection } from "../components/items";
 
 export async function loader({ context, params }: LoaderFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
@@ -22,7 +23,9 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  return new Response(JSON.stringify({ item }), {
+  const existingTags = await getAllTags(kv);
+
+  return new Response(JSON.stringify({ item, existingTags }), {
     headers: { "Content-Type": "application/json" },
   });
 }
@@ -80,32 +83,25 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 
 interface LoaderData {
   item: Item;
+  existingTags: string[];
 }
 
 export default function EditItem() {
-  const { item } = useLoaderData() as LoaderData;
-  const [productUrl, setProductUrl] = useState(item.productUrl || "");
-  const [name, setName] = useState(item.name);
-  const [imageUrl, setImageUrl] = useState(item.imageUrl);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [candidateImages, setCandidateImages] = useState<string[]>([]);
-  const [analysisResult, setAnalysisResult] = useState<{
-    success: boolean;
-    message: string;
-  } | null>(null);
+  const { item, existingTags } = useLoaderData() as LoaderData;
+  const formState = useEditItemForm(item, existingTags);
 
   const handleAnalyze = async () => {
-    if (!productUrl.trim()) {
-      setAnalysisResult({
+    if (!formState.productUrl.trim()) {
+      formState.setAnalysisResult({
         success: false,
         message: "商品URLを入力してください",
       });
       return;
     }
 
-    setIsAnalyzing(true);
-    setCandidateImages([]);
-    setAnalysisResult(null);
+    formState.setIsAnalyzing(true);
+    formState.setCandidateImages([]);
+    formState.setAnalysisResult(null);
 
     try {
       const response = await fetch("/api/analyze", {
@@ -113,7 +109,7 @@ export default function EditItem() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ productUrl }),
+        body: JSON.stringify({ productUrl: formState.productUrl }),
       });
 
       if (response.ok) {
@@ -122,40 +118,40 @@ export default function EditItem() {
           imageUrls?: string[];
         };
         if (data.name && data.imageUrls && data.imageUrls.length > 0) {
-          setName(data.name);
-          setCandidateImages(data.imageUrls);
+          formState.setName(data.name);
+          formState.setCandidateImages(data.imageUrls);
           // 最初の画像をデフォルトで選択
-          setImageUrl(data.imageUrls[0]);
-          setAnalysisResult({
+          formState.setImageUrl(data.imageUrls[0]);
+          formState.setAnalysisResult({
             success: true,
             message: `分析完了！商品名を取得し、${data.imageUrls.length}件の画像候補を見つけました。下記から画像を選択して「更新する」ボタンを押してください。`,
           });
         } else {
-          setAnalysisResult({
+          formState.setAnalysisResult({
             success: false,
             message: "商品情報を取得できませんでした",
           });
         }
       } else {
         const errorText = await response.text();
-        setAnalysisResult({
+        formState.setAnalysisResult({
           success: false,
           message: `分析に失敗しました: ${errorText}`,
         });
       }
     } catch (error) {
       console.error("Error:", error);
-      setAnalysisResult({
+      formState.setAnalysisResult({
         success: false,
         message: "エラーが発生しました。もう一度お試しください。",
       });
     } finally {
-      setIsAnalyzing(false);
+      formState.setIsAnalyzing(false);
     }
   };
 
   const handleImageSelect = (selectedImageUrl: string) => {
-    setImageUrl(selectedImageUrl);
+    formState.setImageUrl(selectedImageUrl);
   };
 
   return (
@@ -198,8 +194,8 @@ export default function EditItem() {
                 type="url"
                 id="productUrl"
                 name="productUrl"
-                value={productUrl}
-                onChange={(e) => setProductUrl(e.target.value)}
+                value={formState.productUrl}
+                onChange={(e) => formState.setProductUrl(e.target.value)}
                 style={{
                   flex: "1",
                   padding: "0.75rem",
@@ -211,14 +207,16 @@ export default function EditItem() {
               <button
                 type="button"
                 onClick={handleAnalyze}
-                disabled={isAnalyzing}
+                disabled={formState.isAnalyzing}
                 style={{
-                  backgroundColor: isAnalyzing ? "#9ca3af" : "#059669",
+                  backgroundColor: formState.isAnalyzing
+                    ? "#9ca3af"
+                    : "#059669",
                   color: "white",
                   padding: "0.75rem 1.5rem",
                   border: "none",
                   borderRadius: "0.375rem",
-                  cursor: isAnalyzing ? "not-allowed" : "pointer",
+                  cursor: formState.isAnalyzing ? "not-allowed" : "pointer",
                   fontSize: "1rem",
                   fontWeight: "bold",
                   display: "flex",
@@ -226,7 +224,7 @@ export default function EditItem() {
                   gap: "0.5rem",
                 }}
               >
-                {isAnalyzing ? (
+                {formState.isAnalyzing ? (
                   <>
                     <div
                       style={{
@@ -248,7 +246,7 @@ export default function EditItem() {
           </div>
 
           {/* 画像候補選択セクション */}
-          {candidateImages.length > 0 && (
+          {formState.candidateImages.length > 0 && (
             <div>
               <label
                 style={{
@@ -257,7 +255,8 @@ export default function EditItem() {
                   fontWeight: "bold",
                 }}
               >
-                画像を選択してください（{candidateImages.length}件の候補）
+                画像を選択してください（{formState.candidateImages.length}
+                件の候補）
               </label>
               <div
                 style={{
@@ -266,20 +265,20 @@ export default function EditItem() {
                   gap: "1rem",
                 }}
               >
-                {candidateImages.map((imgUrl, index) => (
+                {formState.candidateImages.map((imgUrl, index) => (
                   <div
                     key={index}
                     onClick={() => handleImageSelect(imgUrl)}
                     style={{
                       cursor: "pointer",
                       border:
-                        imageUrl === imgUrl
+                        formState.imageUrl === imgUrl
                           ? "2px solid #3b82f6"
                           : "2px solid #d1d5db",
                       borderRadius: "0.5rem",
                       overflow: "hidden",
                       boxShadow:
-                        imageUrl === imgUrl
+                        formState.imageUrl === imgUrl
                           ? "0 0 0 2px rgba(59, 130, 246, 0.2)"
                           : "none",
                     }}
@@ -330,8 +329,8 @@ export default function EditItem() {
               type="text"
               id="name"
               name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={formState.name}
+              onChange={(e) => formState.setName(e.target.value)}
               required
               style={{
                 width: "100%",
@@ -358,8 +357,8 @@ export default function EditItem() {
               type="url"
               id="imageUrl"
               name="imageUrl"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              value={formState.imageUrl}
+              onChange={(e) => formState.setImageUrl(e.target.value)}
               required
               style={{
                 width: "100%",
@@ -370,7 +369,7 @@ export default function EditItem() {
               }}
             />
             {/* 画像プレビュー */}
-            {imageUrl && (
+            {formState.imageUrl && (
               <div style={{ marginTop: "0.5rem" }}>
                 <div
                   style={{
@@ -390,7 +389,7 @@ export default function EditItem() {
                   }}
                 >
                   <img
-                    src={imageUrl}
+                    src={formState.imageUrl}
                     alt="画像プレビュー"
                     style={{
                       width: "100%",
@@ -407,41 +406,16 @@ export default function EditItem() {
             )}
           </div>
 
-          <div>
-            <label
-              htmlFor="tags"
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              タグ（カンマ区切り）
-            </label>
-            <input
-              type="text"
-              id="tags"
-              name="tags"
-              defaultValue={item.tags?.join(", ") || ""}
-              placeholder="例: 夏, 祭り, 青"
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                border: "1px solid #d1d5db",
-                borderRadius: "0.375rem",
-                fontSize: "1rem",
-              }}
-            />
-            <p
-              style={{
-                marginTop: "0.25rem",
-                fontSize: "0.875rem",
-                color: "#6b7280",
-              }}
-            >
-              複数のタグを追加する場合は、カンマ（,）で区切って入力してください
-            </p>
-          </div>
+          <TagSelection
+            existingTags={existingTags}
+            selectedTags={formState.selectedTags}
+            tags={formState.tags}
+            newTagInput={formState.newTagInput}
+            onTagToggle={formState.handleTagToggle}
+            onNewTagInputChange={formState.setNewTagInput}
+            onAddNewTag={formState.handleAddNewTag}
+            onKeyPress={formState.handleKeyPress}
+          />
 
           <div>
             <label

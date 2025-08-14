@@ -28,7 +28,7 @@ export function TagSelection({
         <label className="block font-medium text-gray-700 mb-2">
           タグを選択または追加
         </label>
-        
+
         {/* 既存タグ + 新規追加を同じエリアに */}
         <div className="border border-gray-300 rounded-md p-3 bg-gray-50 space-y-3">
           {/* 既存タグ */}
@@ -53,7 +53,7 @@ export function TagSelection({
               </div>
             </div>
           )}
-          
+
           {/* 新規タグ追加（コンパクト版） */}
           <div>
             <div className="text-xs text-gray-600 mb-2">新しいタグを追加</div>
@@ -79,7 +79,7 @@ export function TagSelection({
             </div>
           </div>
         </div>
-        
+
         <p className="mt-1 text-xs text-gray-500">
           既存タグをクリックして選択、または新しいタグを入力してEnterキーまたは「+」ボタンで追加
         </p>
@@ -110,7 +110,9 @@ export function TagSelection({
               ))}
             </div>
           ) : (
-            <span className="text-gray-400 text-sm">タグが選択されていません</span>
+            <span className="text-gray-400 text-sm">
+              タグが選択されていません
+            </span>
           )}
         </div>
         <input type="hidden" name="tags" value={tags} />
