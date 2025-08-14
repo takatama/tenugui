@@ -20,37 +20,22 @@ export default function Items() {
   const { items } = useLoaderData() as LoaderData;
 
   return (
-    <div style={{ fontFamily: "sans-serif", padding: "2rem" }}>
-      <h1 style={{ fontSize: "2rem", marginBottom: "2rem" }}>商品一覧</h1>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-          gap: "1.5rem",
-        }}
-      >
+    <div className="font-sans p-8">
+      <h1 className="text-3xl font-bold mb-8">商品一覧</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {items.map((item) => (
           <Link
             to={`/items/${item.id}`}
             key={item.id}
-            style={{ textDecoration: "none", color: "inherit" }}
+            className="no-underline text-inherit"
           >
-            <div
-              key={item.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "1rem",
-              }}
-            >
+            <div className="border border-gray-200 rounded-lg p-4 transition-transform duration-200 hover:shadow-lg hover:-translate-y-1">
               <img
                 src={item.imageUrl}
                 alt={item.name}
-                style={{ width: "100%", height: "auto", borderRadius: "4px" }}
+                className="w-full h-auto rounded-md"
               />
-              <h2 style={{ fontSize: "1.1rem", marginTop: "0.75rem" }}>
-                {item.name}
-              </h2>
+              <h2 className="text-lg font-semibold mt-3">{item.name}</h2>
             </div>
           </Link>
         ))}
