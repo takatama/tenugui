@@ -1,4 +1,5 @@
 import { createItem } from "../data/items";
+import type { ImageAnalysis } from "../data/items";
 import { Form, redirect, type ActionFunctionArgs } from "react-router-dom";
 import { useState } from "react";
 
@@ -10,6 +11,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
   const productUrl = formData.get("productUrl");
   const tagsString = formData.get("tags");
   const memo = formData.get("memo");
+  const analysisData = formData.get("analysis");
 
   if (
     typeof name !== "string" ||
@@ -32,12 +34,23 @@ export async function action({ context, request }: ActionFunctionArgs) {
     .map((tag) => tag.trim())
     .filter((tag) => tag.length > 0);
 
+  // 分析データがある場合はパース
+  let analysis: ImageAnalysis | undefined;
+  if (typeof analysisData === "string" && analysisData.trim() !== "") {
+    try {
+      analysis = JSON.parse(analysisData);
+    } catch (error) {
+      console.error("Failed to parse analysis data:", error);
+    }
+  }
+
   const newItem = await createItem(kv, {
     name,
     imageUrl,
     productUrl: productUrlValue,
     tags,
     memo,
+    analysis,
   });
   return redirect(`/items/${newItem.id}`);
 }
@@ -46,8 +59,10 @@ export default function NewItem() {
   const [productUrl, setProductUrl] = useState("");
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [tags, setTags] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [candidateImages, setCandidateImages] = useState<string[]>([]);
+  const [aiAnalysis, setAiAnalysis] = useState<ImageAnalysis | null>(null);
   const [analysisResult, setAnalysisResult] = useState<{
     success: boolean;
     message: string;
@@ -115,6 +130,71 @@ export default function NewItem() {
 
   const handleImageSelect = (selectedImageUrl: string) => {
     setImageUrl(selectedImageUrl);
+  };
+
+  const handleAiAnalyze = async () => {
+    if (!imageUrl.trim()) {
+      setAnalysisResult({
+        success: false,
+        message: "画像URLを入力してください",
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageUrl }),
+      });
+
+      if (response.ok) {
+        const data = (await response.json()) as {
+          success: boolean;
+          analysis?: ImageAnalysis;
+        };
+
+        if (data.success && data.analysis) {
+          setAiAnalysis(data.analysis);
+          // AIが提案したタグを既存のタグに追加
+          const aiTags = data.analysis.tags || [];
+          const currentTags = tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t);
+          const allTags = [...new Set([...currentTags, ...aiTags])];
+          setTags(allTags.join(", "));
+
+          setAnalysisResult({
+            success: true,
+            message: `AI分析完了！${aiTags.length}個のタグを提案しました。`,
+          });
+        } else {
+          setAnalysisResult({
+            success: false,
+            message: "AI分析に失敗しました",
+          });
+        }
+      } else {
+        const errorText = await response.text();
+        setAnalysisResult({
+          success: false,
+          message: `AI分析に失敗しました (${response.status}): ${errorText}`,
+        });
+      }
+    } catch (error) {
+      setAnalysisResult({
+        success: false,
+        message: `通信エラーが発生しました: ${error instanceof Error ? error.message : "Unknown error"}`,
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -227,15 +307,32 @@ export default function NewItem() {
           <label htmlFor="imageUrl" className="block font-medium text-gray-700">
             画像URL
           </label>
-          <input
-            type="url"
-            id="imageUrl"
-            name="imageUrl"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+          <div className="flex gap-2">
+            <input
+              type="url"
+              id="imageUrl"
+              name="imageUrl"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              required
+              className="mt-1 flex-1 border border-gray-300 rounded-md shadow-sm p-2"
+            />
+            <button
+              type="button"
+              onClick={handleAiAnalyze}
+              disabled={isAnalyzing || !imageUrl.trim()}
+              className="mt-1 bg-purple-600 text-white font-bold py-2 px-4 rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isAnalyzing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  AI分析中...
+                </>
+              ) : (
+                "AI分析"
+              )}
+            </button>
+          </div>
           {/* 画像プレビュー */}
           {imageUrl && (
             <div className="mt-2">
@@ -253,6 +350,52 @@ export default function NewItem() {
             </div>
           )}
         </div>
+
+        {/* AI分析結果表示 */}
+        {aiAnalysis && (
+          <div className="bg-purple-50 border border-purple-200 rounded-md p-4">
+            <h3 className="font-medium text-purple-900 mb-3">AI分析結果</h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="font-medium">説明:</span>
+                <p className="text-gray-700 mt-1">{aiAnalysis.description}</p>
+              </div>
+              <div>
+                <span className="font-medium">主要な色:</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {aiAnalysis.colors.map((color, index) => (
+                    <span
+                      key={index}
+                      className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs"
+                    >
+                      {color}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="font-medium">パターン:</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {aiAnalysis.patterns.map((pattern, index) => (
+                    <span
+                      key={index}
+                      className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs"
+                    >
+                      {pattern}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <span className="font-medium">信頼度:</span>
+                <span className="ml-2">
+                  {Math.round(aiAnalysis.confidence * 100)}%
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div>
           <label htmlFor="tags" className="block font-medium text-gray-700">
             タグ（カンマ区切り）
@@ -261,6 +404,8 @@ export default function NewItem() {
             type="text"
             id="tags"
             name="tags"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
             placeholder="例: 夏, 祭り, 青"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           />
@@ -280,6 +425,19 @@ export default function NewItem() {
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           />
         </div>
+
+        {/* 分析データを隠しフィールドで送信 */}
+        {aiAnalysis && (
+          <input
+            type="hidden"
+            name="analysis"
+            value={JSON.stringify({
+              ...aiAnalysis,
+              analyzedAt: new Date().toISOString(),
+            })}
+          />
+        )}
+
         <button
           type="submit"
           className="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700"

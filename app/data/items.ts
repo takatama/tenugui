@@ -5,6 +5,16 @@ export interface Item {
   productUrl?: string;
   tags: string[];
   memo: string;
+  analysis?: ImageAnalysis;
+}
+
+export interface ImageAnalysis {
+  tags: string[];
+  description: string;
+  colors: string[];
+  patterns: string[];
+  confidence: number;
+  analyzedAt: string;
 }
 
 /**
@@ -50,6 +60,7 @@ export async function createItem(
     productUrl?: string;
     tags: string[];
     memo: string;
+    analysis?: ImageAnalysis;
   }
 ): Promise<Item> {
   const items = await getAllItemsFromKV(kv);
@@ -61,6 +72,7 @@ export async function createItem(
     productUrl: data.productUrl,
     tags: data.tags,
     memo: data.memo,
+    analysis: data.analysis,
   };
   items.push(newItem);
   await kv.put("items", JSON.stringify(items));
@@ -106,6 +118,7 @@ export async function updateItem(
     productUrl?: string;
     tags: string[];
     memo: string;
+    analysis?: ImageAnalysis;
   }
 ): Promise<Item | undefined> {
   const items = await getAllItemsFromKV(kv);
@@ -123,6 +136,7 @@ export async function updateItem(
     productUrl: data.productUrl,
     tags: data.tags,
     memo: data.memo,
+    analysis: data.analysis,
   };
 
   items[itemIndex] = updatedItem;
