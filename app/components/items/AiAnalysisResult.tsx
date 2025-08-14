@@ -17,7 +17,7 @@ export function AiAnalysisResult({
 }: AiAnalysisResultProps) {
   return (
     <div className="bg-purple-50 border border-purple-200 rounded-md p-4">
-      <h3 className="font-medium text-purple-900 mb-3">AI分析結果</h3>
+      <h3 className="font-medium text-purple-900 mb-3">タグ分析結果</h3>
       <div className="space-y-3 text-sm">
         <div>
           <span className="font-medium">説明:</span>

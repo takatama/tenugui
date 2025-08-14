@@ -27,7 +27,6 @@ export async function action({ context, request }: ActionFunctionArgs) {
     productUrl: formData.productUrl,
     tags: formData.tags,
     memo: formData.memo,
-    analysis: formData.analysis,
   });
   return redirect(`/items/${newItem.id}`);
 }
