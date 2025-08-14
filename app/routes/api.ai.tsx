@@ -67,7 +67,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
 
     return new Response(
       JSON.stringify({
-        error: "分析中にエラーが発生しました",
+        error: "タグ分析中にエラーが発生しました",
         details: error instanceof Error ? error.message : String(error),
       }),
       {

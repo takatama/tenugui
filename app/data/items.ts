@@ -7,7 +7,7 @@ export interface Item {
   memo: string;
 }
 
-export interface ImageAnalysis {
+export interface TagAnalysis {
   tags: string[];
   description: string;
   colors: string[];

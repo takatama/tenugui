@@ -1,5 +1,5 @@
 import { Form } from "react-router-dom";
-import type { Item, ImageAnalysis } from "../../data/items";
+import type { Item, TagAnalysis } from "../../data/items";
 import { useItemForm } from "../../hooks/useItemFormShared";
 import { useProductAnalysis } from "../../hooks/useProductAnalysis";
 import { useTagAnalysis } from "../../hooks/useTagAnalysis";
@@ -7,7 +7,7 @@ import {
   ProductAnalysis,
   ImageSelection,
   ImageUrlInput,
-  AiAnalysisResult,
+  TagAnalysisResult,
   TagSelection,
 } from "./index";
 
@@ -45,7 +45,7 @@ export function ItemForm({
     analyzeImage(
       formState.imageUrl,
       formState.setIsAnalyzing,
-      formState.setAiAnalysis,
+      formState.setTagAnalysis,
       formState.setAnalysisResult
     );
   };
@@ -90,9 +90,9 @@ export function ItemForm({
           onAiAnalyze={handleAiAnalyze}
         />
 
-        {formState.aiAnalysis && (
-          <AiAnalysisResult
-            aiAnalysis={formState.aiAnalysis}
+        {formState.tagAnalysis && (
+          <TagAnalysisResult
+            tagAnalysis={formState.tagAnalysis}
             selectedTags={formState.selectedTags}
             onTagToggle={formState.handleTagToggle}
             onAddAllTags={formState.handleAddAllAiTags}

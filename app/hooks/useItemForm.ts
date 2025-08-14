@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ImageAnalysis } from "../data/items";
+import type { TagAnalysis } from "../data/items";
 
 export interface AnalysisResult {
   success: boolean;
@@ -13,7 +13,7 @@ export function useItemForm() {
   const [tags, setTags] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [candidateImages, setCandidateImages] = useState<string[]>([]);
-  const [aiAnalysis, setAiAnalysis] = useState<ImageAnalysis | null>(null);
+  const [tagAnalysis, setTagAnalysis] = useState<TagAnalysis | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null
   );
@@ -36,10 +36,10 @@ export function useItemForm() {
     updateTags(newSelectedTags);
   };
 
-  const handleAddAllAiTags = () => {
-    if (!aiAnalysis?.tags) return;
+  const handleAddAllTags = () => {
+    if (!tagAnalysis?.tags) return;
     const newSelectedTags = new Set(selectedTags);
-    aiAnalysis.tags.forEach((tag) => newSelectedTags.add(tag));
+    tagAnalysis.tags.forEach((tag) => newSelectedTags.add(tag));
     updateTags(newSelectedTags);
   };
 
@@ -77,7 +77,7 @@ export function useItemForm() {
     tags,
     isAnalyzing,
     candidateImages,
-    aiAnalysis,
+    tagAnalysis,
     analysisResult,
     selectedTags,
     newTagInput,
@@ -88,13 +88,13 @@ export function useItemForm() {
     setImageUrl,
     setIsAnalyzing,
     setCandidateImages,
-    setAiAnalysis,
+    setTagAnalysis,
     setAnalysisResult,
     setNewTagInput,
 
     // Handlers
     handleTagToggle,
-    handleAddAllAiTags,
+    handleAddAllTags,
     handleClearAllTags,
     handleImageSelect,
     handleAddNewTag,

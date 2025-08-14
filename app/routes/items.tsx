@@ -104,8 +104,8 @@ export default function Items() {
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">
             {selectedTag
-              ? `タグ「${selectedTag}」の商品は見つかりませんでした`
-              : "商品がありません"}
+              ? `タグ「${selectedTag}」の手ぬぐいは見つかりませんでした`
+              : "手ぬぐいがありません"}
           </p>
         </div>
       )}
