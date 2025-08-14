@@ -38,7 +38,7 @@ export default function Items() {
           <h2 className="text-xl font-semibold mb-4">タグで絞り込み</h2>
           <div className="flex flex-wrap gap-2 mb-4">
             <Link
-              to="/items"
+              to="/"
               className={`px-3 py-1 rounded-full text-sm border ${
                 !selectedTag
                   ? "bg-blue-500 text-white border-blue-500"
@@ -50,7 +50,7 @@ export default function Items() {
             {allTags.map((tag) => (
               <Link
                 key={tag}
-                to={`/items?tag=${encodeURIComponent(tag)}`}
+                to={`/?tag=${encodeURIComponent(tag)}`}
                 className={`px-3 py-1 rounded-full text-sm border ${
                   selectedTag === tag
                     ? "bg-blue-500 text-white border-blue-500"

@@ -19,12 +19,6 @@ export default function Layout() {
               to="/"
               className="text-gray-600 hover:text-blue-600 transition-colors"
             >
-              ホーム
-            </Link>
-            <Link
-              to="/items"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
-            >
               手ぬぐい一覧
             </Link>
             <Link

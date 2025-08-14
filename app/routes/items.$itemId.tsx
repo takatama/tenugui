@@ -40,7 +40,7 @@ export async function action({ context, params }: ActionFunctionArgs) {
     throw new Response("Item not found", { status: 404 });
   }
 
-  return redirect("/items");
+  return redirect("/");
 }
 
 interface LoaderData {
@@ -73,7 +73,7 @@ export default function ItemDetail() {
             {item.tags.map((tag) => (
               <a
                 key={tag}
-                href={`/items?tag=${encodeURIComponent(tag)}`}
+                href={`/?tag=${encodeURIComponent(tag)}`}
                 style={{
                   backgroundColor: "#e5e7eb",
                   color: "#374151",
@@ -158,7 +158,7 @@ export default function ItemDetail() {
         </Form>
 
         <a
-          href="/items"
+          href="/"
           style={{
             backgroundColor: "#6b7280",
             color: "white",
