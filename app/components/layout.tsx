@@ -27,6 +27,12 @@ export default function Layout() {
             >
               手ぬぐい一覧
             </Link>
+            <Link
+              to="/items/new"
+              className="text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              手ぬぐい追加
+            </Link>
           </div>
         </nav>
       </header>

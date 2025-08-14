@@ -4,7 +4,7 @@ export interface Item {
   imageUrl: string;
 }
 
-const dummyItems: Item[] = [
+export const dummyItems: Item[] = [
   {
     id: 1,
     name: "伝統柄 - 青海波（せいがいは）",
