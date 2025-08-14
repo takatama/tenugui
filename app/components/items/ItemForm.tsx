@@ -1,7 +1,8 @@
 import { Form } from "react-router-dom";
 import type { Item, ImageAnalysis } from "../../data/items";
 import { useItemForm } from "../../hooks/useItemFormShared";
-import { useItemAnalysis } from "../../hooks/useItemAnalysis";
+import { useProductAnalysis } from "../../hooks/useProductAnalysis";
+import { useTagAnalysis } from "../../hooks/useTagAnalysis";
 import {
   ProductAnalysis,
   ImageSelection,
@@ -26,7 +27,8 @@ export function ItemForm({
   cancelUrl,
 }: ItemFormProps) {
   const formState = useItemForm({ initialItem });
-  const { analyzeProduct, analyzeImage } = useItemAnalysis();
+  const { analyzeProduct } = useProductAnalysis();
+  const { analyzeImage } = useTagAnalysis();
 
   const handleAnalyze = () => {
     analyzeProduct(
