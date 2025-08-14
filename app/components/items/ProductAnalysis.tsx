@@ -41,7 +41,7 @@ export function ProductAnalysis({
               分析中...
             </>
           ) : (
-            "分析"
+            "商品分析"
           )}
         </button>
       </div>

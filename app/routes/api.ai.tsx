@@ -1,13 +1,16 @@
 import type { ActionFunctionArgs } from "react-router-dom";
 import { getAllTags } from "../data/items";
-import { analyzeImageWithGemini, validateAndCleanAnalysisResult } from "../lib/aiAnalysis";
+import {
+  analyzeImageWithGemini,
+  validateAndCleanAnalysisResult,
+} from "../lib/aiAnalysis";
 
 interface RequestBody {
   imageUrl: string;
 }
 
 export async function action({ context, request }: ActionFunctionArgs) {
-  console.log("AI分析APIが呼び出されました");
+  console.log("タグ分析APIが呼び出されました");
 
   try {
     // リクエストボディの解析
@@ -15,13 +18,10 @@ export async function action({ context, request }: ActionFunctionArgs) {
     const { imageUrl } = body;
 
     if (!imageUrl) {
-      return new Response(
-        JSON.stringify({ error: "imageUrl is required" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "imageUrl is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     console.log("分析対象画像URL:", imageUrl);
@@ -30,13 +30,10 @@ export async function action({ context, request }: ActionFunctionArgs) {
     const apiKey = context.cloudflare.env.GEMINI_API_KEY;
     if (!apiKey) {
       console.error("GEMINI_API_KEY が設定されていません");
-      return new Response(
-        JSON.stringify({ error: "API key not configured" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "API key not configured" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 既存タグを取得
@@ -51,16 +48,13 @@ export async function action({ context, request }: ActionFunctionArgs) {
     );
 
     if (!analysisResult) {
-      return new Response(
-        JSON.stringify({ error: "分析に失敗しました" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "分析に失敗しました" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    console.log("AI分析完了:", analysisResult.tags.length, "個のタグを生成");
+    console.log("タグ分析完了:", analysisResult.tags.length, "個のタグを生成");
 
     // 結果の検証とクリーニング
     const cleanedResult = validateAndCleanAnalysisResult(analysisResult);
@@ -68,9 +62,8 @@ export async function action({ context, request }: ActionFunctionArgs) {
     return new Response(JSON.stringify(cleanedResult), {
       headers: { "Content-Type": "application/json" },
     });
-
   } catch (error) {
-    console.error("AI分析エラー:", error);
+    console.error("タグ分析エラー:", error);
 
     return new Response(
       JSON.stringify({
