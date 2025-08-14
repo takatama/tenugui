@@ -100,7 +100,9 @@ export default function ItemDetail() {
 
       {item.productUrl && (
         <div style={{ marginTop: "1.5rem" }}>
-          <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>商品URL:</h3>
+          <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>
+            商品URL:
+          </h3>
           <a
             href={item.productUrl}
             target="_blank"
