@@ -10,4 +10,5 @@ export default [
       route("items/:itemId/edit", "routes/items.$itemId.edit.tsx"),
     ],
   },
+  route("api/analyze", "routes/api.analyze.tsx"),
 ] satisfies RouteConfig;
