@@ -157,7 +157,11 @@ export default function NewItem() {
           existingTags={existingTags}
           selectedTags={formState.selectedTags}
           tags={formState.tags}
+          newTagInput={formState.newTagInput}
           onTagToggle={formState.handleTagToggle}
+          onNewTagInputChange={formState.setNewTagInput}
+          onAddNewTag={formState.handleAddNewTag}
+          onKeyPress={formState.handleKeyPress}
         />
 
         <div>

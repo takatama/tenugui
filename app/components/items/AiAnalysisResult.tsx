@@ -95,7 +95,9 @@ export function AiAnalysisResult({
 
         <div>
           <span className="font-medium">信頼度:</span>
-          <span className="ml-2">{Math.round(aiAnalysis.confidence * 100)}%</span>
+          <span className="ml-2">
+            {Math.round(aiAnalysis.confidence * 100)}%
+          </span>
         </div>
       </div>
     </div>
