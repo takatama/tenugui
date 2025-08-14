@@ -2,6 +2,7 @@ export interface Item {
   id: string;
   name: string;
   imageUrl: string;
+  tags: string[];
 }
 
 /**
@@ -30,7 +31,7 @@ export async function getItemById(
  */
 export async function createItem(
   kv: KVNamespace,
-  data: { name: string; imageUrl: string }
+  data: { name: string; imageUrl: string; tags: string[] }
 ): Promise<Item> {
   const items = await getItems(kv);
 
@@ -38,6 +39,7 @@ export async function createItem(
     id: crypto.randomUUID(),
     name: data.name,
     imageUrl: data.imageUrl,
+    tags: data.tags,
   };
   items.push(newItem);
   await kv.put("items", JSON.stringify(items));
@@ -77,7 +79,7 @@ export async function deleteItem(
 export async function updateItem(
   kv: KVNamespace,
   itemId: string,
-  data: { name: string; imageUrl: string }
+  data: { name: string; imageUrl: string; tags: string[] }
 ): Promise<Item | undefined> {
   const items = await getItems(kv);
   const itemIndex = items.findIndex((item) => item.id === itemId);
@@ -91,9 +93,35 @@ export async function updateItem(
     ...items[itemIndex],
     name: data.name,
     imageUrl: data.imageUrl,
+    tags: data.tags,
   };
 
   items[itemIndex] = updatedItem;
   await kv.put("items", JSON.stringify(items));
   return updatedItem;
+}
+
+/**
+ * すべてのタグを取得する関数
+ * @param kv KVNamespace
+ * @returns すべてのユニークなタグの配列
+ */
+export async function getAllTags(kv: KVNamespace): Promise<string[]> {
+  const items = await getItems(kv);
+  const allTags = items.flatMap((item) => item.tags || []);
+  return [...new Set(allTags)].sort();
+}
+
+/**
+ * 指定されたタグでアイテムを絞り込む関数
+ * @param kv KVNamespace
+ * @param tag 絞り込むタグ
+ * @returns 指定されたタグを持つアイテムの配列
+ */
+export async function getItemsByTag(
+  kv: KVNamespace,
+  tag: string
+): Promise<Item[]> {
+  const items = await getItems(kv);
+  return items.filter((item) => item.tags && item.tags.includes(tag));
 }

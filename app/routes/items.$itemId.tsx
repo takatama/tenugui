@@ -66,6 +66,38 @@ export default function ItemDetail() {
       />
       <h1 style={{ fontSize: "2.5rem", marginTop: "1.5rem" }}>{item.name}</h1>
 
+      {item.tags && item.tags.length > 0 && (
+        <div style={{ marginTop: "1rem" }}>
+          <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>タグ:</h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            {item.tags.map((tag) => (
+              <a
+                key={tag}
+                href={`/items?tag=${encodeURIComponent(tag)}`}
+                style={{
+                  backgroundColor: "#e5e7eb",
+                  color: "#374151",
+                  padding: "0.25rem 0.75rem",
+                  borderRadius: "9999px",
+                  textDecoration: "none",
+                  fontSize: "0.875rem",
+                  border: "1px solid #d1d5db",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseOver={(e) => {
+                  (e.target as HTMLElement).style.backgroundColor = "#d1d5db";
+                }}
+                onMouseOut={(e) => {
+                  (e.target as HTMLElement).style.backgroundColor = "#e5e7eb";
+                }}
+              >
+                {tag}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div style={{ marginTop: "2rem", display: "flex", gap: "1rem" }}>
         <a
           href={`/items/${item.id}/edit`}

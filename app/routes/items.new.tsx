@@ -6,12 +6,23 @@ export async function action({ context, request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const name = formData.get("name");
   const imageUrl = formData.get("imageUrl");
+  const tagsString = formData.get("tags");
 
-  if (typeof name !== "string" || typeof imageUrl !== "string") {
+  if (
+    typeof name !== "string" ||
+    typeof imageUrl !== "string" ||
+    typeof tagsString !== "string"
+  ) {
     throw new Error("Invalid form data");
   }
 
-  const newItem = await createItem(kv, { name, imageUrl });
+  // タグ文字列をカンマで分割し、前後の空白を除去
+  const tags = tagsString
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+
+  const newItem = await createItem(kv, { name, imageUrl, tags });
   return redirect(`/items/${newItem.id}`);
 }
 
@@ -44,6 +55,21 @@ export default function NewItem() {
             required
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           />
+        </div>
+        <div>
+          <label htmlFor="tags" className="block font-medium text-gray-700">
+            タグ（カンマ区切り）
+          </label>
+          <input
+            type="text"
+            id="tags"
+            name="tags"
+            placeholder="例: 夏, 祭り, 青"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            複数のタグを追加する場合は、カンマ（,）で区切って入力してください
+          </p>
         </div>
         <button
           type="submit"

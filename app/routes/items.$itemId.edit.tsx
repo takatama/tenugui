@@ -37,12 +37,23 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const name = formData.get("name");
   const imageUrl = formData.get("imageUrl");
+  const tagsString = formData.get("tags");
 
-  if (typeof name !== "string" || typeof imageUrl !== "string") {
+  if (
+    typeof name !== "string" ||
+    typeof imageUrl !== "string" ||
+    typeof tagsString !== "string"
+  ) {
     throw new Error("Invalid form data");
   }
 
-  const updatedItem = await updateItem(kv, itemId, { name, imageUrl });
+  // タグ文字列をカンマで分割し、前後の空白を除去
+  const tags = tagsString
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+
+  const updatedItem = await updateItem(kv, itemId, { name, imageUrl, tags });
 
   if (!updatedItem) {
     throw new Response("Item not found", { status: 404 });
@@ -125,6 +136,42 @@ export default function EditItem() {
               fontSize: "1rem",
             }}
           />
+        </div>
+
+        <div>
+          <label
+            htmlFor="tags"
+            style={{
+              display: "block",
+              marginBottom: "0.5rem",
+              fontWeight: "bold",
+            }}
+          >
+            タグ（カンマ区切り）
+          </label>
+          <input
+            type="text"
+            id="tags"
+            name="tags"
+            defaultValue={item.tags?.join(", ") || ""}
+            placeholder="例: 夏, 祭り, 青"
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              border: "1px solid #d1d5db",
+              borderRadius: "0.375rem",
+              fontSize: "1rem",
+            }}
+          />
+          <p
+            style={{
+              marginTop: "0.25rem",
+              fontSize: "0.875rem",
+              color: "#6b7280",
+            }}
+          >
+            複数のタグを追加する場合は、カンマ（,）で区切って入力してください
+          </p>
         </div>
 
         <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
