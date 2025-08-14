@@ -10,4 +10,6 @@ export default [
       route("items/:itemId/edit", "routes/items.$itemId.edit.tsx"),
     ],
   },
+  route("api/product-analysis", "routes/api.product-analysis.tsx"),
+  route("api/tag-analysis", "routes/api.tag-analysis.tsx"),
 ] satisfies RouteConfig;
