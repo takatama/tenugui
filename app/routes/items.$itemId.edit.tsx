@@ -38,11 +38,13 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
   const name = formData.get("name");
   const imageUrl = formData.get("imageUrl");
   const tagsString = formData.get("tags");
+  const memo = formData.get("memo");
 
   if (
     typeof name !== "string" ||
     typeof imageUrl !== "string" ||
-    typeof tagsString !== "string"
+    typeof tagsString !== "string" ||
+    typeof memo !== "string"
   ) {
     throw new Error("Invalid form data");
   }
@@ -53,7 +55,12 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
     .map((tag) => tag.trim())
     .filter((tag) => tag.length > 0);
 
-  const updatedItem = await updateItem(kv, itemId, { name, imageUrl, tags });
+  const updatedItem = await updateItem(kv, itemId, {
+    name,
+    imageUrl,
+    tags,
+    memo,
+  });
 
   if (!updatedItem) {
     throw new Response("Item not found", { status: 404 });
@@ -172,6 +179,35 @@ export default function EditItem() {
           >
             複数のタグを追加する場合は、カンマ（,）で区切って入力してください
           </p>
+        </div>
+
+        <div>
+          <label
+            htmlFor="memo"
+            style={{
+              display: "block",
+              marginBottom: "0.5rem",
+              fontWeight: "bold",
+            }}
+          >
+            メモ
+          </label>
+          <textarea
+            id="memo"
+            name="memo"
+            rows={4}
+            defaultValue={item.memo || ""}
+            placeholder="手ぬぐいに関するメモや説明を入力してください"
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              border: "1px solid #d1d5db",
+              borderRadius: "0.375rem",
+              fontSize: "1rem",
+              fontFamily: "inherit",
+              resize: "vertical",
+            }}
+          />
         </div>
 
         <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>

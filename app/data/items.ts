@@ -3,6 +3,7 @@ export interface Item {
   name: string;
   imageUrl: string;
   tags: string[];
+  memo: string;
 }
 
 /**
@@ -42,7 +43,7 @@ export async function getAllItems(kv: KVNamespace): Promise<Item[]> {
  */
 export async function createItem(
   kv: KVNamespace,
-  data: { name: string; imageUrl: string; tags: string[] }
+  data: { name: string; imageUrl: string; tags: string[]; memo: string }
 ): Promise<Item> {
   const items = await getAllItemsFromKV(kv);
 
@@ -51,6 +52,7 @@ export async function createItem(
     name: data.name,
     imageUrl: data.imageUrl,
     tags: data.tags,
+    memo: data.memo,
   };
   items.push(newItem);
   await kv.put("items", JSON.stringify(items));
@@ -90,7 +92,7 @@ export async function deleteItem(
 export async function updateItem(
   kv: KVNamespace,
   itemId: string,
-  data: { name: string; imageUrl: string; tags: string[] }
+  data: { name: string; imageUrl: string; tags: string[]; memo: string }
 ): Promise<Item | undefined> {
   const items = await getAllItemsFromKV(kv);
   const itemIndex = items.findIndex((item) => item.id === itemId);
@@ -105,6 +107,7 @@ export async function updateItem(
     name: data.name,
     imageUrl: data.imageUrl,
     tags: data.tags,
+    memo: data.memo,
   };
 
   items[itemIndex] = updatedItem;

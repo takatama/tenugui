@@ -98,6 +98,25 @@ export default function ItemDetail() {
         </div>
       )}
 
+      {item.memo && (
+        <div style={{ marginTop: "1.5rem" }}>
+          <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>メモ:</h3>
+          <div
+            style={{
+              backgroundColor: "#f9fafb",
+              border: "1px solid #e5e7eb",
+              borderRadius: "0.5rem",
+              padding: "1rem",
+              whiteSpace: "pre-wrap",
+              fontSize: "1rem",
+              lineHeight: "1.6",
+            }}
+          >
+            {item.memo}
+          </div>
+        </div>
+      )}
+
       <div style={{ marginTop: "2rem", display: "flex", gap: "1rem" }}>
         <a
           href={`/items/${item.id}/edit`}

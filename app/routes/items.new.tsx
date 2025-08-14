@@ -7,11 +7,13 @@ export async function action({ context, request }: ActionFunctionArgs) {
   const name = formData.get("name");
   const imageUrl = formData.get("imageUrl");
   const tagsString = formData.get("tags");
+  const memo = formData.get("memo");
 
   if (
     typeof name !== "string" ||
     typeof imageUrl !== "string" ||
-    typeof tagsString !== "string"
+    typeof tagsString !== "string" ||
+    typeof memo !== "string"
   ) {
     throw new Error("Invalid form data");
   }
@@ -22,7 +24,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
     .map((tag) => tag.trim())
     .filter((tag) => tag.length > 0);
 
-  const newItem = await createItem(kv, { name, imageUrl, tags });
+  const newItem = await createItem(kv, { name, imageUrl, tags, memo });
   return redirect(`/items/${newItem.id}`);
 }
 
@@ -70,6 +72,18 @@ export default function NewItem() {
           <p className="mt-1 text-sm text-gray-500">
             複数のタグを追加する場合は、カンマ（,）で区切って入力してください
           </p>
+        </div>
+        <div>
+          <label htmlFor="memo" className="block font-medium text-gray-700">
+            メモ
+          </label>
+          <textarea
+            id="memo"
+            name="memo"
+            rows={4}
+            placeholder="手ぬぐいに関するメモや説明を入力してください"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          />
         </div>
         <button
           type="submit"
