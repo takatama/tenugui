@@ -125,3 +125,41 @@ export async function getItemsByTag(
   const items = await getItems(kv);
   return items.filter((item) => item.tags && item.tags.includes(tag));
 }
+
+/**
+ * アイテムとタグを効率的に取得する関数
+ * @param kv KVNamespace
+ * @param tagFilter 絞り込むタグ（オプション）
+ * @returns アイテム、全タグ、件数情報を含むオブジェクト
+ */
+export async function getItemsWithTags(
+  kv: KVNamespace,
+  tagFilter?: string | null
+): Promise<{
+  items: Item[];
+  allTags: string[];
+  totalCount: number;
+  filteredCount: number;
+  selectedTag: string | null;
+}> {
+  // 1回のKVアクセスですべてのアイテムを取得
+  const allItems = await getItems(kv);
+
+  // 全タグを抽出
+  const allTags = [
+    ...new Set(allItems.flatMap((item) => item.tags || [])),
+  ].sort();
+
+  // フィルタリング
+  const filteredItems = tagFilter
+    ? allItems.filter((item) => item.tags?.includes(tagFilter))
+    : allItems;
+
+  return {
+    items: filteredItems,
+    allTags,
+    totalCount: allItems.length,
+    filteredCount: filteredItems.length,
+    selectedTag: tagFilter || null,
+  };
+}

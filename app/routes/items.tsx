@@ -1,21 +1,15 @@
 import { useLoaderData, Link, type LoaderFunctionArgs } from "react-router-dom";
-import { getItems, getAllTags, getItemsByTag, type Item } from "../data/items";
+import { getItemsWithTags, type Item } from "../data/items";
 
 export async function loader({ context, request }: LoaderFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
   const url = new URL(request.url);
   const selectedTag = url.searchParams.get("tag");
 
-  let items: Item[];
-  if (selectedTag) {
-    items = await getItemsByTag(kv, selectedTag);
-  } else {
-    items = await getItems(kv);
-  }
+  // 1回のKVアクセスですべてのデータを取得
+  const data = await getItemsWithTags(kv, selectedTag);
 
-  const allTags = await getAllTags(kv);
-
-  return new Response(JSON.stringify({ items, allTags, selectedTag }), {
+  return new Response(JSON.stringify(data), {
     headers: {
       "Content-Type": "application/json",
     },
@@ -25,11 +19,14 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
 interface LoaderData {
   items: Item[];
   allTags: string[];
+  totalCount: number;
+  filteredCount: number;
   selectedTag: string | null;
 }
 
 export default function Items() {
-  const { items, allTags, selectedTag } = useLoaderData() as LoaderData;
+  const { items, allTags, selectedTag, filteredCount } =
+    useLoaderData() as LoaderData;
 
   return (
     <div className="font-sans p-8">
@@ -66,7 +63,7 @@ export default function Items() {
           </div>
           {selectedTag && (
             <p className="text-gray-600 mb-4">
-              タグ「{selectedTag}」で絞り込み中 ({items.length}件)
+              タグ「{selectedTag}」で絞り込み中 ({filteredCount}件)
             </p>
           )}
         </div>
