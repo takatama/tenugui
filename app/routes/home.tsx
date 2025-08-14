@@ -1,6 +1,6 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
-import { useLoaderData } from "react-router-dom";
+// import { Welcome } from "../welcome/welcome";
+// import { useLoaderData } from "react-router-dom";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,11 +17,17 @@ export function loader({ context }: Route.LoaderArgs) {
   });
 }
 
-interface LoaderData {
-  message: string;
-}
+// interface LoaderData {
+//   message: string;
+// }
 
 export default function Home() {
-  const { message } = useLoaderData() as LoaderData;
-  return <Welcome message={message} />;
+  return (
+    <div className="text-center py-16">
+      <h1 className="text-4xl font-bold mb-4">ようこそ！</h1>
+      <p className="text-lg text-gray-600">
+        これは私が集めた手ぬぐいを記録する、個人的なギャラリーです。
+      </p>
+    </div>
+  );
 }
