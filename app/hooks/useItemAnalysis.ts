@@ -86,6 +86,8 @@ export function useItemAnalysis() {
     setAnalysisResult(null);
 
     try {
+      console.log("タグ分析リクエスト開始:", imageUrl);
+
       const response = await fetch("/api/ai", {
         method: "POST",
         headers: {
@@ -94,30 +96,34 @@ export function useItemAnalysis() {
         body: JSON.stringify({ imageUrl }),
       });
 
-      if (response.ok) {
-        const data = (await response.json()) as {
-          success: boolean;
-          analysis?: ImageAnalysis;
-          existingTags?: string[];
-        };
+      console.log("タグ分析レスポンス:", {
+        status: response.status,
+        ok: response.ok,
+      });
 
-        if (data.success && data.analysis) {
-          setAiAnalysis(data.analysis);
+      if (response.ok) {
+        const data = (await response.json()) as ImageAnalysis;
+
+        console.log("タグ分析データ:", data);
+
+        // データの妥当性をチェック
+        if (data.tags && Array.isArray(data.tags) && data.tags.length > 0) {
+          setAiAnalysis(data);
           setAnalysisResult({
             success: true,
-            message: `AI分析完了！${data.analysis.tags.length}個のタグを提案しました。`,
+            message: `タグ分析完了！${data.tags.length}個のタグを提案しました。`,
           });
         } else {
           setAnalysisResult({
             success: false,
-            message: "AI分析に失敗しました",
+            message: "タグ分析結果が不正です",
           });
         }
       } else {
         const errorText = await response.text();
         setAnalysisResult({
           success: false,
-          message: `AI分析に失敗しました (${response.status}): ${errorText}`,
+          message: `タグ分析に失敗しました (${response.status}): ${errorText}`,
         });
       }
     } catch (error) {
