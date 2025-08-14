@@ -123,18 +123,6 @@ export function ItemForm({
           />
         </div>
 
-        {/* 分析データを隠しフィールドで送信 */}
-        {formState.aiAnalysis && (
-          <input
-            type="hidden"
-            name="analysis"
-            value={JSON.stringify({
-              ...formState.aiAnalysis,
-              analyzedAt: new Date().toISOString(),
-            })}
-          />
-        )}
-
         <div className="flex gap-4">
           <button
             type="submit"

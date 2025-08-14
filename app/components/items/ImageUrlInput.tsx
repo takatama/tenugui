@@ -35,10 +35,10 @@ export function ImageUrlInput({
           {isAnalyzing ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              AI分析中...
+              タグ分析中...
             </>
           ) : (
-            "AI分析"
+            "タグ分析"
           )}
         </button>
       </div>
