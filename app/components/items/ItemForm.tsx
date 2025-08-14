@@ -125,6 +125,10 @@ export function ItemForm({
           />
         </div>
 
+        {/* Hidden fields for form submission */}
+        <input type="hidden" name="productUrl" value={formState.productUrl} />
+        <input type="hidden" name="tags" value={formState.tags} />
+
         <div className="flex gap-4">
           <button
             type="submit"
