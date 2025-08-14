@@ -1,5 +1,5 @@
 import { useLoaderData, Link, type LoaderFunctionArgs } from "react-router-dom";
-import { getItemsWithTags, type Item } from "../data/items";
+import { getItems, type Item } from "../data/items";
 
 export async function loader({ context, request }: LoaderFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
@@ -7,7 +7,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
   const selectedTag = url.searchParams.get("tag");
 
   // 1回のKVアクセスですべてのデータを取得
-  const data = await getItemsWithTags(kv, selectedTag);
+  const data = await getItems(kv, selectedTag);
 
   return new Response(JSON.stringify(data), {
     headers: {

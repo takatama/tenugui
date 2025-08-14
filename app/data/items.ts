@@ -6,9 +6,11 @@ export interface Item {
 }
 
 /**
- * すべての手ぬぐいを取得する関数
+ * すべての手ぬぐいを取得する関数（内部使用専用）
+ * @param kv KVNamespace
+ * @returns すべての手ぬぐいの配列
  */
-export async function getItems(kv: KVNamespace): Promise<Item[]> {
+async function getAllItemsFromKV(kv: KVNamespace): Promise<Item[]> {
   return (await kv.get("items", "json")) || [];
 }
 
@@ -20,8 +22,17 @@ export async function getItemById(
   kv: KVNamespace,
   itemId: string
 ): Promise<Item | undefined> {
-  const items = await getItems(kv);
+  const items = await getAllItemsFromKV(kv);
   return items.find((item) => item.id === itemId);
+}
+
+/**
+ * すべてのアイテムを配列として取得する関数（シンプル版）
+ * @param kv KVNamespace
+ * @returns すべてのアイテムの配列
+ */
+export async function getAllItems(kv: KVNamespace): Promise<Item[]> {
+  return await getAllItemsFromKV(kv);
 }
 
 /**
@@ -33,7 +44,7 @@ export async function createItem(
   kv: KVNamespace,
   data: { name: string; imageUrl: string; tags: string[] }
 ): Promise<Item> {
-  const items = await getItems(kv);
+  const items = await getAllItemsFromKV(kv);
 
   const newItem: Item = {
     id: crypto.randomUUID(),
@@ -56,7 +67,7 @@ export async function deleteItem(
   kv: KVNamespace,
   itemId: string
 ): Promise<boolean> {
-  const items = await getItems(kv);
+  const items = await getAllItemsFromKV(kv);
   const initialLength = items.length;
   const filteredItems = items.filter((item) => item.id !== itemId);
 
@@ -81,7 +92,7 @@ export async function updateItem(
   itemId: string,
   data: { name: string; imageUrl: string; tags: string[] }
 ): Promise<Item | undefined> {
-  const items = await getItems(kv);
+  const items = await getAllItemsFromKV(kv);
   const itemIndex = items.findIndex((item) => item.id === itemId);
 
   if (itemIndex === -1) {
@@ -102,37 +113,12 @@ export async function updateItem(
 }
 
 /**
- * すべてのタグを取得する関数
- * @param kv KVNamespace
- * @returns すべてのユニークなタグの配列
- */
-export async function getAllTags(kv: KVNamespace): Promise<string[]> {
-  const items = await getItems(kv);
-  const allTags = items.flatMap((item) => item.tags || []);
-  return [...new Set(allTags)].sort();
-}
-
-/**
- * 指定されたタグでアイテムを絞り込む関数
- * @param kv KVNamespace
- * @param tag 絞り込むタグ
- * @returns 指定されたタグを持つアイテムの配列
- */
-export async function getItemsByTag(
-  kv: KVNamespace,
-  tag: string
-): Promise<Item[]> {
-  const items = await getItems(kv);
-  return items.filter((item) => item.tags && item.tags.includes(tag));
-}
-
-/**
- * アイテムとタグを効率的に取得する関数
+ * アイテム一覧を取得する関数（メインの取得関数）
  * @param kv KVNamespace
  * @param tagFilter 絞り込むタグ（オプション）
  * @returns アイテム、全タグ、件数情報を含むオブジェクト
  */
-export async function getItemsWithTags(
+export async function getItems(
   kv: KVNamespace,
   tagFilter?: string | null
 ): Promise<{
@@ -143,7 +129,7 @@ export async function getItemsWithTags(
   selectedTag: string | null;
 }> {
   // 1回のKVアクセスですべてのアイテムを取得
-  const allItems = await getItems(kv);
+  const allItems = await getAllItemsFromKV(kv);
 
   // 全タグを抽出
   const allTags = [
