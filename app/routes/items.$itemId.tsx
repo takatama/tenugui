@@ -67,6 +67,22 @@ export default function ItemDetail() {
       <h1 style={{ fontSize: "2.5rem", marginTop: "1.5rem" }}>{item.name}</h1>
 
       <div style={{ marginTop: "2rem", display: "flex", gap: "1rem" }}>
+        <a
+          href={`/items/${item.id}/edit`}
+          style={{
+            backgroundColor: "#2563eb",
+            color: "white",
+            padding: "0.5rem 1rem",
+            textDecoration: "none",
+            borderRadius: "0.375rem",
+            fontSize: "1rem",
+            fontWeight: "bold",
+            display: "inline-block",
+          }}
+        >
+          編集
+        </a>
+
         <Form method="post" style={{ display: "inline" }}>
           <button
             type="submit"

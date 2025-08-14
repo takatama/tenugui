@@ -8,6 +8,7 @@ export default [
       route("items", "routes/items.tsx"),
       route("items/new", "routes/items.new.tsx"),
       route("items/:itemId", "routes/items.$itemId.tsx"),
+      route("items/:itemId/edit", "routes/items.$itemId.edit.tsx"),
     ],
   },
 ] satisfies RouteConfig;

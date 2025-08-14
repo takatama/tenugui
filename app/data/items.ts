@@ -66,3 +66,34 @@ export async function deleteItem(
   await kv.put("items", JSON.stringify(filteredItems));
   return true;
 }
+
+/**
+ * 指定されたIDの手ぬぐいを更新する関数
+ * @param kv KVNamespace
+ * @param itemId 更新する手ぬぐいのID
+ * @param data 更新するデータ
+ * @returns 更新されたアイテム、存在しない場合はundefined
+ */
+export async function updateItem(
+  kv: KVNamespace,
+  itemId: string,
+  data: { name: string; imageUrl: string }
+): Promise<Item | undefined> {
+  const items = await getItems(kv);
+  const itemIndex = items.findIndex((item) => item.id === itemId);
+
+  if (itemIndex === -1) {
+    // アイテムが見つからなかった場合
+    return undefined;
+  }
+
+  const updatedItem: Item = {
+    ...items[itemIndex],
+    name: data.name,
+    imageUrl: data.imageUrl,
+  };
+
+  items[itemIndex] = updatedItem;
+  await kv.put("items", JSON.stringify(items));
+  return updatedItem;
+}
