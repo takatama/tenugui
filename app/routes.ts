@@ -11,4 +11,5 @@ export default [
     ],
   },
   route("api/analyze", "routes/api.analyze.tsx"),
+  route("api/ai", "routes/api.ai.tsx"),
 ] satisfies RouteConfig;
