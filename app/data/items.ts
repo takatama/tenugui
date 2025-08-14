@@ -4,35 +4,42 @@ export interface Item {
   imageUrl: string;
 }
 
-export const dummyItems: Item[] = [
-  {
-    id: 1,
-    name: "伝統柄 - 青海波（せいがいは）",
-    imageUrl: "https://placehold.co/600x600/3b82f6/ffffff?text=Tenugui+1",
-  },
-  {
-    id: 2,
-    name: "動物柄 - 猫と足跡",
-    imageUrl: "https://placehold.co/600x600/ef4444/ffffff?text=Tenugui+2",
-  },
-  {
-    id: 3,
-    name: "植物柄 - 朝顔",
-    imageUrl: "https://placehold.co/600x600/22c55e/ffffff?text=Tenugui+3",
-  },
-];
-
 /**
- * すべての商品を取得する関数
+ * すべての手ぬぐいを取得する関数
  */
-export function getItems(): Item[] {
-  return dummyItems;
+export async function getItems(kv: KVNamespace): Promise<Item[]> {
+  return (await kv.get("items", "json")) || [];
 }
 
 /**
- * IDを指定して単一の商品を取得する関数
- * @param itemId 商品ID
+ * IDを指定して単一の手ぬぐいを取得する関数
+ * @param itemId 手ぬぐいID
  */
-export function getItemById(itemId: number): Item | undefined {
-  return dummyItems.find((item) => item.id === itemId);
+export async function getItemById(
+  kv: KVNamespace,
+  itemId: number
+): Promise<Item | undefined> {
+  const items = await getItems(kv);
+  return items.find((item) => item.id === itemId);
+}
+
+/**
+ * 新しい手ぬぐいを作成する関数
+ * @param data 手ぬぐいのデータ
+ * @returns 作成された手ぬぐい
+ */
+export async function createItem(
+  kv: KVNamespace,
+  data: { name: string; imageUrl: string }
+): Promise<Item> {
+  const items = await getItems(kv);
+
+  const newItem: Item = {
+    id: items.reduce((maxId, item) => Math.max(item.id, maxId), 0) + 1,
+    name: data.name,
+    imageUrl: data.imageUrl,
+  };
+  items.push(newItem);
+  await kv.put("items", JSON.stringify(items));
+  return newItem;
 }

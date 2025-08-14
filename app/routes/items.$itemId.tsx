@@ -1,9 +1,10 @@
 import { useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
 import { getItemById, type Item } from "../data/items";
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ context, params }: LoaderFunctionArgs) {
+  const kv = context.cloudflare.env.TENUGUI_KV;
   const itemId = Number(params.itemId);
-  const item = getItemById(itemId);
+  const item = await getItemById(kv, itemId);
 
   if (!item) {
     throw new Response("Not Found", { status: 404 });

@@ -1,8 +1,9 @@
-import { useLoaderData, Link } from "react-router-dom";
+import { useLoaderData, Link, type LoaderFunctionArgs } from "react-router-dom";
 import { getItems, type Item } from "../data/items";
 
-export async function loader() {
-  const items = getItems();
+export async function loader({ context }: LoaderFunctionArgs) {
+  const kv = context.cloudflare.env.TENUGUI_KV;
+  const items = await getItems(kv);
 
   // JavaScriptオブジェクトをJSON文字列に変換し、Responseオブジェクトとして返します
   return new Response(JSON.stringify({ items }), {

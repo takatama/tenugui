@@ -1,7 +1,8 @@
-import { createItem } from "../data/item";
+import { createItem } from "../data/items";
 import { Form, redirect, type ActionFunctionArgs } from "react-router-dom";
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ context, request }: ActionFunctionArgs) {
+  const kv = context.cloudflare.env.TENUGUI_KV;
   const formData = await request.formData();
   const name = formData.get("name");
   const imageUrl = formData.get("imageUrl");
@@ -10,7 +11,7 @@ export async function action({ request }: ActionFunctionArgs) {
     throw new Error("Invalid form data");
   }
 
-  const newItem = createItem({ name, imageUrl });
+  const newItem = await createItem(kv, { name, imageUrl });
   return redirect(`/items/${newItem.id}`);
 }
 
