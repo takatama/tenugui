@@ -30,7 +30,7 @@ export default function Items() {
 
   return (
     <div className="font-sans p-8">
-      <h1 className="text-3xl font-bold mb-8">商品一覧</h1>
+      <h1 className="text-3xl font-bold mb-8">手ぬぐい一覧</h1>
 
       {/* タグフィルター */}
       {allTags.length > 0 && (
