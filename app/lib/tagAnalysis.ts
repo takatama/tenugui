@@ -1,4 +1,4 @@
-import type { AnalysisResult, GeminiResponse } from "./geminiAnalysis";
+import type { TagAnalysisResult, GeminiResponse } from "./geminiAnalysis";
 import {
   convertImageToBase64,
   createAnalysisPrompt,
@@ -7,11 +7,11 @@ import {
 } from "./geminiAnalysis";
 
 // Gemini APIを使用して画像を分析（リトライ機能付き）
-export async function analyzeImageWithGemini(
+export async function analyzeTagWithGemini(
   imageUrl: string,
   apiKey: string,
   existingTags: string[] = []
-): Promise<AnalysisResult | null> {
+): Promise<TagAnalysisResult | null> {
   const maxRetries = 3;
   let lastError: Error | null = null;
 
@@ -79,8 +79,8 @@ export async function analyzeImageWithGemini(
 
 // 分析結果の検証とクリーニング
 export function validateAndCleanAnalysisResult(
-  result: AnalysisResult
-): AnalysisResult {
+  result: TagAnalysisResult
+): TagAnalysisResult {
   return {
     tags: result.tags.filter((tag) => tag && tag.trim().length > 0).slice(0, 8),
     description:

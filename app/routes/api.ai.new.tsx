@@ -1,9 +1,9 @@
 import type { ActionFunctionArgs } from "react-router-dom";
 import { getAllTags } from "../data/items";
 import {
-  analyzeImageWithGemini,
+  analyzeTagWithGemini,
   validateAndCleanAnalysisResult,
-} from "../lib/aiAnalysis";
+} from "../lib/tagAnalysis";
 
 interface RequestBody {
   imageUrl: string;
@@ -41,7 +41,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
     const existingTags = await getAllTags(kv);
 
     // 画像分析実行
-    const analysisResult = await analyzeImageWithGemini(
+    const analysisResult = await analyzeTagWithGemini(
       imageUrl,
       apiKey,
       existingTags
@@ -54,7 +54,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
       });
     }
 
-    console.log("タグ分析完了:", analysisResult.tags.length, "個のタグを生成");
+    console.log("AI分析完了:", analysisResult.tags.length, "個のタグを生成");
 
     // 結果の検証とクリーニング
     const cleanedResult = validateAndCleanAnalysisResult(analysisResult);
@@ -63,11 +63,11 @@ export async function action({ context, request }: ActionFunctionArgs) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("タグ分析エラー:", error);
+    console.error("AI分析エラー:", error);
 
     return new Response(
       JSON.stringify({
-        error: "タグ分析中にエラーが発生しました",
+        error: "分析中にエラーが発生しました",
         details: error instanceof Error ? error.message : String(error),
       }),
       {
