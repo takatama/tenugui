@@ -22,7 +22,7 @@ export function useProductAnalysis() {
     setAnalysisResult(null);
 
     try {
-      const response = await fetch("/api/analyze", {
+      const response = await fetch("/api/product-analysis", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,11 +1,11 @@
-import type { ImageAnalysis } from "../data/items";
+import type { TagAnalysis } from "../data/items";
 import type { AnalysisResult } from "./useItemForm";
 
 export function useTagAnalysis() {
   const analyzeImage = async (
     imageUrl: string,
     setIsAnalyzing: (analyzing: boolean) => void,
-    setAiAnalysis: (analysis: ImageAnalysis | null) => void,
+    setTagAnalysis: (analysis: TagAnalysis | null) => void,
     setAnalysisResult: (result: AnalysisResult | null) => void
   ) => {
     if (!imageUrl.trim()) {
@@ -22,7 +22,7 @@ export function useTagAnalysis() {
     try {
       console.log("タグ分析リクエスト開始:", imageUrl);
 
-      const response = await fetch("/api/ai", {
+      const response = await fetch("/api/tag-analysis", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -36,13 +36,13 @@ export function useTagAnalysis() {
       });
 
       if (response.ok) {
-        const data = (await response.json()) as ImageAnalysis;
+        const data = (await response.json()) as TagAnalysis;
 
         console.log("タグ分析データ:", data);
 
         // データの妥当性をチェック
         if (data.tags && Array.isArray(data.tags) && data.tags.length > 0) {
-          setAiAnalysis(data);
+          setTagAnalysis(data);
           setAnalysisResult({
             success: true,
             message: `タグ分析完了！${data.tags.length}個のタグを提案しました。`,

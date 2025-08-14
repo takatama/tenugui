@@ -1,27 +1,27 @@
-import type { ImageAnalysis } from "../../data/items";
+import type { TagAnalysis } from "../../data/items";
 
-interface AiAnalysisResultProps {
-  aiAnalysis: ImageAnalysis;
+interface TagAnalysisResultProps {
+  tagAnalysis: TagAnalysis;
   selectedTags: Set<string>;
   onTagToggle: (tag: string) => void;
   onAddAllTags: () => void;
   onClearAllTags: () => void;
 }
 
-export function AiAnalysisResult({
-  aiAnalysis,
+export function TagAnalysisResult({
+  tagAnalysis,
   selectedTags,
   onTagToggle,
   onAddAllTags,
   onClearAllTags,
-}: AiAnalysisResultProps) {
+}: TagAnalysisResultProps) {
   return (
     <div className="bg-purple-50 border border-purple-200 rounded-md p-4">
       <h3 className="font-medium text-purple-900 mb-3">タグ分析結果</h3>
       <div className="space-y-3 text-sm">
         <div>
           <span className="font-medium">説明:</span>
-          <p className="text-gray-700 mt-1">{aiAnalysis.description}</p>
+          <p className="text-gray-700 mt-1">{tagAnalysis.description}</p>
         </div>
 
         <div>
@@ -45,7 +45,7 @@ export function AiAnalysisResult({
             </div>
           </div>
           <div className="flex flex-wrap gap-1 mt-1">
-            {aiAnalysis.tags.map((tag, index) => (
+            {tagAnalysis.tags.map((tag, index) => (
               <button
                 key={index}
                 type="button"
@@ -68,7 +68,7 @@ export function AiAnalysisResult({
         <div>
           <span className="font-medium">主要な色:</span>
           <div className="flex flex-wrap gap-1 mt-1">
-            {aiAnalysis.colors.map((color, index) => (
+            {tagAnalysis.colors.map((color, index) => (
               <span
                 key={index}
                 className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs"
@@ -82,7 +82,7 @@ export function AiAnalysisResult({
         <div>
           <span className="font-medium">パターン:</span>
           <div className="flex flex-wrap gap-1 mt-1">
-            {aiAnalysis.patterns.map((pattern, index) => (
+            {tagAnalysis.patterns.map((pattern, index) => (
               <span
                 key={index}
                 className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs"
@@ -96,7 +96,7 @@ export function AiAnalysisResult({
         <div>
           <span className="font-medium">信頼度:</span>
           <span className="ml-2">
-            {Math.round(aiAnalysis.confidence * 100)}%
+            {Math.round(tagAnalysis.confidence * 100)}%
           </span>
         </div>
       </div>
