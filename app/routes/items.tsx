@@ -1,4 +1,5 @@
 import { useLoaderData } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const dummyItems = [
   {
@@ -52,23 +53,29 @@ export default function Items() {
         }}
       >
         {items.map((item) => (
-          <div
+          <Link
+            to={`/items/${item.id}`}
             key={item.id}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              padding: "1rem",
-            }}
+            style={{ textDecoration: "none", color: "inherit" }}
           >
-            <img
-              src={item.imageUrl}
-              alt={item.name}
-              style={{ width: "100%", height: "auto", borderRadius: "4px" }}
-            />
-            <h2 style={{ fontSize: "1.1rem", marginTop: "0.75rem" }}>
-              {item.name}
-            </h2>
-          </div>
+            <div
+              key={item.id}
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                padding: "1rem",
+              }}
+            >
+              <img
+                src={item.imageUrl}
+                alt={item.name}
+                style={{ width: "100%", height: "auto", borderRadius: "4px" }}
+              />
+              <h2 style={{ fontSize: "1.1rem", marginTop: "0.75rem" }}>
+                {item.name}
+              </h2>
+            </div>
+          </Link>
         ))}
       </div>
     </div>
