@@ -1,5 +1,5 @@
 // 分析結果型定義
-export interface AnalysisResult {
+export interface TagAnalysisResult {
   tags: string[];
   description: string;
   colors: string[];
@@ -102,7 +102,9 @@ export function createGeminiPayload(
 }
 
 // Gemini APIレスポンスを解析する関数
-export function parseGeminiResponse(response: GeminiResponse): AnalysisResult {
+export function parseGeminiResponse(
+  response: GeminiResponse
+): TagAnalysisResult {
   if (response.error) {
     throw new Error(`Gemini API error: ${response.error.message}`);
   }
@@ -121,7 +123,7 @@ export function parseGeminiResponse(response: GeminiResponse): AnalysisResult {
   }
 
   try {
-    const result = JSON.parse(jsonMatch[0]) as AnalysisResult;
+    const result = JSON.parse(jsonMatch[0]) as TagAnalysisResult;
 
     // データの検証
     if (
