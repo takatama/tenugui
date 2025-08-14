@@ -30,7 +30,7 @@ export default function Items() {
 
   return (
     <div className="font-sans p-8">
-      <h1 className="text-3xl font-bold mb-8">商品一覧</h1>
+      <h1 className="text-3xl font-bold mb-8">手ぬぐい一覧</h1>
 
       {/* タグフィルター */}
       {allTags.length > 0 && (
@@ -104,8 +104,8 @@ export default function Items() {
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">
             {selectedTag
-              ? `タグ「${selectedTag}」の商品は見つかりませんでした`
-              : "商品がありません"}
+              ? `タグ「${selectedTag}」の手ぬぐいは見つかりませんでした`
+              : "手ぬぐいがありません"}
           </p>
         </div>
       )}
