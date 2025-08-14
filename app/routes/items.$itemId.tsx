@@ -1,26 +1,9 @@
 import { useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
-
-const dummyItems = [
-  {
-    id: 1,
-    name: "伝統柄 - 青海波（せいがいは）",
-    imageUrl: "https://placehold.co/600x600/3b82f6/ffffff?text=Tenugui+1",
-  },
-  {
-    id: 2,
-    name: "動物柄 - 猫と足跡",
-    imageUrl: "https://placehold.co/600x600/ef4444/ffffff?text=Tenugui+2",
-  },
-  {
-    id: 3,
-    name: "植物柄 - 朝顔",
-    imageUrl: "https://placehold.co/600x600/22c55e/ffffff?text=Tenugui+3",
-  },
-];
+import { getItemById, type Item } from "../data/items";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const itemId = Number(params.itemId);
-  const item = dummyItems.find((it) => it.id === itemId);
+  const item = getItemById(itemId);
 
   if (!item) {
     throw new Response("Not Found", { status: 404 });
@@ -29,12 +12,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
   return new Response(JSON.stringify({ item }), {
     headers: { "Content-Type": "application/json" },
   });
-}
-
-interface Item {
-  id: number;
-  name: string;
-  imageUrl: string;
 }
 
 interface LoaderData {

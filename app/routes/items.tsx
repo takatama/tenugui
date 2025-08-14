@@ -1,38 +1,15 @@
-import { useLoaderData } from "react-router-dom";
-import { Link } from "react-router-dom";
-
-const dummyItems = [
-  {
-    id: 1,
-    name: "伝統柄 - 青海波（せいがいは）",
-    imageUrl: "https://placehold.co/400x400/3b82f6/ffffff?text=Tenugui+1",
-  },
-  {
-    id: 2,
-    name: "動物柄 - 猫と足跡",
-    imageUrl: "https://placehold.co/400x400/ef4444/ffffff?text=Tenugui+2",
-  },
-  {
-    id: 3,
-    name: "植物柄 - 朝顔",
-    imageUrl: "https://placehold.co/400x400/22c55e/ffffff?text=Tenugui+3",
-  },
-];
+import { useLoaderData, Link } from "react-router-dom";
+import { getItems, type Item } from "../data/items";
 
 export async function loader() {
-  const data = { items: dummyItems };
+  const items = getItems();
+
   // JavaScriptオブジェクトをJSON文字列に変換し、Responseオブジェクトとして返します
-  return new Response(JSON.stringify(data), {
+  return new Response(JSON.stringify({ items }), {
     headers: {
       "Content-Type": "application/json",
     },
   });
-}
-
-interface Item {
-  id: number;
-  name: string;
-  imageUrl: string;
 }
 
 interface LoaderData {
