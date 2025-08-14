@@ -1,4 +1,5 @@
 import type { ActionFunctionArgs } from "react-router-dom";
+import { getAllTags } from "../data/items";
 
 // Gemini API レスポンス型定義
 interface GeminiResponse {
@@ -26,7 +27,8 @@ interface AnalysisResult {
 // Gemini APIを使用して画像を分析（リトライ機能付き）
 async function analyzeImageWithGemini(
   imageUrl: string,
-  apiKey: string
+  apiKey: string,
+  existingTags: string[] = []
 ): Promise<AnalysisResult | null> {
   const maxRetries = 3;
   let lastError: Error | null = null;
@@ -64,6 +66,13 @@ async function analyzeImageWithGemini(
 3. スタイル（伝統的、現代的、季節性など）
 4. 用途や特徴
 5. 全体的な印象
+
+【重要】タグ生成時の注意事項：
+既存のタグリスト: [${existingTags.join(", ")}]
+- 上記の既存タグと類似・重複するタグは避けてください
+- 既存タグで表現できるものはそのタグを使用してください
+- 新しいタグを提案する場合は、既存タグと明確に異なる意味を持つものにしてください
+- タグは簡潔で分かりやすい日本語で付けてください
 
 レスポンスは必ずJSONフォーマットのみで返してください。`;
 
@@ -189,13 +198,25 @@ export async function action({ request, context }: ActionFunctionArgs) {
     // Cloudflare環境変数からAPIキーを取得
     const env = context?.cloudflare?.env as any;
     const apiKey = env?.GEMINI_API_KEY;
+    const kv = env?.TENUGUI_KV;
 
     if (!apiKey) {
       return new Response("GEMINI_API_KEY is not configured", { status: 500 });
     }
 
+    if (!kv) {
+      return new Response("TENUGUI_KV is not configured", { status: 500 });
+    }
+
+    // 既存のタグを取得
+    const existingTags = await getAllTags(kv);
+
     // Gemini API呼び出し
-    const analysisResult = await analyzeImageWithGemini(imageUrl, apiKey);
+    const analysisResult = await analyzeImageWithGemini(
+      imageUrl,
+      apiKey,
+      existingTags
+    );
 
     if (!analysisResult) {
       return new Response("Failed to analyze image", { status: 500 });
@@ -207,9 +228,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
       success: true,
       analysis: analysisResult,
       imageUrl,
+      existingTags, // クライアントサイドでも使用するために返す
     });
   } catch (error) {
-    console.error("AI分析エラー:", error instanceof Error ? error.message : error);
+    console.error(
+      "AI分析エラー:",
+      error instanceof Error ? error.message : error
+    );
     return new Response(
       `Internal server error: ${error instanceof Error ? error.message : "Unknown error"}`,
       { status: 500 }
