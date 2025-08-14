@@ -14,8 +14,11 @@ export function useItemForm() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [candidateImages, setCandidateImages] = useState<string[]>([]);
   const [aiAnalysis, setAiAnalysis] = useState<ImageAnalysis | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null
+  );
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [newTagInput, setNewTagInput] = useState("");
 
   const updateTags = (newSelectedTags: Set<string>) => {
     setSelectedTags(newSelectedTags);
@@ -49,6 +52,23 @@ export function useItemForm() {
     setImageUrl(selectedImageUrl);
   };
 
+  const handleAddNewTag = () => {
+    const trimmedTag = newTagInput.trim();
+    if (trimmedTag && !selectedTags.has(trimmedTag)) {
+      const newSelectedTags = new Set(selectedTags);
+      newSelectedTags.add(trimmedTag);
+      updateTags(newSelectedTags);
+      setNewTagInput("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddNewTag();
+    }
+  };
+
   return {
     // State
     productUrl,
@@ -60,7 +80,8 @@ export function useItemForm() {
     aiAnalysis,
     analysisResult,
     selectedTags,
-    
+    newTagInput,
+
     // Setters
     setProductUrl,
     setName,
@@ -69,11 +90,14 @@ export function useItemForm() {
     setCandidateImages,
     setAiAnalysis,
     setAnalysisResult,
-    
+    setNewTagInput,
+
     // Handlers
     handleTagToggle,
     handleAddAllAiTags,
     handleClearAllTags,
     handleImageSelect,
+    handleAddNewTag,
+    handleKeyPress,
   };
 }

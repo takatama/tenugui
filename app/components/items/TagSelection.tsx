@@ -1,15 +1,25 @@
+import React from "react";
+
 interface TagSelectionProps {
   existingTags: string[];
   selectedTags: Set<string>;
   tags: string;
+  newTagInput: string;
   onTagToggle: (tag: string) => void;
+  onNewTagInputChange: (value: string) => void;
+  onAddNewTag: () => void;
+  onKeyPress: (e: React.KeyboardEvent) => void;
 }
 
 export function TagSelection({
   existingTags,
   selectedTags,
   tags,
+  newTagInput,
   onTagToggle,
+  onNewTagInputChange,
+  onAddNewTag,
+  onKeyPress,
 }: TagSelectionProps) {
   return (
     <>
@@ -42,6 +52,36 @@ export function TagSelection({
           </p>
         </div>
       )}
+
+      {/* 新しいタグを手動で追加 */}
+      <div>
+        <label className="block font-medium text-gray-700 mb-2">
+          新しいタグを追加
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newTagInput}
+            onChange={(e) => onNewTagInputChange(e.target.value)}
+            onKeyPress={onKeyPress}
+            placeholder="新しいタグを入力..."
+            className="flex-1 border border-gray-300 rounded-md shadow-sm p-2 text-sm"
+          />
+          <button
+            type="button"
+            onClick={onAddNewTag}
+            disabled={
+              !newTagInput.trim() || selectedTags.has(newTagInput.trim())
+            }
+            className="bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+          >
+            追加
+          </button>
+        </div>
+        <p className="mt-1 text-sm text-gray-500">
+          Enterキーを押すか「追加」ボタンをクリックして新しいタグを追加できます
+        </p>
+      </div>
 
       {/* 選択されたタグ表示 */}
       <div>
