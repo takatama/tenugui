@@ -1,7 +1,22 @@
-import { createItem } from "../data/items";
+import { createItem, getAllTags } from "../data/items";
 import type { ImageAnalysis } from "../data/items";
-import { Form, redirect, type ActionFunctionArgs } from "react-router-dom";
+import {
+  Form,
+  redirect,
+  useLoaderData,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from "react-router-dom";
 import { useState } from "react";
+
+export async function loader({ context }: LoaderFunctionArgs) {
+  const kv = context.cloudflare.env.TENUGUI_KV;
+  const existingTags = await getAllTags(kv);
+
+  return {
+    existingTags,
+  };
+}
 
 export async function action({ context, request }: ActionFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
@@ -56,6 +71,7 @@ export async function action({ context, request }: ActionFunctionArgs) {
 }
 
 export default function NewItem() {
+  const { existingTags } = useLoaderData<typeof loader>();
   const [productUrl, setProductUrl] = useState("");
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -67,7 +83,6 @@ export default function NewItem() {
     success: boolean;
     message: string;
   } | null>(null);
-  const [existingTags, setExistingTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 
   const handleAnalyze = async () => {
@@ -164,7 +179,6 @@ export default function NewItem() {
 
         if (data.success && data.analysis) {
           setAiAnalysis(data.analysis);
-          setExistingTags(data.existingTags || []);
 
           setAnalysisResult({
             success: true,
@@ -465,41 +479,6 @@ export default function NewItem() {
           </div>
         )}
 
-        <div>
-          <label htmlFor="tags" className="block font-medium text-gray-700">
-            選択されたタグ
-          </label>
-          <div className="mt-1 min-h-[42px] block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50">
-            {selectedTags.size > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {Array.from(selectedTags).map((tag) => (
-                  <span
-                    key={tag}
-                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => handleTagToggle(tag)}
-                      className="text-blue-600 hover:text-blue-800 ml-1"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <span className="text-gray-500 text-sm">
-                AI分析結果からタグを選択してください
-              </span>
-            )}
-          </div>
-          <input type="hidden" name="tags" value={tags} />
-          <p className="mt-1 text-sm text-gray-500">
-            AI分析結果のタグをクリックして選択してください。選択したタグは×ボタンで削除できます。
-          </p>
-        </div>
-
         {/* 既存タグ表示セクション */}
         {existingTags.length > 0 && (
           <div>
@@ -529,6 +508,42 @@ export default function NewItem() {
             </p>
           </div>
         )}
+
+        <div>
+          <label htmlFor="tags" className="block font-medium text-gray-700">
+            選択されたタグ
+          </label>
+          <div className="mt-1 min-h-[42px] block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50">
+            {selectedTags.size > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {Array.from(selectedTags).map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => handleTagToggle(tag)}
+                      className="text-blue-600 hover:text-blue-800 ml-1"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-gray-500 text-sm">
+                既存タグまたはAI分析結果からタグを選択してください
+              </span>
+            )}
+          </div>
+          <input type="hidden" name="tags" value={tags} />
+          <p className="mt-1 text-sm text-gray-500">
+            既存タグまたはAI分析結果のタグをクリックして選択してください。選択したタグは×ボタンで削除できます。
+          </p>
+        </div>
+
         <div>
           <label htmlFor="memo" className="block font-medium text-gray-700">
             メモ
