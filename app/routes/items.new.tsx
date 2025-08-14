@@ -67,6 +67,8 @@ export default function NewItem() {
     success: boolean;
     message: string;
   } | null>(null);
+  const [existingTags, setExistingTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 
   const handleAnalyze = async () => {
     if (!productUrl.trim()) {
@@ -157,22 +159,16 @@ export default function NewItem() {
         const data = (await response.json()) as {
           success: boolean;
           analysis?: ImageAnalysis;
+          existingTags?: string[];
         };
 
         if (data.success && data.analysis) {
           setAiAnalysis(data.analysis);
-          // AIが提案したタグを既存のタグに追加
-          const aiTags = data.analysis.tags || [];
-          const currentTags = tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter((t) => t);
-          const allTags = [...new Set([...currentTags, ...aiTags])];
-          setTags(allTags.join(", "));
+          setExistingTags(data.existingTags || []);
 
           setAnalysisResult({
             success: true,
-            message: `AI分析完了！${aiTags.length}個のタグを提案しました。`,
+            message: `AI分析完了！${data.analysis.tags.length}個のタグを提案しました。`,
           });
         } else {
           setAnalysisResult({
@@ -195,6 +191,37 @@ export default function NewItem() {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // タグ選択・削除の管理
+  const handleTagToggle = (tag: string) => {
+    const newSelectedTags = new Set(selectedTags);
+    if (newSelectedTags.has(tag)) {
+      newSelectedTags.delete(tag);
+    } else {
+      newSelectedTags.add(tag);
+    }
+    setSelectedTags(newSelectedTags);
+
+    // tagsフィールドを更新
+    const tagsArray = Array.from(newSelectedTags);
+    setTags(tagsArray.join(", "));
+  };
+
+  const handleAddAllAiTags = () => {
+    if (!aiAnalysis?.tags) return;
+
+    const newSelectedTags = new Set(selectedTags);
+    aiAnalysis.tags.forEach((tag) => newSelectedTags.add(tag));
+    setSelectedTags(newSelectedTags);
+
+    const tagsArray = Array.from(newSelectedTags);
+    setTags(tagsArray.join(", "));
+  };
+
+  const handleClearAllTags = () => {
+    setSelectedTags(new Set());
+    setTags("");
   };
 
   return (
@@ -355,11 +382,53 @@ export default function NewItem() {
         {aiAnalysis && (
           <div className="bg-purple-50 border border-purple-200 rounded-md p-4">
             <h3 className="font-medium text-purple-900 mb-3">AI分析結果</h3>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-3 text-sm">
               <div>
                 <span className="font-medium">説明:</span>
                 <p className="text-gray-700 mt-1">{aiAnalysis.description}</p>
               </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">提案タグ:</span>
+                  <div className="space-x-2">
+                    <button
+                      type="button"
+                      onClick={handleAddAllAiTags}
+                      className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
+                    >
+                      全て追加
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClearAllTags}
+                      className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                    >
+                      全て削除
+                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {aiAnalysis.tags.map((tag, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleTagToggle(tag)}
+                      className={`px-2 py-1 rounded-full text-xs cursor-pointer transition-colors ${
+                        selectedTags.has(tag)
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  クリックでタグを選択・解除できます
+                </p>
+              </div>
+
               <div>
                 <span className="font-medium">主要な色:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
@@ -398,21 +467,68 @@ export default function NewItem() {
 
         <div>
           <label htmlFor="tags" className="block font-medium text-gray-700">
-            タグ（カンマ区切り）
+            選択されたタグ
           </label>
-          <input
-            type="text"
-            id="tags"
-            name="tags"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="例: 夏, 祭り, 青"
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
+          <div className="mt-1 min-h-[42px] block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50">
+            {selectedTags.size > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {Array.from(selectedTags).map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => handleTagToggle(tag)}
+                      className="text-blue-600 hover:text-blue-800 ml-1"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-gray-500 text-sm">
+                AI分析結果からタグを選択してください
+              </span>
+            )}
+          </div>
+          <input type="hidden" name="tags" value={tags} />
           <p className="mt-1 text-sm text-gray-500">
-            複数のタグを追加する場合は、カンマ（,）で区切って入力してください
+            AI分析結果のタグをクリックして選択してください。選択したタグは×ボタンで削除できます。
           </p>
         </div>
+
+        {/* 既存タグ表示セクション */}
+        {existingTags.length > 0 && (
+          <div>
+            <label className="block font-medium text-gray-700 mb-2">
+              既存のタグから選択
+            </label>
+            <div className="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-3 bg-gray-50">
+              <div className="flex flex-wrap gap-1">
+                {existingTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => handleTagToggle(tag)}
+                    className={`px-2 py-1 rounded-full text-xs cursor-pointer transition-colors ${
+                      selectedTags.has(tag)
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="mt-1 text-sm text-gray-500">
+              過去に使用したタグから選択できます
+            </p>
+          </div>
+        )}
         <div>
           <label htmlFor="memo" className="block font-medium text-gray-700">
             メモ

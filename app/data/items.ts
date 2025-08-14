@@ -181,3 +181,16 @@ export async function getItems(
     selectedTag: tagFilter || null,
   };
 }
+
+/**
+ * すべての既存タグを取得する関数
+ * @param kv KVNamespace
+ * @returns ユニークなタグの配列（アルファベット順）
+ */
+export async function getAllTags(kv: KVNamespace): Promise<string[]> {
+  const allItems = await getAllItemsFromKV(kv);
+  const allTags = [
+    ...new Set(allItems.flatMap((item) => item.tags || [])),
+  ].sort();
+  return allTags;
+}
