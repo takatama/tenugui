@@ -29,12 +29,20 @@ export default function Layout() {
             </Link>
             {!isLoading &&
               (isAuthenticated ? (
-                <Link
-                  to="/items/new"
-                  className="text-gray-600 hover:text-blue-600 transition-colors"
-                >
-                  手ぬぐい追加
-                </Link>
+                <>
+                  <Link
+                    to="/items/new"
+                    className="text-gray-600 hover:text-blue-600 transition-colors"
+                  >
+                    手ぬぐい追加
+                  </Link>
+                  <Link
+                    to="/settings"
+                    className="text-gray-600 hover:text-blue-600 transition-colors"
+                  >
+                    設定
+                  </Link>
+                </>
               ) : (
                 <span className="text-gray-400 cursor-not-allowed">
                   手ぬぐい追加

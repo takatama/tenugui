@@ -1,6 +1,7 @@
 import { Form } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import type { Item } from "../../data/items";
+import { TagList } from "../common/TagDisplay";
 
 interface ItemDetailViewProps {
   item: Item;
@@ -123,25 +124,13 @@ function ItemTags({ tags }: { tags: string[] }) {
 
   return (
     <div style={{ marginBottom: "1.5rem" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-        {tags.map((tag) => (
-          <a
-            key={tag}
-            href={`/?tag=${encodeURIComponent(tag)}`}
-            style={{
-              backgroundColor: "#e5e7eb",
-              color: "#374151",
-              padding: "0.25rem 0.75rem",
-              borderRadius: "9999px",
-              textDecoration: "none",
-              fontSize: "0.875rem",
-              border: "1px solid #d1d5db",
-            }}
-          >
-            {tag}
-          </a>
-        ))}
-      </div>
+      <TagList
+        tags={tags}
+        variant="filter"
+        onTagClick={(tag) => {
+          window.location.href = `/?tag=${encodeURIComponent(tag)}`;
+        }}
+      />
     </div>
   );
 }

@@ -5,6 +5,12 @@ export interface Item {
   productUrl?: string;
   tags: string[];
   memo: string;
+  order?: number;
+}
+
+export interface ItemOrder {
+  itemId: string;
+  order: number;
 }
 
 export interface TagAnalysis {
@@ -188,4 +194,75 @@ export async function getAllTags(kv: KVNamespace): Promise<string[]> {
     ...new Set(allItems.flatMap((item) => item.tags || [])),
   ].sort();
   return allTags;
+}
+
+/**
+ * アイテムの順序を取得する関数
+ * @param kv KVNamespace
+ * @returns アイテムIDと順序のマッピング
+ */
+export async function getItemOrders(
+  kv: KVNamespace
+): Promise<Record<string, number>> {
+  return (await kv.get("item-orders", "json")) || {};
+}
+
+/**
+ * アイテムの順序を保存する関数
+ * @param kv KVNamespace
+ * @param orders アイテムIDと順序のマッピング
+ */
+export async function saveItemOrders(
+  kv: KVNamespace,
+  orders: Record<string, number>
+): Promise<void> {
+  await kv.put("item-orders", JSON.stringify(orders));
+}
+
+/**
+ * 順序付きでアイテムを取得する関数
+ * @param kv KVNamespace
+ * @param tagFilter 絞り込むタグ（オプション）
+ * @returns 順序付きアイテム、全タグ、件数情報を含むオブジェクト
+ */
+export async function getItemsWithOrder(
+  kv: KVNamespace,
+  tagFilter?: string | null
+): Promise<{
+  items: Item[];
+  allTags: string[];
+  totalCount: number;
+  filteredCount: number;
+  selectedTag: string | null;
+}> {
+  // アイテムと順序を並行取得
+  const [allItems, orders] = await Promise.all([
+    getAllItemsFromKV(kv),
+    getItemOrders(kv),
+  ]);
+
+  // 順序を適用してソート
+  const sortedItems = allItems.sort((a, b) => {
+    const orderA = orders[a.id] ?? 999999;
+    const orderB = orders[b.id] ?? 999999;
+    return orderA - orderB;
+  });
+
+  // 全タグを抽出
+  const allTags = [
+    ...new Set(sortedItems.flatMap((item) => item.tags || [])),
+  ].sort();
+
+  // フィルタリング
+  const filteredItems = tagFilter
+    ? sortedItems.filter((item) => item.tags?.includes(tagFilter))
+    : sortedItems;
+
+  return {
+    items: filteredItems,
+    allTags,
+    totalCount: sortedItems.length,
+    filteredCount: filteredItems.length,
+    selectedTag: tagFilter || null,
+  };
 }
