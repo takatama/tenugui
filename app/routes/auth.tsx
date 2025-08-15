@@ -12,10 +12,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const action = url.searchParams.get("action");
   const returnTo = url.searchParams.get("returnTo") || "/";
 
-  console.log(`[AUTH] Action: ${action}, ReturnTo: ${returnTo}`);
-
   if (action === "login") {
-    console.log("[AUTH] Processing login action");
     // Google OAuth認証URLを生成
     const redirectUri = `${url.origin}/auth/callback`;
     const authUrl = generateGoogleAuthUrl(
@@ -23,7 +20,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       redirectUri,
       encodeURIComponent(returnTo)
     );
-    console.log(`[AUTH] Redirecting to Google OAuth: ${authUrl}`);
 
     return new Response(null, {
       status: 302,
@@ -34,27 +30,19 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   }
 
   if (action === "logout") {
-    console.log("[AUTH] Processing logout action");
     // セッションを削除
     const kv = env.SESSIONS;
     const authState = await getAuthStateFromRequest(request, kv);
 
-    console.log(`[AUTH] Current auth state:`, authState);
-
     if (authState.isAuthenticated) {
       const cookieHeader = request.headers.get("Cookie");
       const sessionId = extractSessionId(cookieHeader);
-      console.log(`[AUTH] Found sessionId: ${sessionId}`);
       if (sessionId) {
         await deleteSession(sessionId, kv);
-        console.log(`[AUTH] Deleted session: ${sessionId}`);
       }
-    } else {
-      console.log("[AUTH] User was not authenticated");
     }
 
     const clearCookie = clearSessionCookie();
-    console.log(`[AUTH] Clearing cookie and redirecting to: ${returnTo}`);
 
     return new Response(null, {
       status: 302,
@@ -65,7 +53,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     });
   }
 
-  console.log(`[AUTH] Invalid action: ${action}`);
   return new Response("Invalid action", { status: 400 });
 }
 
