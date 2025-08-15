@@ -133,9 +133,16 @@ export default function Settings() {
             <div className="text-sm text-blue-600">保存中...</div>
           )}
         </div>
-        <p className="text-gray-600 mb-4">
-          アイテムをドラッグ・アンド・ドロップして順序を変更できます。変更は自動的に保存されます。
-        </p>
+        <div className="space-y-2 mb-4">
+          <p className="text-gray-600">
+            アイテムをドラッグ・アンド・ドロップして順序を変更できます。変更は自動的に保存されます。
+          </p>
+          <p className="text-sm text-gray-500">
+            📱 スマホ・タブレット: ≡ マークを長押ししてドラッグ
+            <br />
+            🖱️ PC: ≡ マークをクリック＆ドラッグ
+          </p>
+        </div>
         <ItemSortableList
           items={initialItems}
           onOrderChange={handleOrderChange}

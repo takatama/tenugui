@@ -4,6 +4,8 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
+  MouseSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -42,13 +44,16 @@ function SortableItem({ item }: SortableItemProps) {
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className="bg-white border border-gray-200 rounded-lg p-4 cursor-move hover:shadow-md transition-shadow"
+      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
     >
       <div className="flex items-center gap-4">
         {/* ドラッグハンドル */}
-        <div className="text-gray-400 flex-shrink-0">
+        <div
+          {...attributes}
+          {...listeners}
+          className="text-gray-400 flex-shrink-0 cursor-move touch-manipulation p-2 -m-2 hover:bg-gray-100 rounded"
+          style={{ touchAction: "none" }}
+        >
           <svg
             className="w-6 h-6"
             fill="none"
@@ -109,8 +114,21 @@ export function ItemSortableList({
   isLoading = false,
 }: ItemSortableListProps) {
   const [localItems, setLocalItems] = useState(items);
+
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(MouseSensor, {
+      // マウスでのドラッグ開始のための最小距離
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      // タッチでのドラッグ開始のための最小距離と時間
+      activationConstraint: {
+        delay: 100,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
