@@ -1,5 +1,6 @@
 import { useLoaderData, Link, type LoaderFunctionArgs } from "react-router-dom";
 import { getItems, type Item } from "../data/items";
+import { TagList } from "../components/common/TagDisplay";
 
 export async function loader({ context, request }: LoaderFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
@@ -47,19 +48,14 @@ export default function Items() {
             >
               すべて
             </Link>
-            {allTags.map((tag) => (
-              <Link
-                key={tag}
-                to={`/?tag=${encodeURIComponent(tag)}`}
-                className={`px-3 py-1 rounded-full text-sm border ${
-                  selectedTag === tag
-                    ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-                }`}
-              >
-                {tag}
-              </Link>
-            ))}
+            <TagList
+              tags={allTags}
+              variant="filter"
+              selectedTags={selectedTag ? new Set([selectedTag]) : new Set()}
+              onTagClick={(tag) => {
+                window.location.href = `/?tag=${encodeURIComponent(tag)}`;
+              }}
+            />
           </div>
           {selectedTag && (
             <p className="text-gray-600 mb-4">
@@ -84,15 +80,12 @@ export default function Items() {
               />
               <h2 className="text-lg font-semibold mt-3">{item.name}</h2>
               {item.tags && item.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {item.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                <div className="mt-2">
+                  <TagList
+                    tags={item.tags}
+                    variant="default"
+                    className="gap-1"
+                  />
                 </div>
               )}
             </div>

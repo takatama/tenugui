@@ -1,4 +1,5 @@
 import type { TagAnalysis } from "../../data/items";
+import { TagList } from "../common/TagDisplay";
 
 interface TagAnalysisResultProps {
   tagAnalysis: TagAnalysis;
@@ -44,22 +45,13 @@ export function TagAnalysisResult({
               </button>
             </div>
           </div>
-          <div className="flex flex-wrap gap-1 mt-1">
-            {tagAnalysis.tags.map((tag, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => onTagToggle(tag)}
-                className={`px-2 py-1 rounded-full text-xs cursor-pointer transition-colors ${
-                  selectedTags.has(tag)
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
+          <TagList
+            tags={tagAnalysis.tags}
+            variant="filter"
+            selectedTags={selectedTags}
+            onTagClick={onTagToggle}
+            className="mt-1 gap-1"
+          />
           <p className="text-xs text-gray-500 mt-1">
             クリックでタグを選択・解除できます
           </p>

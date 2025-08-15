@@ -1,4 +1,5 @@
 import React from "react";
+import { TagList } from "../common/TagDisplay";
 
 interface TagSelectionProps {
   existingTags: string[];
@@ -92,23 +93,12 @@ export function TagSelection({
         </label>
         <div className="min-h-[40px] block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-white">
           {selectedTags.size > 0 ? (
-            <div className="flex flex-wrap gap-1">
-              {Array.from(selectedTags).map((tag) => (
-                <span
-                  key={tag}
-                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => onTagToggle(tag)}
-                    className="text-blue-600 hover:text-blue-800 ml-1 text-xs"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
+            <TagList
+              tags={Array.from(selectedTags)}
+              variant="removable"
+              onTagRemove={onTagToggle}
+              className="gap-1"
+            />
           ) : (
             <span className="text-gray-400 text-sm">
               タグが選択されていません
