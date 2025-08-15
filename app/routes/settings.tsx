@@ -1,8 +1,9 @@
 import { data, type LoaderFunctionArgs, useLoaderData } from "react-router";
-import { getAllTags } from "../data/items";
+import { getAllTags, getItemsWithOrder } from "../data/items";
 import { requireAuth } from "../lib/auth-guard";
 import { useState } from "react";
 import { TagList } from "../components/common/TagDisplay";
+import { ItemSortableList } from "../components/items/ItemSortableList";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // 認証チェック
@@ -12,17 +13,59 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
 
   try {
-    const tags = await getAllTags(kv);
-    return data({ tags });
+    const [tags, itemsData] = await Promise.all([
+      getAllTags(kv),
+      getItemsWithOrder(kv),
+    ]);
+
+    return data({
+      tags,
+      items: itemsData.items,
+    });
   } catch (error) {
     console.error("Settings loader error:", error);
-    return data({ tags: [] });
+    return data({
+      tags: [],
+      items: [],
+    });
   }
 }
 
 export default function Settings() {
-  const { tags: initialTags } = useLoaderData<typeof loader>();
+  const { tags: initialTags, items: initialItems } =
+    useLoaderData<typeof loader>();
   const [tags, setTags] = useState(initialTags);
+  const [isOrderSaving, setIsOrderSaving] = useState(false);
+
+  const handleOrderChange = async (newOrder: string[]) => {
+    setIsOrderSaving(true);
+
+    try {
+      // 新しい順序をオブジェクトに変換（インデックスが順序になる）
+      const orders: Record<string, number> = {};
+      newOrder.forEach((itemId, index) => {
+        orders[itemId] = index;
+      });
+
+      const response = await fetch("/api/item-order", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ orders }),
+      });
+
+      if (!response.ok) {
+        const errorData = (await response.json()) as { error?: string };
+        alert(`順序の保存に失敗しました: ${errorData.error || "不明なエラー"}`);
+      }
+    } catch (error) {
+      console.error("Order save failed:", error);
+      alert("順序の保存に失敗しました");
+    } finally {
+      setIsOrderSaving(false);
+    }
+  };
 
   const handleDeleteTag = async (tagToDelete: string) => {
     if (
@@ -82,10 +125,22 @@ export default function Settings() {
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          アイテムの並び替え
-        </h2>
-        <p className="text-gray-500">この機能は今後実装予定です。</p>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">
+            アイテムの並び替え
+          </h2>
+          {isOrderSaving && (
+            <div className="text-sm text-blue-600">保存中...</div>
+          )}
+        </div>
+        <p className="text-gray-600 mb-4">
+          アイテムをドラッグ・アンド・ドロップして順序を変更できます。変更は自動的に保存されます。
+        </p>
+        <ItemSortableList
+          items={initialItems}
+          onOrderChange={handleOrderChange}
+          isLoading={isOrderSaving}
+        />
       </div>
     </div>
   );
