@@ -1,4 +1,5 @@
 import { Form } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 import type { Item } from "../../data/items";
 
 interface ItemDetailViewProps {
@@ -6,6 +7,8 @@ interface ItemDetailViewProps {
 }
 
 export function ItemDetailView({ item }: ItemDetailViewProps) {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div
       style={{
@@ -29,7 +32,7 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
         <ItemImage item={item} />
 
         {/* 右カラム: 詳細情報 */}
-        <ItemInfo item={item} />
+        <ItemInfo item={item} isAuthenticated={isAuthenticated} />
       </div>
 
       {/* モバイル用CSS */}
@@ -63,7 +66,13 @@ function ItemImage({ item }: { item: Item }) {
   );
 }
 
-function ItemInfo({ item }: { item: Item }) {
+function ItemInfo({
+  item,
+  isAuthenticated,
+}: {
+  item: Item;
+  isAuthenticated: boolean;
+}) {
   return (
     <div>
       <h1
@@ -79,7 +88,7 @@ function ItemInfo({ item }: { item: Item }) {
       <ItemTags tags={item.tags} />
       <ItemProductUrl productUrl={item.productUrl} />
       <ItemMemo memo={item.memo} />
-      <ItemActions item={item} />
+      <ItemActions item={item} isAuthenticated={isAuthenticated} />
     </div>
   );
 }
@@ -165,47 +174,57 @@ function ItemMemo({ memo }: { memo?: string }) {
   );
 }
 
-function ItemActions({ item }: { item: Item }) {
+function ItemActions({
+  item,
+  isAuthenticated,
+}: {
+  item: Item;
+  isAuthenticated: boolean;
+}) {
   return (
     <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-      <a
-        href={`/items/${item.id}/edit`}
-        style={{
-          backgroundColor: "#2563eb",
-          color: "white",
-          padding: "0.5rem 1rem",
-          textDecoration: "none",
-          borderRadius: "0.375rem",
-          fontSize: "1rem",
-          fontWeight: "bold",
-          display: "inline-block",
-        }}
-      >
-        編集
-      </a>
+      {isAuthenticated && (
+        <>
+          <a
+            href={`/items/${item.id}/edit`}
+            style={{
+              backgroundColor: "#2563eb",
+              color: "white",
+              padding: "0.5rem 1rem",
+              textDecoration: "none",
+              borderRadius: "0.375rem",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              display: "inline-block",
+            }}
+          >
+            編集
+          </a>
 
-      <Form method="post" style={{ display: "inline" }}>
-        <button
-          type="submit"
-          style={{
-            backgroundColor: "#dc2626",
-            color: "white",
-            padding: "0.5rem 1rem",
-            border: "none",
-            borderRadius: "0.375rem",
-            cursor: "pointer",
-            fontSize: "1rem",
-            fontWeight: "bold",
-          }}
-          onClick={(e) => {
-            if (!confirm("この手ぬぐいを削除しますか？")) {
-              e.preventDefault();
-            }
-          }}
-        >
-          削除
-        </button>
-      </Form>
+          <Form method="post" style={{ display: "inline" }}>
+            <button
+              type="submit"
+              style={{
+                backgroundColor: "#dc2626",
+                color: "white",
+                padding: "0.5rem 1rem",
+                border: "none",
+                borderRadius: "0.375rem",
+                cursor: "pointer",
+                fontSize: "1rem",
+                fontWeight: "bold",
+              }}
+              onClick={(e) => {
+                if (!confirm("この手ぬぐいを削除しますか？")) {
+                  e.preventDefault();
+                }
+              }}
+            >
+              削除
+            </button>
+          </Form>
+        </>
+      )}
 
       <a
         href="/"

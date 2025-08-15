@@ -12,4 +12,7 @@ export default [
   },
   route("api/product-analysis", "routes/api.product-analysis.tsx"),
   route("api/tag-analysis", "routes/api.tag-analysis.tsx"),
+  route("api/auth/me", "routes/api.auth.me.tsx"),
+  route("auth", "routes/auth.tsx"),
+  route("auth/callback", "routes/auth.callback.tsx"),
 ] satisfies RouteConfig;
