@@ -5,8 +5,12 @@ declare namespace Cloudflare {
   interface Env {
     TENUGUI_KV: KVNamespace;
     VALUE_FROM_CLOUDFLARE: "Hello from Cloudflare";
-    RAKUTEN_APPLICATION_ID: string;
     MICROLINK_API_KEY?: string;
+    GEMINI_API_KEY?: string;
+    GOOGLE_CLIENT_ID?: string;
+    GOOGLE_CLIENT_SECRET?: string;
+    SESSION_SECRET?: string;
+    ALLOWED_EMAILS?: string;
   }
 }
 interface Env extends Cloudflare.Env {}
