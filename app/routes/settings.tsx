@@ -2,6 +2,7 @@ import { data, type LoaderFunctionArgs, useLoaderData } from "react-router";
 import { getAllTags } from "../data/items";
 import { requireAuth } from "../lib/auth-guard";
 import { useState } from "react";
+import { TagList } from "../components/common/TagDisplay";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // 認証チェック
@@ -69,34 +70,12 @@ export default function Settings() {
               現在 {tags.length} 個のタグがあります。削除したいタグの ×
               ボタンをクリックしてください。
             </p>
-            <div className="space-y-2">
-              {tags.map((tag) => (
-                <div
-                  key={tag}
-                  className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 border"
-                >
-                  <span className="text-gray-800 font-medium">{tag}</span>
-                  <button
-                    onClick={() => handleDeleteTag(tag)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-colors"
-                    title={`「${tag}」を削除`}
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
+            <div className="min-h-[40px] block w-full border border-gray-300 rounded-md shadow-sm p-3 bg-gray-50">
+              <TagList
+                tags={tags}
+                variant="removable"
+                onTagRemove={handleDeleteTag}
+              />
             </div>
           </div>
         )}
