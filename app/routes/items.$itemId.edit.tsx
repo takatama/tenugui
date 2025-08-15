@@ -7,19 +7,11 @@ import {
 import { getItemById, updateItem, getAllTags, type Item } from "../data/items";
 import { parseFormData } from "../lib/formUtils";
 import { ItemForm } from "../components/items/ItemForm";
-import { getAuthStateFromRequest } from "../lib/cloudflare-auth";
+import { requireAuth, requireAuthForAction } from "../lib/auth-guard";
 
 export async function loader({ context, params, request }: LoaderFunctionArgs) {
-  // 認証チェック
-  const sessionsKv = context.cloudflare.env.SESSIONS;
-  const authState = await getAuthStateFromRequest(request, sessionsKv);
-
-  if (!authState.isAuthenticated) {
-    const url = new URL(request.url);
-    return redirect(
-      `/auth?action=login&returnTo=${encodeURIComponent(url.pathname)}`
-    );
-  }
+  // 認証チェック（共通化）
+  await requireAuth(request, context);
 
   const kv = context.cloudflare.env.TENUGUI_KV;
   const itemId = params.itemId;
@@ -43,13 +35,8 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
 }
 
 export async function action({ context, request, params }: ActionFunctionArgs) {
-  // 認証チェック
-  const sessionsKv = context.cloudflare.env.SESSIONS;
-  const authState = await getAuthStateFromRequest(request, sessionsKv);
-
-  if (!authState.isAuthenticated) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  // 認証チェック（共通化）
+  await requireAuthForAction(request, context);
 
   const kv = context.cloudflare.env.TENUGUI_KV;
   const itemId = params.itemId;
