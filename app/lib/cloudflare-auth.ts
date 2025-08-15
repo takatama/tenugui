@@ -40,14 +40,11 @@ export async function getSession(
   kv: KVNamespace
 ): Promise<CloudflareUser | null> {
   if (!sessionId) {
-    console.log("[AUTH] No sessionId provided");
     return null;
   }
 
-  console.log(`[AUTH] Getting session: ${sessionId}`);
   const sessionData = await kv.get(`session:${sessionId}`);
   if (!sessionData) {
-    console.log(`[AUTH] No session data found for: ${sessionId}`);
     return null;
   }
 
@@ -55,26 +52,18 @@ export async function getSession(
     const parsed: SessionData = JSON.parse(sessionData);
 
     if (Date.now() > parsed.expires) {
-      console.log(`[AUTH] Session expired for: ${sessionId}`);
       await kv.delete(`session:${sessionId}`);
       return null;
     }
 
-    console.log(`[AUTH] Valid session found for user: ${parsed.user.email}`);
     return parsed.user;
   } catch (error) {
-    console.log(`[AUTH] Error parsing session data: ${error}`);
     return null;
   }
 }
 
-export async function deleteSession(
-  sessionId: string,
-  kv: KVNamespace
-): Promise<void> {
-  console.log(`[AUTH] Deleting session: ${sessionId}`);
+export async function deleteSession(sessionId: string, kv: KVNamespace) {
   await kv.delete(`session:${sessionId}`);
-  console.log(`[AUTH] Session deleted: ${sessionId}`);
 }
 
 // 認証状態を取得（サーバーサイド）
@@ -83,53 +72,33 @@ export async function getAuthStateFromRequest(
   kv: KVNamespace
 ): Promise<AuthState> {
   const cookieHeader = request.headers.get("Cookie");
-  console.log(`[AUTH] Cookie header: ${cookieHeader}`);
-
   const sessionId = extractSessionId(cookieHeader);
-  console.log(`[AUTH] Extracted sessionId: ${sessionId}`);
 
   if (!sessionId) {
-    console.log("[AUTH] No sessionId found in cookies");
     return { isAuthenticated: false, user: null };
   }
 
   const user = await getSession(sessionId, kv);
-  const authState = {
+  return {
     isAuthenticated: !!user,
     user,
   };
-
-  console.log(`[AUTH] Auth state result:`, authState);
-  return authState;
 }
 
 // クライアントサイド用（既存のコードとの互換性）
 export async function getAuthState(): Promise<AuthState> {
   try {
-    console.log("[CLIENT] Fetching auth state from /api/auth/me");
     const response = await fetch("/api/auth/me", {
       credentials: "include",
     });
 
-    console.log("[CLIENT] Response status:", response.status);
-    console.log(
-      "[CLIENT] Response headers:",
-      Object.fromEntries(response.headers.entries())
-    );
-
     if (response.ok) {
       const data = (await response.json()) as AuthState;
-      console.log("[CLIENT] Auth response data:", data);
       return data;
-    } else {
-      console.log(
-        "[CLIENT] Auth response not ok:",
-        response.status,
-        response.statusText
-      );
     }
   } catch (error) {
-    console.log("[CLIENT] 認証情報の取得に失敗:", error);
+    // エラーログはエラー処理として残す
+    console.error("認証情報の取得に失敗:", error);
   }
 
   return {
@@ -156,11 +125,9 @@ export function clearSessionCookie(): string {
 
 function extractSessionId(cookieHeader: string | null): string | null {
   if (!cookieHeader) {
-    console.log("[AUTH] No cookie header found");
     return null;
   }
 
-  console.log(`[AUTH] Parsing cookies from: ${cookieHeader}`);
   const cookies = cookieHeader.split(";").reduce(
     (acc, cookie) => {
       const [name, value] = cookie.trim().split("=");
@@ -170,9 +137,7 @@ function extractSessionId(cookieHeader: string | null): string | null {
     {} as Record<string, string>
   );
 
-  const sessionId = cookies.session || null;
-  console.log(`[AUTH] Found session cookie: ${sessionId}`);
-  return sessionId;
+  return cookies.session || null;
 }
 
 // Google OAuth URL生成

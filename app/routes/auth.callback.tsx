@@ -91,13 +91,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const sessionId = await createSession(user, kv);
     const sessionCookie = createSessionCookie(sessionId);
 
-    console.log("[AUTH CALLBACK] Created session:", sessionId);
-    console.log("[AUTH CALLBACK] Session cookie:", sessionCookie);
-
     // リダイレクト先を決定
     const redirectTo =
       state && state !== "null" ? decodeURIComponent(state) : "/";
-    console.log("[AUTH CALLBACK] Redirecting to:", redirectTo);
 
     return new Response(null, {
       status: 302,

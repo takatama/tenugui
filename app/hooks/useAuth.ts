@@ -10,12 +10,10 @@ export function useAuth() {
 
   const checkAuth = async () => {
     try {
-      console.log("[CLIENT] Checking auth state...");
       const state = await getAuthState();
-      console.log("[CLIENT] Auth state result:", state);
       setAuthState(state);
     } catch (error) {
-      console.error("[CLIENT] 認証チェックエラー:", error);
+      console.error("認証チェックエラー:", error);
       setAuthState({
         isAuthenticated: false,
         user: null,
@@ -30,7 +28,6 @@ export function useAuth() {
 
     // ログアウト後の状態更新のため、フォーカス時にも再チェック
     const handleFocus = () => {
-      console.log("[CLIENT] Window focused, rechecking auth state");
       checkAuth();
     };
 
