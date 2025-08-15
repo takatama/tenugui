@@ -10,101 +10,57 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div
-      style={{
-        fontFamily: "sans-serif",
-        padding: "2rem",
-        maxWidth: "1200px",
-        margin: "auto",
-        minHeight: "100vh",
-        boxSizing: "border-box",
-      }}
-    >
-      {/* レスポンシブグリッドレイアウト */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(300px, 1fr) 2fr",
-          gap: "3rem",
-          alignItems: "start",
-          width: "100%",
-        }}
-        className="responsive-layout"
-      >
-        {/* 左カラム: 画像 */}
+    <div className="item-detail-container">
+      <div className="item-layout">
         <ItemImage item={item} />
-
-        {/* 右カラム: 詳細情報 */}
         <ItemInfo item={item} isAuthenticated={isAuthenticated} />
       </div>
 
-      {/* モバイル用CSS */}
       <style>{`
+        .item-detail-container {
+          font-family: sans-serif;
+          padding: 2rem;
+          max-width: 1200px;
+          margin: auto;
+        }
+        
+        .item-layout {
+          display: grid;
+          grid-template-columns: minmax(300px, 1fr) 2fr;
+          gap: 3rem;
+          align-items: start;
+        }
+        
         @media (max-width: 768px) {
-          .responsive-layout {
-            grid-template-columns: 1fr !important;
-            gap: 1.5rem !important;
+          .item-detail-container { padding: 1rem; }
+          .item-layout { 
+            grid-template-columns: 1fr; 
+            gap: 1.5rem; 
           }
-          
-          .item-image-container {
-            position: static !important;
-            display: flex !important;
-            justify-content: center !important;
-            margin-bottom: 1rem !important;
+          .item-image-container { 
+            position: static; 
+            text-align: center; 
           }
-          
-          .item-image {
-            max-width: 280px !important;
-            width: 100% !important;
-            height: auto !important;
+          .item-image { max-width: 280px; }
+          .item-title { 
+            font-size: 1.8rem; 
+            text-align: center; 
           }
-          
-          .item-title {
-            font-size: 1.8rem !important;
-            margin-bottom: 1rem !important;
-            text-align: center !important;
+          .item-actions { 
+            flex-direction: column; 
+            gap: 0.75rem; 
           }
-          
-          .item-actions {
-            flex-direction: column !important;
-            gap: 0.75rem !important;
-            margin-top: 1.5rem !important;
-          }
-          
-          .item-actions a,
-          .item-actions button {
-            width: 100% !important;
-            text-align: center !important;
-            justify-content: center !important;
-          }
+          .item-actions a, .item-actions button { width: 100%; }
         }
         
         @media (max-width: 480px) {
-          .item-image {
-            max-width: 240px !important;
-          }
-          
-          .item-title {
-            font-size: 1.5rem !important;
-          }
-          
-          .item-actions {
-            padding: 0 !important;
-          }
-          
-          div[style*="padding: 2rem"] {
-            padding: 1rem !important;
-          }
+          .item-image { max-width: 240px; }
+          .item-title { font-size: 1.5rem; }
         }
         
         @media (max-width: 360px) {
-          .item-image {
-            max-width: 200px !important;
-          }
-          
-          .item-title {
-            font-size: 1.3rem !important;
-          }
+          .item-image { max-width: 200px; }
+          .item-title { font-size: 1.3rem; }
         }
       `}</style>
     </div>
@@ -113,13 +69,11 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
 
 function ItemImage({ item }: { item: Item }) {
   return (
-    <div
-      style={{ position: "sticky", top: "2rem" }}
-      className="item-image-container"
-    >
+    <div className="item-image-container">
       <img
         src={item.imageUrl}
         alt={item.name}
+        className="item-image"
         style={{
           width: "100%",
           maxWidth: "400px",
@@ -127,7 +81,6 @@ function ItemImage({ item }: { item: Item }) {
           borderRadius: "8px",
           boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
         }}
-        className="item-image"
       />
     </div>
   );
@@ -141,18 +94,17 @@ function ItemInfo({
   isAuthenticated: boolean;
 }) {
   return (
-    <div style={{ width: "100%", minWidth: 0 }}>
+    <div>
       <h1
+        className="item-title"
         style={{
           fontSize: "2.5rem",
           marginBottom: "1.5rem",
           lineHeight: "1.2",
         }}
-        className="item-title"
       >
         {item.name}
       </h1>
-
       <ItemTags tags={item.tags} />
       <ItemProductUrl productUrl={item.productUrl} />
       <ItemMemo memo={item.memo} />
@@ -180,13 +132,6 @@ function ItemTags({ tags }: { tags: string[] }) {
               textDecoration: "none",
               fontSize: "0.875rem",
               border: "1px solid #d1d5db",
-              transition: "background-color 0.2s",
-            }}
-            onMouseOver={(e) => {
-              (e.target as HTMLElement).style.backgroundColor = "#d1d5db";
-            }}
-            onMouseOut={(e) => {
-              (e.target as HTMLElement).style.backgroundColor = "#e5e7eb";
             }}
           >
             {tag}
@@ -249,52 +194,47 @@ function ItemActions({
   item: Item;
   isAuthenticated: boolean;
 }) {
+  const buttonStyle = {
+    padding: "0.75rem 1.5rem",
+    borderRadius: "0.375rem",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    textDecoration: "none",
+    display: "inline-block",
+    textAlign: "center" as const,
+  };
+
   return (
     <div
+      className="item-actions"
       style={{
         display: "flex",
         gap: "1rem",
         flexWrap: "wrap",
         marginTop: "2rem",
-        width: "100%",
       }}
-      className="item-actions"
     >
       {isAuthenticated && (
         <>
           <a
             href={`/items/${item.id}/edit`}
             style={{
+              ...buttonStyle,
               backgroundColor: "#2563eb",
               color: "white",
-              padding: "0.75rem 1.5rem",
-              textDecoration: "none",
-              borderRadius: "0.375rem",
-              fontSize: "1rem",
-              fontWeight: "bold",
-              display: "inline-block",
-              minWidth: "fit-content",
-              textAlign: "center",
-              flex: "0 0 auto",
             }}
           >
             編集
           </a>
-
-          <Form method="post" style={{ display: "inline", flex: "0 0 auto" }}>
+          <Form method="post" style={{ display: "inline" }}>
             <button
               type="submit"
               style={{
+                ...buttonStyle,
                 backgroundColor: "#dc2626",
                 color: "white",
-                padding: "0.75rem 1.5rem",
                 border: "none",
-                borderRadius: "0.375rem",
                 cursor: "pointer",
-                fontSize: "1rem",
-                fontWeight: "bold",
-                minWidth: "fit-content",
-                textAlign: "center",
               }}
               onClick={(e) => {
                 if (!confirm("この手ぬぐいを削除しますか？")) {
@@ -307,22 +247,9 @@ function ItemActions({
           </Form>
         </>
       )}
-
       <a
         href="/"
-        style={{
-          backgroundColor: "#6b7280",
-          color: "white",
-          padding: "0.75rem 1.5rem",
-          textDecoration: "none",
-          borderRadius: "0.375rem",
-          fontSize: "1rem",
-          fontWeight: "bold",
-          display: "inline-block",
-          minWidth: "fit-content",
-          textAlign: "center",
-          flex: "0 0 auto",
-        }}
+        style={{ ...buttonStyle, backgroundColor: "#6b7280", color: "white" }}
       >
         一覧に戻る
       </a>
