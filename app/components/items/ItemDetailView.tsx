@@ -10,38 +10,62 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div
-      style={{
-        fontFamily: "sans-serif",
-        padding: "2rem",
-        maxWidth: "1200px",
-        margin: "auto",
-      }}
-    >
-      {/* レスポンシブグリッドレイアウト */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(300px, 1fr) 2fr",
-          gap: "3rem",
-          alignItems: "start",
-        }}
-        className="responsive-layout"
-      >
-        {/* 左カラム: 画像 */}
+    <div className="item-detail-container">
+      <div className="item-layout">
         <ItemImage item={item} />
-
-        {/* 右カラム: 詳細情報 */}
         <ItemInfo item={item} isAuthenticated={isAuthenticated} />
       </div>
 
-      {/* モバイル用CSS */}
       <style>{`
+        .item-detail-container {
+          font-family: sans-serif;
+          padding: 2rem;
+          max-width: 1200px;
+          margin: auto;
+        }
+        
+        .item-layout {
+          display: grid;
+          grid-template-columns: minmax(300px, 1fr) 2fr;
+          gap: 3rem;
+          align-items: start;
+        }
+        
         @media (max-width: 768px) {
-          .responsive-layout {
-            grid-template-columns: 1fr !important;
-            gap: 1.5rem !important;
+          .item-detail-container { padding: 1rem; }
+          .item-layout { 
+            grid-template-columns: 1fr; 
+            gap: 1rem; 
           }
+          .item-image-container { 
+            position: static; 
+            text-align: center;
+            margin-bottom: 1rem; 
+          }
+          .item-image { max-width: 220px; }
+          .item-title { 
+            font-size: 1.5rem; 
+            text-align: center;
+            margin-bottom: 1rem; 
+          }
+          .item-actions { 
+            flex-direction: column; 
+            gap: 0.75rem;
+            margin-top: 1rem; 
+          }
+          .item-actions a, .item-actions button { width: 100%; }
+        }
+        
+        @media (max-width: 480px) {
+          .item-image { max-width: 180px; }
+          .item-title { font-size: 1.3rem; }
+          .item-detail-container { padding: 0.75rem; }
+        }
+        
+        @media (max-width: 360px) {
+          .item-image { max-width: 150px; }
+          .item-title { font-size: 1.1rem; }
+          .item-detail-container { padding: 0.5rem; }
         }
       `}</style>
     </div>
@@ -50,10 +74,11 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
 
 function ItemImage({ item }: { item: Item }) {
   return (
-    <div style={{ position: "sticky", top: "2rem" }}>
+    <div className="item-image-container">
       <img
         src={item.imageUrl}
         alt={item.name}
+        className="item-image"
         style={{
           width: "100%",
           maxWidth: "400px",
@@ -76,6 +101,7 @@ function ItemInfo({
   return (
     <div>
       <h1
+        className="item-title"
         style={{
           fontSize: "2.5rem",
           marginBottom: "1.5rem",
@@ -84,7 +110,6 @@ function ItemInfo({
       >
         {item.name}
       </h1>
-
       <ItemTags tags={item.tags} />
       <ItemProductUrl productUrl={item.productUrl} />
       <ItemMemo memo={item.memo} />
@@ -97,8 +122,7 @@ function ItemTags({ tags }: { tags: string[] }) {
   if (!tags || tags.length === 0) return null;
 
   return (
-    <div style={{ marginBottom: "2rem" }}>
-      <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>タグ:</h3>
+    <div style={{ marginBottom: "1.5rem" }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
         {tags.map((tag) => (
           <a
@@ -112,13 +136,6 @@ function ItemTags({ tags }: { tags: string[] }) {
               textDecoration: "none",
               fontSize: "0.875rem",
               border: "1px solid #d1d5db",
-              transition: "background-color 0.2s",
-            }}
-            onMouseOver={(e) => {
-              (e.target as HTMLElement).style.backgroundColor = "#d1d5db";
-            }}
-            onMouseOut={(e) => {
-              (e.target as HTMLElement).style.backgroundColor = "#e5e7eb";
             }}
           >
             {tag}
@@ -133,8 +150,7 @@ function ItemProductUrl({ productUrl }: { productUrl?: string }) {
   if (!productUrl) return null;
 
   return (
-    <div style={{ marginBottom: "2rem" }}>
-      <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>商品URL:</h3>
+    <div style={{ marginBottom: "1.5rem" }}>
       <a
         href={productUrl}
         target="_blank"
@@ -155,8 +171,7 @@ function ItemMemo({ memo }: { memo?: string }) {
   if (!memo) return null;
 
   return (
-    <div style={{ marginBottom: "2rem" }}>
-      <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>メモ:</h3>
+    <div style={{ marginBottom: "1.5rem" }}>
       <div
         style={{
           backgroundColor: "#f9fafb",
@@ -164,7 +179,7 @@ function ItemMemo({ memo }: { memo?: string }) {
           borderRadius: "0.5rem",
           padding: "1rem",
           whiteSpace: "pre-wrap",
-          fontSize: "1rem",
+          fontSize: "0.95rem",
           lineHeight: "1.6",
         }}
       >
@@ -181,38 +196,47 @@ function ItemActions({
   item: Item;
   isAuthenticated: boolean;
 }) {
+  const buttonStyle = {
+    padding: "0.75rem 1.5rem",
+    borderRadius: "0.375rem",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    textDecoration: "none",
+    display: "inline-block",
+    textAlign: "center" as const,
+  };
+
   return (
-    <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+    <div
+      className="item-actions"
+      style={{
+        display: "flex",
+        gap: "1rem",
+        flexWrap: "wrap",
+        marginTop: "2rem",
+      }}
+    >
       {isAuthenticated && (
         <>
           <a
             href={`/items/${item.id}/edit`}
             style={{
+              ...buttonStyle,
               backgroundColor: "#2563eb",
               color: "white",
-              padding: "0.5rem 1rem",
-              textDecoration: "none",
-              borderRadius: "0.375rem",
-              fontSize: "1rem",
-              fontWeight: "bold",
-              display: "inline-block",
             }}
           >
             編集
           </a>
-
           <Form method="post" style={{ display: "inline" }}>
             <button
               type="submit"
               style={{
+                ...buttonStyle,
                 backgroundColor: "#dc2626",
                 color: "white",
-                padding: "0.5rem 1rem",
                 border: "none",
-                borderRadius: "0.375rem",
                 cursor: "pointer",
-                fontSize: "1rem",
-                fontWeight: "bold",
               }}
               onClick={(e) => {
                 if (!confirm("この手ぬぐいを削除しますか？")) {
@@ -225,19 +249,9 @@ function ItemActions({
           </Form>
         </>
       )}
-
       <a
         href="/"
-        style={{
-          backgroundColor: "#6b7280",
-          color: "white",
-          padding: "0.5rem 1rem",
-          textDecoration: "none",
-          borderRadius: "0.375rem",
-          fontSize: "1rem",
-          fontWeight: "bold",
-          display: "inline-block",
-        }}
+        style={{ ...buttonStyle, backgroundColor: "#6b7280", color: "white" }}
       >
         一覧に戻る
       </a>
