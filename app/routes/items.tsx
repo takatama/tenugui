@@ -30,14 +30,15 @@ export default function Items() {
     useLoaderData() as LoaderData;
 
   return (
-    <div className="font-sans p-8">
-      <h1 className="text-3xl font-bold mb-8">手ぬぐい一覧</h1>
+    <div className="font-sans p-4 sm:p-6 md:p-8 mx-auto max-w-5xl">
+      {/* 一覧タイトルは視覚的に非表示（スクリーンリーダー向けに残す） */}
+      <h1 className="sr-only">手ぬぐい一覧</h1>
 
       {/* タグフィルター */}
       {allTags.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">タグで絞り込み</h2>
-          <div className="flex flex-wrap gap-2 mb-4">
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h2 className="sr-only">タグで絞り込み</h2>
+          <div className="flex flex-wrap gap-2 mb-2">
             <Link
               to="/"
               className={`px-3 py-1 rounded-full text-sm border ${
@@ -58,36 +59,30 @@ export default function Items() {
             />
           </div>
           {selectedTag && (
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 text-sm">
               タグ「{selectedTag}」で絞り込み中 ({filteredCount}件)
             </p>
           )}
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      {/* ギャラリー表示：モバイル含め3列／余白は現状の約2倍 */}
+      <div className="grid grid-cols-3 gap-6 sm:gap-8 md:gap-12">
         {items.map((item) => (
           <Link
             to={`/items/${item.id}`}
             key={item.id}
-            className="no-underline text-inherit"
+            className="block group focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-md"
+            aria-label={item.name}
           >
-            <div className="border border-gray-200 rounded-lg p-4 transition-transform duration-200 hover:shadow-lg hover:-translate-y-1">
+            <div className="relative overflow-hidden rounded-md">
               <img
                 src={item.imageUrl}
                 alt={item.name}
-                className="w-full h-auto rounded-md"
+                loading="lazy"
+                decoding="async"
+                className="block w-full h-auto"
               />
-              <h2 className="text-lg font-semibold mt-3">{item.name}</h2>
-              {item.tags && item.tags.length > 0 && (
-                <div className="mt-2">
-                  <TagList
-                    tags={item.tags}
-                    variant="default"
-                    className="gap-1"
-                  />
-                </div>
-              )}
             </div>
           </Link>
         ))}
