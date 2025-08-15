@@ -3,6 +3,7 @@
 
 RAKUTEN_APPLICATION_ID=your-rakuten-application-id
 GEMINI_API_KEY=your-gemini-api-key
+MICROLINK_API_KEY=your-microlink-api-key
 
 # Google OAuth設定
 GOOGLE_CLIENT_ID=your-google-client-id

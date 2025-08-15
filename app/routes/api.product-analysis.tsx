@@ -1,101 +1,89 @@
 import type { ActionFunctionArgs } from "react-router-dom";
 
-// 楽天API レスポンス型定義
-interface RakutenApiResponse {
-  Items?: Array<{
-    Item: {
-      itemName: string;
-      mediumImageUrls?: Array<{ imageUrl: string }>;
-    };
-  }>;
+// Microlink レスポンス型
+interface MicrolinkImage {
+  url?: string;
+  type?: string;
+  size?: number;
+  height?: number;
+  width?: number;
+}
+interface MicrolinkData {
+  title?: string;
+  image?: MicrolinkImage | string;
+  images?: Array<MicrolinkImage | string>;
+}
+interface MicrolinkResponse {
+  status: "success" | "fail";
+  data?: MicrolinkData;
+  error?: { message?: string };
 }
 
-// 商品情報型定義
-interface ItemInfo {
-  shopUrl: string;
-  itemId: string;
-}
-
-// API レスポンス型定義
+// API レスポンス型
 interface AnalyzeResult {
   name: string;
   imageUrls: string[];
 }
 
-// 楽天商品URLから商品情報を抽出
-async function extractItemInfo(url: string): Promise<ItemInfo | null> {
+function normalizeImageUrl(u: string): string {
   try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
-
-    const html = await response.text();
-
-    // HTMLから商品データを抽出
-    const match = html.match(
-      /<script type="application\/json" id="item-page-app-data">([\s\S]*?)<\/script>/
-    );
-
-    if (match) {
-      const data = JSON.parse(match[1]);
-      const itemInfo =
-        data?.api?.data?.itemInfoSku || data?.newApi?.itemInfoSku;
-
-      if (itemInfo?.itemId) {
-        const urlMatch = url.match(/\/item\.rakuten\.co\.jp\/([^\/]+)\/[^\/]+/);
-        const shopUrl = urlMatch?.[1];
-
-        if (shopUrl) {
-          return {
-            shopUrl,
-            itemId: itemInfo.itemId.toString(),
-          };
-        }
-      }
-    }
-
-    return null;
+    const s = u.replace(/&amp;/g, "&").trim();
+    return s.split("?")[0];
   } catch {
-    return null;
+    return u;
   }
 }
 
-// 楽天APIから商品情報を取得
-async function fetchProductInfo(
-  itemInfo: ItemInfo,
-  applicationId: string
+function isImageUrl(s: string): boolean {
+  return /^https?:\/\/.+\.(?:jpg|jpeg|png|webp)(?:$|[?#])/i.test(s);
+}
+
+// MicrolinkでOG情報取得
+async function fetchOgWithMicrolink(
+  targetUrl: string,
+  apiKey?: string,
+  maxImages = 10
 ): Promise<AnalyzeResult | null> {
-  try {
-    const itemCode = `${itemInfo.shopUrl}:${itemInfo.itemId}`;
-    const params = new URLSearchParams({
-      format: "json",
-      applicationId,
-      itemCode,
-      elements: "itemName,mediumImageUrls",
-    });
+  const apiUrl = new URL("https://api.microlink.io/");
+  apiUrl.searchParams.set("url", targetUrl);
+  // 軽量化（不要機能をオフ）
+  apiUrl.searchParams.set("audio", "false");
+  apiUrl.searchParams.set("video", "false");
+  apiUrl.searchParams.set("screenshot", "false");
 
-    const response = await fetch(
-      `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?${params}`
-    );
+  const headers: Record<string, string> = {};
+  if (apiKey) headers["x-api-key"] = apiKey;
 
-    if (!response.ok) return null;
+  const res = await fetch(apiUrl.toString(), { headers });
+  if (!res.ok) return null;
 
-    const data = (await response.json()) as RakutenApiResponse;
-    const item = data.Items?.[0]?.Item;
+  const json = (await res.json()) as MicrolinkResponse;
+  if (json.status !== "success" || !json.data) return null;
 
-    if (!item) return null;
+  const title = json.data.title?.trim();
 
-    // 画像URLからクエリパラメータを削除
-    const imageUrls = (item.mediumImageUrls || [])
-      .map((img) => img.imageUrl.split("?")[0])
-      .filter(Boolean);
+  // 画像候補を収集
+  const images = new Set<string>();
+  const push = (v: unknown) => {
+    if (typeof v === "string" && isImageUrl(v))
+      images.add(normalizeImageUrl(v));
+    if (typeof v === "object" && v && "url" in (v as any)) {
+      const u = (v as any).url;
+      if (typeof u === "string" && isImageUrl(u))
+        images.add(normalizeImageUrl(u));
+    }
+  };
 
-    return {
-      name: item.itemName,
-      imageUrls,
-    };
-  } catch {
-    return null;
-  }
+  if (json.data.image) push(json.data.image);
+  if (Array.isArray(json.data.images)) json.data.images.forEach(push);
+
+  const imageUrls = Array.from(images).slice(0, maxImages);
+  if (!title && imageUrls.length === 0) return null;
+
+  return {
+    name: title || "商品",
+    imageUrls,
+  };
 }
 
 export async function loader() {
@@ -108,35 +96,31 @@ export async function action({ request, context }: ActionFunctionArgs) {
   }
 
   try {
-    const { productUrl } = (await request.json()) as { productUrl?: string };
+    const { productUrl, maxImages } = (await request.json()) as {
+      productUrl?: string;
+      maxImages?: number;
+    };
 
     if (!productUrl?.trim()) {
       return new Response("Product URL is required", { status: 400 });
     }
 
-    // 環境変数から楽天Application IDを取得
-    const applicationId = context?.cloudflare?.env?.RAKUTEN_APPLICATION_ID;
-    if (!applicationId) {
-      return new Response("Rakuten Application ID not configured", { status: 500 });
-    }
+    const apiKey = context?.cloudflare?.env?.MICROLINK_API_KEY as
+      | string
+      | undefined;
 
-    // 商品情報を抽出
-    const itemInfo = await extractItemInfo(productUrl);
-    if (!itemInfo) {
-      return new Response("Failed to extract item information", {
-        status: 400,
+    const result = await fetchOgWithMicrolink(
+      productUrl,
+      apiKey,
+      Math.min(maxImages || 10, 20)
+    );
+    if (!result) {
+      return new Response("Failed to fetch OG info via Microlink", {
+        status: 502,
       });
     }
 
-    // 楽天APIから商品情報を取得
-    const productInfo = await fetchProductInfo(itemInfo, applicationId);
-    if (!productInfo) {
-      return new Response("Failed to fetch product information", {
-        status: 500,
-      });
-    }
-
-    return Response.json(productInfo);
+    return Response.json(result);
   } catch {
     return new Response("Internal server error", { status: 500 });
   }
