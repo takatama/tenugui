@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import { getItemById, deleteItem, type Item } from "../data/items";
 import { ItemDetailView } from "../components/items/ItemDetailView";
+import { getAuthStateFromRequest } from "../lib/cloudflare-auth";
 
 export async function loader({ context, params }: LoaderFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
@@ -26,7 +27,15 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
   });
 }
 
-export async function action({ context, params }: ActionFunctionArgs) {
+export async function action({ context, params, request }: ActionFunctionArgs) {
+  // 認証チェック
+  const sessionsKv = context.cloudflare.env.SESSIONS;
+  const authState = await getAuthStateFromRequest(request, sessionsKv);
+
+  if (!authState.isAuthenticated) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   const kv = context.cloudflare.env.TENUGUI_KV;
   const itemId = params.itemId;
 

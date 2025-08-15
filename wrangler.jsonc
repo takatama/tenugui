@@ -18,6 +18,11 @@
       "binding": "TENUGUI_KV",
       "id": "d0d8ad6f7ec54fe181d02b8e1492379f",
     },
+    {
+      "binding": "SESSIONS",
+      "id": "1096876cd280418ebc2e5705611f8ecd",
+      "preview_id": "b3c18484211b44c88e754acd1747c683",
+    },
   ],
   /**
    * Smart Placement
