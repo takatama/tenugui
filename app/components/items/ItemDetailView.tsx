@@ -35,32 +35,37 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
           .item-detail-container { padding: 1rem; }
           .item-layout { 
             grid-template-columns: 1fr; 
-            gap: 1.5rem; 
+            gap: 1rem; 
           }
           .item-image-container { 
             position: static; 
-            text-align: center; 
+            text-align: center;
+            margin-bottom: 1rem; 
           }
-          .item-image { max-width: 280px; }
+          .item-image { max-width: 220px; }
           .item-title { 
-            font-size: 1.8rem; 
-            text-align: center; 
+            font-size: 1.5rem; 
+            text-align: center;
+            margin-bottom: 1rem; 
           }
           .item-actions { 
             flex-direction: column; 
-            gap: 0.75rem; 
+            gap: 0.75rem;
+            margin-top: 1rem; 
           }
           .item-actions a, .item-actions button { width: 100%; }
         }
         
         @media (max-width: 480px) {
-          .item-image { max-width: 240px; }
-          .item-title { font-size: 1.5rem; }
+          .item-image { max-width: 180px; }
+          .item-title { font-size: 1.3rem; }
+          .item-detail-container { padding: 0.75rem; }
         }
         
         @media (max-width: 360px) {
-          .item-image { max-width: 200px; }
-          .item-title { font-size: 1.3rem; }
+          .item-image { max-width: 150px; }
+          .item-title { font-size: 1.1rem; }
+          .item-detail-container { padding: 0.5rem; }
         }
       `}</style>
     </div>
@@ -117,8 +122,7 @@ function ItemTags({ tags }: { tags: string[] }) {
   if (!tags || tags.length === 0) return null;
 
   return (
-    <div style={{ marginBottom: "2rem" }}>
-      <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>タグ:</h3>
+    <div style={{ marginBottom: "1.5rem" }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
         {tags.map((tag) => (
           <a
@@ -146,8 +150,7 @@ function ItemProductUrl({ productUrl }: { productUrl?: string }) {
   if (!productUrl) return null;
 
   return (
-    <div style={{ marginBottom: "2rem" }}>
-      <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>商品URL:</h3>
+    <div style={{ marginBottom: "1.5rem" }}>
       <a
         href={productUrl}
         target="_blank"
@@ -168,8 +171,7 @@ function ItemMemo({ memo }: { memo?: string }) {
   if (!memo) return null;
 
   return (
-    <div style={{ marginBottom: "2rem" }}>
-      <h3 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>メモ:</h3>
+    <div style={{ marginBottom: "1.5rem" }}>
       <div
         style={{
           backgroundColor: "#f9fafb",
@@ -177,7 +179,7 @@ function ItemMemo({ memo }: { memo?: string }) {
           borderRadius: "0.5rem",
           padding: "1rem",
           whiteSpace: "pre-wrap",
-          fontSize: "1rem",
+          fontSize: "0.95rem",
           lineHeight: "1.6",
         }}
       >
