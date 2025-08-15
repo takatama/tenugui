@@ -77,11 +77,13 @@ export function ItemForm({
           />
         </div>
 
-        <ImageSelection
-          candidateImages={formState.candidateImages}
-          selectedImageUrl={formState.imageUrl}
-          onImageSelect={formState.handleImageSelect}
-        />
+        {formState.candidateImages.length > 1 && (
+          <ImageSelection
+            candidateImages={formState.candidateImages}
+            selectedImageUrl={formState.imageUrl}
+            onImageSelect={formState.handleImageSelect}
+          />
+        )}
 
         <ImageUrlInput
           imageUrl={formState.imageUrl}

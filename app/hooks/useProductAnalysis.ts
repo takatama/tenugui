@@ -35,14 +35,31 @@ export function useProductAnalysis() {
           name?: string;
           imageUrls?: string[];
         };
-        if (data.name && data.imageUrls && data.imageUrls.length > 0) {
+        console.log("Product analysis response:", data);
+        if (data.name) {
           setName(data.name);
-          setCandidateImages(data.imageUrls);
-          setImageUrl(data.imageUrls[0]);
-          setAnalysisResult({
-            success: true,
-            message: `分析完了！商品名を取得し、${data.imageUrls.length}件の画像候補を見つけました。下記から画像を選択して「追加する」ボタンを押してください。`,
-          });
+          if (data.imageUrls && data.imageUrls.length > 0) {
+            setCandidateImages(data.imageUrls);
+            setImageUrl(data.imageUrls[0]);
+            if (data.imageUrls.length === 1) {
+              setAnalysisResult({
+                success: true,
+                message: "分析完了！商品名と画像を取得しました。",
+              });
+            } else {
+              setAnalysisResult({
+                success: true,
+                message: `分析完了！商品名を取得し、${data.imageUrls.length}件の画像候補を見つけました。下記から画像を選択してください。`,
+              });
+            }
+          } else {
+            setCandidateImages([]);
+            setAnalysisResult({
+              success: true,
+              message:
+                "分析完了！商品名を取得しました。画像候補は見つかりませんでしたので、手動で画像URLを入力してください。",
+            });
+          }
         } else {
           setAnalysisResult({
             success: false,

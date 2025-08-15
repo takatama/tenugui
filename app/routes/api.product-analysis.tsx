@@ -54,36 +54,116 @@ async function fetchOgWithMicrolink(
   const headers: Record<string, string> = {};
   if (apiKey) headers["x-api-key"] = apiKey;
 
-  const res = await fetch(apiUrl.toString(), { headers });
-  if (!res.ok) return null;
-
-  const json = (await res.json()) as MicrolinkResponse;
-  if (json.status !== "success" || !json.data) return null;
-
-  const title = json.data.title?.trim();
-
-  // 画像候補を収集
-  const images = new Set<string>();
-  const push = (v: unknown) => {
-    if (typeof v === "string" && isImageUrl(v))
-      images.add(normalizeImageUrl(v));
-    if (typeof v === "object" && v && "url" in (v as any)) {
-      const u = (v as any).url;
-      if (typeof u === "string" && isImageUrl(u))
-        images.add(normalizeImageUrl(u));
+  try {
+    const res = await fetch(apiUrl.toString(), { headers });
+    if (!res.ok) {
+      console.error(
+        `Microlink API request failed: ${res.status} ${res.statusText}`,
+        JSON.stringify(
+          {
+            url: targetUrl,
+            apiUrl: apiUrl.toString(),
+            status: res.status,
+            statusText: res.statusText,
+          },
+          null,
+          2
+        )
+      );
+      return null;
     }
-  };
 
-  if (json.data.image) push(json.data.image);
-  if (Array.isArray(json.data.images)) json.data.images.forEach(push);
+    const json = (await res.json()) as MicrolinkResponse;
+    if (json.status !== "success") {
+      console.error(
+        "Microlink API returned error status:",
+        JSON.stringify(
+          {
+            url: targetUrl,
+            status: json.status,
+            error: json.error,
+            data: json.data,
+          },
+          null,
+          2
+        )
+      );
+      return null;
+    }
 
-  const imageUrls = Array.from(images).slice(0, maxImages);
-  if (!title && imageUrls.length === 0) return null;
+    if (!json.data) {
+      console.error(
+        "Microlink API returned no data:",
+        JSON.stringify(
+          {
+            url: targetUrl,
+            response: json,
+          },
+          null,
+          2
+        )
+      );
+      return null;
+    }
 
-  return {
-    name: title || "商品",
-    imageUrls,
-  };
+    const title = json.data.title?.trim();
+
+    // 画像候補を収集
+    const images = new Set<string>();
+    const push = (v: unknown) => {
+      if (typeof v === "string" && isImageUrl(v))
+        images.add(normalizeImageUrl(v));
+      if (typeof v === "object" && v && "url" in (v as any)) {
+        const u = (v as any).url;
+        if (typeof u === "string" && isImageUrl(u))
+          images.add(normalizeImageUrl(u));
+      }
+    };
+
+    // メイン画像から取得
+    if (json.data.image) push(json.data.image);
+
+    // 画像配列から取得
+    if (Array.isArray(json.data.images)) json.data.images.forEach(push);
+
+    const imageUrls = Array.from(images).slice(0, maxImages);
+    if (!title && imageUrls.length === 0) {
+      console.error(
+        "Microlink API returned no usable title or images:",
+        JSON.stringify(
+          {
+            url: targetUrl,
+            title,
+            imageCount: imageUrls.length,
+            data: json.data,
+          },
+          null,
+          2
+        )
+      );
+      return null;
+    }
+
+    return {
+      name: title || "商品",
+      imageUrls,
+    };
+  } catch (error) {
+    console.error(
+      "Microlink API request failed with exception:",
+      JSON.stringify(
+        {
+          url: targetUrl,
+          apiUrl: apiUrl.toString(),
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        },
+        null,
+        2
+      )
+    );
+    return null;
+  }
 }
 
 export async function loader() {
