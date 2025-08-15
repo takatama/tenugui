@@ -7,8 +7,12 @@ import {
 } from "react-router-dom";
 import { parseFormData } from "../lib/formUtils";
 import { ItemForm } from "../components/items/ItemForm";
+import { requireAuth, requireAuthForAction } from "../lib/auth-guard";
 
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader({ context, request }: LoaderFunctionArgs) {
+  // 認証チェック（共通化）
+  await requireAuth(request, context);
+
   const kv = context.cloudflare.env.TENUGUI_KV;
   const existingTags = await getAllTags(kv);
 
@@ -18,6 +22,9 @@ export async function loader({ context }: LoaderFunctionArgs) {
 }
 
 export async function action({ context, request }: ActionFunctionArgs) {
+  // 認証チェック（共通化）
+  await requireAuthForAction(request, context);
+
   const kv = context.cloudflare.env.TENUGUI_KV;
   const formData = await parseFormData(request);
 

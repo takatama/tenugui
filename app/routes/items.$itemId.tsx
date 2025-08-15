@@ -6,27 +6,27 @@ import {
 } from "react-router-dom";
 import { getItemById, deleteItem, type Item } from "../data/items";
 import { ItemDetailView } from "../components/items/ItemDetailView";
+import { requireAuthForAction } from "../lib/auth-guard";
+import { createJsonResponse } from "../lib/response-utils";
+import {
+  validateRequiredParam,
+  validateItemExists,
+} from "../lib/validation-utils";
 
 export async function loader({ context, params }: LoaderFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
-  const itemId = params.itemId;
-
-  if (!itemId) {
-    throw new Response("Item ID is required", { status: 400 });
-  }
+  const itemId = validateRequiredParam(params.itemId, "Item ID");
 
   const item = await getItemById(kv, itemId);
+  await validateItemExists(item);
 
-  if (!item) {
-    throw new Response("Not Found", { status: 404 });
-  }
-
-  return new Response(JSON.stringify({ item }), {
-    headers: { "Content-Type": "application/json" },
-  });
+  return createJsonResponse({ item });
 }
 
-export async function action({ context, params }: ActionFunctionArgs) {
+export async function action({ context, params, request }: ActionFunctionArgs) {
+  // 認証チェック（共通化）
+  await requireAuthForAction(request, context);
+
   const kv = context.cloudflare.env.TENUGUI_KV;
   const itemId = params.itemId;
 
