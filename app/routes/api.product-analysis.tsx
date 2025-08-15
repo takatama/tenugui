@@ -41,7 +41,7 @@ async function extractItemInfo(url: string): Promise<ItemInfo | null> {
         data?.api?.data?.itemInfoSku || data?.newApi?.itemInfoSku;
 
       if (itemInfo?.itemId) {
-        const urlMatch = url.match(/\/([^\/]+)\/[^\/]+\/?$/);
+        const urlMatch = url.match(/\/item\.rakuten\.co\.jp\/([^\/]+)\/[^\/]+/);
         const shopUrl = urlMatch?.[1];
 
         if (shopUrl) {
