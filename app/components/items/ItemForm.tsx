@@ -18,6 +18,7 @@ interface ItemFormProps {
   submitLabel: string;
   title: string;
   cancelUrl?: string;
+  initialProductUrl?: string;
 }
 
 export function ItemForm({
@@ -26,8 +27,9 @@ export function ItemForm({
   submitLabel,
   title,
   cancelUrl,
+  initialProductUrl,
 }: ItemFormProps) {
-  const formState = useItemForm({ initialItem });
+  const formState = useItemForm({ initialItem, initialProductUrl });
   const { analyzeProduct } = useProductAnalysis();
   const { analyzeImage } = useTagAnalysis();
 

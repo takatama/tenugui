@@ -39,8 +39,30 @@ export function useApiRequest<T = any>() {
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
+          let errorMessage = `HTTP ${response.status}`;
+
+          try {
+            const errorData = (await response.json()) as {
+              message?: string;
+              error?: string;
+            };
+            // レート制限エラーの場合は詳細メッセージを使用
+            if (response.status === 429 && errorData.message) {
+              errorMessage = errorData.message;
+            } else {
+              errorMessage = `${errorMessage}: ${errorData.message || errorData.error || response.statusText}`;
+            }
+          } catch {
+            // JSON解析に失敗した場合はテキストを取得
+            try {
+              const errorText = await response.text();
+              errorMessage = `${errorMessage}: ${errorText || response.statusText}`;
+            } catch {
+              errorMessage = `${errorMessage}: ${response.statusText}`;
+            }
+          }
+
+          throw new Error(errorMessage);
         }
 
         const data = (await response.json()) as T;

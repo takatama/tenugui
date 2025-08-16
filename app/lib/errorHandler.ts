@@ -68,6 +68,11 @@ function getUserFriendlyMessage(error: unknown, operation: string): string {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
 
+    // レート制限エラーの場合（日本時間情報を含む詳細メッセージをそのまま表示）
+    if (message.includes("レート制限")) {
+      return error.message;
+    }
+
     // HTTPエラーの場合
     if (message.includes("http 4")) {
       return `${operation}のリクエストに問題があります。入力内容を確認してください。`;

@@ -24,7 +24,7 @@ export default function Layout() {
             to="/"
             className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight ml-3 md:ml-0 md:flex-1 md:text-center"
           >
-            わたしの手ぬぐい帖
+            手ぬぐい帖
           </Link>
 
           {/* PCでの展開メニュー */}
