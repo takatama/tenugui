@@ -19,21 +19,11 @@ export async function action({ request, context }: ActionFunctionArgs) {
       itemIds?: string[];
     };
 
-    // 新しい形式（itemIds配列）と既存形式（orders）の両方をサポート
     if (requestData.itemIds && Array.isArray(requestData.itemIds)) {
       // 新しい配列ベースの並び替え
       await reorderItems(kv, requestData.itemIds);
-    } else if (requestData.orders && typeof requestData.orders === "object") {
-      // 既存のorders形式から配列に変換
-      const sortedItems = Object.entries(requestData.orders)
-        .sort(([, a], [, b]) => a - b)
-        .map(([itemId]) => itemId);
-      await reorderItems(kv, sortedItems);
     } else {
-      return data(
-        { error: "Either itemIds array or orders object is required" },
-        { status: 400 }
-      );
+      return data({ error: "itemIds array is required" }, { status: 400 });
     }
 
     return data({ success: true });
