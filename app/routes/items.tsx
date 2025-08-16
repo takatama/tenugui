@@ -1,5 +1,5 @@
 import { useLoaderData, Link, type LoaderFunctionArgs } from "react-router-dom";
-import { getItemsWithOrder, type Item } from "../data/items";
+import { getItems, type Item } from "../data/items";
 import { TagList } from "../components/common/TagDisplay";
 
 export async function loader({ context, request }: LoaderFunctionArgs) {
@@ -7,12 +7,15 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const selectedTag = url.searchParams.get("tag");
 
-  // 順序付きですべてのデータを取得
-  const data = await getItemsWithOrder(kv, selectedTag);
+  // 配列順序でアイテムを取得
+  const data = await getItems(kv, selectedTag);
 
   return new Response(JSON.stringify(data), {
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
     },
   });
 }
@@ -30,7 +33,7 @@ export default function Items() {
     useLoaderData() as LoaderData;
 
   return (
-    <div className="font-sans p-4 sm:p-6 md:p-8 mx-auto max-w-5xl">
+    <div className="font-sans max-w-5xl mx-auto">
       {/* 一覧タイトルは視覚的に非表示（スクリーンリーダー向けに残す） */}
       <h1 className="sr-only">手ぬぐい一覧</h1>
 

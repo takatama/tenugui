@@ -1,5 +1,5 @@
 import { data, type ActionFunctionArgs } from "react-router";
-import { saveItemOrders } from "../data/items";
+import { reorderItems } from "../data/items";
 import { requireAuthForAction } from "../lib/auth-guard";
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -16,15 +16,15 @@ export async function action({ request, context }: ActionFunctionArgs) {
   try {
     const requestData = (await request.json()) as {
       orders?: Record<string, number>;
+      itemIds?: string[];
     };
-    const { orders } = requestData;
 
-    if (!orders || typeof orders !== "object") {
-      return data({ error: "Orders data is required" }, { status: 400 });
+    if (requestData.itemIds && Array.isArray(requestData.itemIds)) {
+      // 新しい配列ベースの並び替え
+      await reorderItems(kv, requestData.itemIds);
+    } else {
+      return data({ error: "itemIds array is required" }, { status: 400 });
     }
-
-    // アイテムの順序を保存
-    await saveItemOrders(kv, orders);
 
     return data({ success: true });
   } catch (error) {

@@ -10,6 +10,18 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 
+export const meta: Route.MetaFunction = () => [
+  { title: "Tenugui Collection" },
+  { name: "description", content: "手ぬぐいコレクション管理アプリ" },
+  // キャッシュ制御のメタタグ
+  {
+    httpEquiv: "Cache-Control",
+    content: "no-cache, no-store, must-revalidate",
+  },
+  { httpEquiv: "Pragma", content: "no-cache" },
+  { httpEquiv: "Expires", content: "0" },
+];
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -24,6 +36,11 @@ export const links: Route.LinksFunction = () => [
   // PWA対応
   { rel: "manifest", href: "/manifest.json" },
   { rel: "apple-touch-icon", href: "/icons/icon-192x192.png" },
+  {
+    rel: "icon",
+    type: "image/x-icon",
+    href: "/icons/favicon.ico",
+  },
   {
     rel: "icon",
     type: "image/png",

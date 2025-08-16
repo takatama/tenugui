@@ -1,5 +1,5 @@
 import { data, type LoaderFunctionArgs, useLoaderData } from "react-router";
-import { getAllTags, getItemsWithOrder } from "../data/items";
+import { getAllTags, getItems } from "../data/items";
 import { requireAuth } from "../lib/auth-guard";
 import { useState } from "react";
 import { TagList } from "../components/common/TagDisplay";
@@ -13,10 +13,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
 
   try {
-    const [tags, itemsData] = await Promise.all([
-      getAllTags(kv),
-      getItemsWithOrder(kv),
-    ]);
+    const [tags, itemsData] = await Promise.all([getAllTags(kv), getItems(kv)]);
 
     return data({
       tags,
@@ -41,18 +38,13 @@ export default function Settings() {
     setIsOrderSaving(true);
 
     try {
-      // 新しい順序をオブジェクトに変換（インデックスが順序になる）
-      const orders: Record<string, number> = {};
-      newOrder.forEach((itemId, index) => {
-        orders[itemId] = index;
-      });
-
+      // 新しい配列ベースの並び替えAPIを使用
       const response = await fetch("/api/item-order", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ orders }),
+        body: JSON.stringify({ itemIds: newOrder }),
       });
 
       if (!response.ok) {

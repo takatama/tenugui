@@ -217,7 +217,7 @@ function ItemActions({
           </Form>
         </>
       )}
-      <Button variant="secondary" size="lg" href="/">
+      <Button variant="secondary" size="lg" href={`/?refresh=${Date.now()}`}>
         一覧に戻る
       </Button>
     </div>
