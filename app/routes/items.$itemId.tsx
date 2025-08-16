@@ -40,7 +40,9 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
     throw new Response("Item not found", { status: 404 });
   }
 
-  return redirect("/");
+  // キャッシュバスティングのためタイムスタンプ付きでリダイレクト
+  const timestamp = Date.now();
+  return redirect(`/?refresh=${timestamp}`);
 }
 
 interface LoaderData {

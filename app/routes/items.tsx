@@ -13,6 +13,9 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
   return new Response(JSON.stringify(data), {
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
     },
   });
 }
