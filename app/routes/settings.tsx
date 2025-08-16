@@ -3,7 +3,7 @@ import { getAllTags, getItems } from "../data/items";
 import { requireAuth } from "../lib/auth-guard";
 import { useState } from "react";
 import { TagManagement } from "../components/items/TagManagement";
-import { ItemSortableList } from "../components/items/ItemSortableList";
+import { ItemGalleryPreview } from "../components/items/ItemGalleryPreview";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // 認証チェック
@@ -154,15 +154,14 @@ export default function Settings() {
         </div>
         <div className="space-y-2 mb-4">
           <p className="text-gray-600">
-            アイテムをドラッグ・アンド・ドロップして順序を変更できます。変更は自動的に保存されます。
+            写真をドラッグして並び順を変更できます。変更は自動的に保存されます。
           </p>
           <p className="text-sm text-gray-500">
-            📱 スマホ・タブレット: ≡ マークを長押ししてドラッグ
-            <br />
-            🖱️ PC: ≡ マークをクリック＆ドラッグ
+            ✨
+            モバイルサイズのギャラリー表示で実際の見た目を確認しながら並び替えできます
           </p>
         </div>
-        <ItemSortableList
+        <ItemGalleryPreview
           items={initialItems}
           onOrderChange={handleOrderChange}
           isLoading={isOrderSaving}

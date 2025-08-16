@@ -6,3 +6,4 @@ export { TagSelection } from "./TagSelection";
 export { TagManagement } from "./TagManagement";
 export { ItemForm } from "./ItemForm";
 export { ItemDetailView } from "./ItemDetailView";
+export { ItemGalleryPreview } from "./ItemGalleryPreview";
