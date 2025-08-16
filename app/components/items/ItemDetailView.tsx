@@ -2,6 +2,7 @@ import { Form } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import type { Item } from "../../data/items";
 import { TagList } from "../common/TagDisplay";
+import { Button } from "../common/Button";
 
 interface ItemDetailViewProps {
   item: Item;
@@ -185,16 +186,6 @@ function ItemActions({
   item: Item;
   isAuthenticated: boolean;
 }) {
-  const buttonStyle = {
-    padding: "0.75rem 1.5rem",
-    borderRadius: "0.375rem",
-    fontSize: "1rem",
-    fontWeight: "bold",
-    textDecoration: "none",
-    display: "inline-block",
-    textAlign: "center" as const,
-  };
-
   return (
     <div
       className="item-actions"
@@ -207,26 +198,14 @@ function ItemActions({
     >
       {isAuthenticated && (
         <>
-          <a
-            href={`/items/${item.id}/edit`}
-            style={{
-              ...buttonStyle,
-              backgroundColor: "#2563eb",
-              color: "white",
-            }}
-          >
+          <Button variant="primary" size="lg" href={`/items/${item.id}/edit`}>
             編集
-          </a>
+          </Button>
           <Form method="post" style={{ display: "inline" }}>
-            <button
+            <Button
               type="submit"
-              style={{
-                ...buttonStyle,
-                backgroundColor: "#dc2626",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-              }}
+              variant="danger"
+              size="lg"
               onClick={(e) => {
                 if (!confirm("この手ぬぐいを削除しますか？")) {
                   e.preventDefault();
@@ -234,16 +213,13 @@ function ItemActions({
               }}
             >
               削除
-            </button>
+            </Button>
           </Form>
         </>
       )}
-      <a
-        href="/"
-        style={{ ...buttonStyle, backgroundColor: "#6b7280", color: "white" }}
-      >
+      <Button variant="secondary" size="lg" href="/">
         一覧に戻る
-      </a>
+      </Button>
     </div>
   );
 }

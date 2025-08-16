@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import { getButtonClasses } from "../../lib/styles";
 
 /**
@@ -34,8 +34,15 @@ interface ButtonProps {
    * - success: 成功アクション（追加、分析）
    * - danger: 危険アクション（削除）
    * - ghost: 軽量アクション（メニュー、アイコンボタン）
+   * - analysis: 分析アクション（タグ分析、商品分析）
    */
-  variant?: "primary" | "secondary" | "success" | "danger" | "ghost";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "success"
+    | "danger"
+    | "ghost"
+    | "analysis";
 
   /** ボタンのサイズ
    * - sm: 小さなアクション
@@ -52,7 +59,9 @@ interface ButtonProps {
   loading?: boolean;
 
   /** クリック時のハンドラー関数 */
-  onClick?: () => void;
+  onClick?: (
+    event: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>
+  ) => void;
 
   /** ボタンのHTML type属性 */
   type?: "button" | "submit" | "reset";
@@ -71,6 +80,12 @@ interface ButtonProps {
 
   /** アクセシビリティ用のaria-expanded属性。メニューボタンなどで使用 */
   "aria-expanded"?: boolean;
+
+  /** リンクとして使用する場合のURL */
+  href?: string;
+
+  /** リンクのターゲット属性 */
+  target?: string;
 }
 
 /**
@@ -92,6 +107,8 @@ export function Button({
   iconPosition = "left",
   "aria-label": ariaLabel,
   "aria-expanded": ariaExpanded,
+  href,
+  target,
 }: ButtonProps) {
   const buttonClasses = getButtonClasses(
     variant,
@@ -105,7 +122,17 @@ export function Button({
 
   // アイコンのみの場合
   if (!children && icon) {
-    return (
+    const element = href ? (
+      <a
+        href={href}
+        target={target}
+        className={buttonClasses}
+        aria-label={ariaLabel}
+        aria-expanded={ariaExpanded}
+      >
+        {loading ? loadingSpinner : icon}
+      </a>
+    ) : (
       <button
         type={type}
         onClick={onClick}
@@ -117,6 +144,7 @@ export function Button({
         {loading ? loadingSpinner : icon}
       </button>
     );
+    return element;
   }
 
   const content = (
@@ -128,6 +156,20 @@ export function Button({
       {loading && iconPosition === "right" && loadingSpinner}
     </>
   );
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target={target}
+        className={buttonClasses}
+        aria-label={ariaLabel}
+        aria-expanded={ariaExpanded}
+      >
+        <div className="flex items-center justify-center gap-2">{content}</div>
+      </a>
+    );
+  }
 
   return (
     <button
