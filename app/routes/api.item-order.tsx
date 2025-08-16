@@ -1,5 +1,5 @@
 import { data, type ActionFunctionArgs } from "react-router";
-import { saveItemOrders } from "../data/items";
+import { reorderItems } from "../data/items";
 import { requireAuthForAction } from "../lib/auth-guard";
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -16,15 +16,25 @@ export async function action({ request, context }: ActionFunctionArgs) {
   try {
     const requestData = (await request.json()) as {
       orders?: Record<string, number>;
+      itemIds?: string[];
     };
-    const { orders } = requestData;
 
-    if (!orders || typeof orders !== "object") {
-      return data({ error: "Orders data is required" }, { status: 400 });
+    // 新しい形式（itemIds配列）と既存形式（orders）の両方をサポート
+    if (requestData.itemIds && Array.isArray(requestData.itemIds)) {
+      // 新しい配列ベースの並び替え
+      await reorderItems(kv, requestData.itemIds);
+    } else if (requestData.orders && typeof requestData.orders === "object") {
+      // 既存のorders形式から配列に変換
+      const sortedItems = Object.entries(requestData.orders)
+        .sort(([, a], [, b]) => a - b)
+        .map(([itemId]) => itemId);
+      await reorderItems(kv, sortedItems);
+    } else {
+      return data(
+        { error: "Either itemIds array or orders object is required" },
+        { status: 400 }
+      );
     }
-
-    // アイテムの順序を保存
-    await saveItemOrders(kv, orders);
 
     return data({ success: true });
   } catch (error) {

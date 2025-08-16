@@ -77,7 +77,8 @@ export async function createItem(
     tags: data.tags,
     memo: data.memo,
   };
-  items.push(newItem);
+  // 新しいアイテムを配列の先頭に追加
+  items.unshift(newItem);
   await kv.put("items", JSON.stringify(items));
   return newItem;
 }
@@ -101,7 +102,16 @@ export async function deleteItem(
     return false;
   }
 
+  // itemsから削除
   await kv.put("items", JSON.stringify(filteredItems));
+
+  // item-ordersからも削除（存在する場合）
+  const orders = await getItemOrders(kv);
+  if (orders[itemId] !== undefined) {
+    delete orders[itemId];
+    await saveItemOrders(kv, orders);
+  }
+
   return true;
 }
 
@@ -217,6 +227,40 @@ export async function saveItemOrders(
   orders: Record<string, number>
 ): Promise<void> {
   await kv.put("item-orders", JSON.stringify(orders));
+}
+
+/**
+ * 配列の順序でアイテムを並び替える関数
+ * @param kv KVNamespace
+ * @param itemIds 新しい順序のアイテムIDの配列
+ */
+export async function reorderItems(
+  kv: KVNamespace,
+  itemIds: string[]
+): Promise<void> {
+  const items = await getAllItemsFromKV(kv);
+
+  // アイテムIDでマップを作成
+  const itemMap = new Map(items.map((item) => [item.id, item]));
+
+  // 新しい順序でアイテムを並び替え
+  const reorderedItems: Item[] = [];
+
+  // 指定された順序でアイテムを追加
+  for (const itemId of itemIds) {
+    const item = itemMap.get(itemId);
+    if (item) {
+      reorderedItems.push(item);
+      itemMap.delete(itemId);
+    }
+  }
+
+  // 残ったアイテム（順序指定されなかった）を末尾に追加
+  for (const remainingItem of itemMap.values()) {
+    reorderedItems.push(remainingItem);
+  }
+
+  await kv.put("items", JSON.stringify(reorderedItems));
 }
 
 /**

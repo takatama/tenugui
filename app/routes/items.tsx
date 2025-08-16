@@ -1,5 +1,5 @@
 import { useLoaderData, Link, type LoaderFunctionArgs } from "react-router-dom";
-import { getItemsWithOrder, type Item } from "../data/items";
+import { getItems, type Item } from "../data/items";
 import { TagList } from "../components/common/TagDisplay";
 
 export async function loader({ context, request }: LoaderFunctionArgs) {
@@ -7,8 +7,8 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const selectedTag = url.searchParams.get("tag");
 
-  // 順序付きですべてのデータを取得
-  const data = await getItemsWithOrder(kv, selectedTag);
+  // 配列順序でアイテムを取得
+  const data = await getItems(kv, selectedTag);
 
   return new Response(JSON.stringify(data), {
     headers: {
