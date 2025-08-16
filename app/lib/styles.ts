@@ -46,6 +46,10 @@ export const colors = {
     600: "bg-red-600",
     700: "bg-red-700",
   },
+  purple: {
+    600: "bg-purple-600",
+    700: "bg-purple-700",
+  },
 } as const;
 
 // ========================================
@@ -70,6 +74,7 @@ export const buttonStyles = {
     success: "bg-green-600 text-white hover:bg-green-700",
     danger: "bg-red-600 text-white hover:bg-red-700",
     ghost: "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
+    analysis: "bg-purple-600 text-white hover:bg-purple-700",
   },
 } as const;
 

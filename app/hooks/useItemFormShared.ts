@@ -8,13 +8,16 @@ export interface AnalysisResult {
 
 interface UseItemFormOptions {
   initialItem?: Item;
+  initialProductUrl?: string;
 }
 
 export function useItemForm(options: UseItemFormOptions = {}) {
-  const { initialItem } = options;
+  const { initialItem, initialProductUrl } = options;
 
   // 基本フォーム状態
-  const [productUrl, setProductUrl] = useState(initialItem?.productUrl || "");
+  const [productUrl, setProductUrl] = useState(
+    initialProductUrl || initialItem?.productUrl || ""
+  );
   const [name, setName] = useState(initialItem?.name || "");
   const [imageUrl, setImageUrl] = useState(initialItem?.imageUrl || "");
   const [isAnalyzing, setIsAnalyzing] = useState(false);

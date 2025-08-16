@@ -2,6 +2,7 @@ import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { HamburgerMenu } from "./HamburgerMenu";
 import { LOGOUT_URL } from "../lib/cloudflare-auth";
+import { Button } from "./common/Button";
 
 export default function Layout() {
   const { isAuthenticated, user, isLoading } = useAuth();
@@ -23,7 +24,7 @@ export default function Layout() {
             to="/"
             className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight ml-3 md:ml-0 md:flex-1 md:text-center"
           >
-            わたしの手ぬぐい帖
+            手ぬぐい帖
           </Link>
 
           {/* PCでの展開メニュー */}
@@ -64,12 +65,14 @@ export default function Layout() {
                           {user.name || user.email}
                         </div>
                       </div>
-                      <a
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         href={LOGOUT_URL}
-                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 xl:px-3 py-1 rounded text-xs xl:text-sm font-medium transition-colors border border-gray-300"
+                        className="px-2 xl:px-3 py-1 text-xs xl:text-sm"
                       >
                         ログアウト
-                      </a>
+                      </Button>
                     </div>
                   )}
                 </>
@@ -78,12 +81,14 @@ export default function Layout() {
                   <span className="text-gray-400 cursor-not-allowed">
                     手ぬぐい追加
                   </span>
-                  <a
+                  <Button
+                    variant="primary"
+                    size="sm"
                     href="/auth?action=login"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 xl:px-4 py-1.5 xl:py-2 rounded text-xs xl:text-sm font-medium transition-colors"
+                    className="px-3 xl:px-4 py-1.5 xl:py-2 text-xs xl:text-sm"
                   >
                     Googleでログイン
-                  </a>
+                  </Button>
                 </>
               ))}
           </div>

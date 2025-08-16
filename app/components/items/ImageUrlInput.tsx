@@ -1,3 +1,6 @@
+import { InputField } from "../common/InputField";
+import { Button } from "../common/Button";
+
 interface ImageUrlInputProps {
   imageUrl: string;
   isAnalyzing: boolean;
@@ -13,36 +16,28 @@ export function ImageUrlInput({
 }: ImageUrlInputProps) {
   return (
     <div>
-      <label htmlFor="imageUrl" className="block font-medium text-gray-700">
-        画像URL
-      </label>
-      <div className="flex gap-2 items-center">
-        <input
-          type="url"
-          id="imageUrl"
-          name="imageUrl"
-          value={imageUrl}
-          onChange={(e) => onImageUrlChange(e.target.value)}
-          required
-          className="flex-1 border border-gray-300 rounded-md shadow-sm p-3 h-10 text-sm"
-          placeholder="画像のURLを入力してください"
-        />
-        <button
-          type="button"
-          onClick={onAiAnalyze}
-          disabled={isAnalyzing || !imageUrl.trim()}
-          className="bg-purple-600 text-white font-medium py-2 px-3 rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 h-10 text-sm whitespace-nowrap flex-shrink-0"
-        >
-          {isAnalyzing ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              タグ分析中…
-            </>
-          ) : (
-            "タグ分析"
-          )}
-        </button>
-      </div>
+      <InputField
+        label="画像URL"
+        id="imageUrl"
+        name="imageUrl"
+        type="url"
+        value={imageUrl}
+        placeholder="画像のURLを入力してください"
+        onChange={(e) => onImageUrlChange(e.target.value)}
+        required
+        rightElement={
+          <Button
+            variant="analysis"
+            size="md"
+            disabled={isAnalyzing || !imageUrl.trim()}
+            loading={isAnalyzing}
+            onClick={onAiAnalyze}
+            className="whitespace-nowrap flex-shrink-0"
+          >
+            {isAnalyzing ? "タグ分析中…" : "タグ分析"}
+          </Button>
+        }
+      />
 
       {/* 画像プレビュー */}
       {imageUrl && (

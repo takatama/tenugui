@@ -3,6 +3,7 @@ import type { Item, TagAnalysis } from "../../data/items";
 import { useItemForm } from "../../hooks/useItemFormShared";
 import { useProductAnalysis } from "../../hooks/useProductAnalysis";
 import { useTagAnalysis } from "../../hooks/useTagAnalysis";
+import { Button } from "../common/Button";
 import {
   ProductAnalysis,
   ImageSelection,
@@ -17,6 +18,7 @@ interface ItemFormProps {
   submitLabel: string;
   title: string;
   cancelUrl?: string;
+  initialProductUrl?: string;
 }
 
 export function ItemForm({
@@ -25,8 +27,9 @@ export function ItemForm({
   submitLabel,
   title,
   cancelUrl,
+  initialProductUrl,
 }: ItemFormProps) {
-  const formState = useItemForm({ initialItem });
+  const formState = useItemForm({ initialItem, initialProductUrl });
   const { analyzeProduct } = useProductAnalysis();
   const { analyzeImage } = useTagAnalysis();
 
@@ -143,19 +146,13 @@ export function ItemForm({
         <input type="hidden" name="tags" value={formState.tags} />
 
         <div className="flex gap-3 pt-4">
-          <button
-            type="submit"
-            className="bg-blue-600 text-white font-medium py-3 px-6 rounded-md hover:bg-blue-700 transition-colors text-sm"
-          >
+          <Button type="submit" variant="primary" size="lg">
             {submitLabel}
-          </button>
+          </Button>
           {cancelUrl && (
-            <a
-              href={cancelUrl}
-              className="bg-gray-600 text-white font-medium py-3 px-6 rounded-md hover:bg-gray-700 transition-colors text-sm inline-block"
-            >
+            <Button variant="secondary" size="lg" href={cancelUrl}>
               キャンセル
-            </a>
+            </Button>
           )}
         </div>
       </Form>
