@@ -66,7 +66,7 @@ export default function Layout() {
                       </div>
                       <a
                         href={LOGOUT_URL}
-                        className="bg-red-600 hover:bg-red-700 text-white px-2 xl:px-3 py-1 rounded text-xs xl:text-sm font-medium transition-colors"
+                        className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 xl:px-3 py-1 rounded text-xs xl:text-sm font-medium transition-colors border border-gray-300"
                       >
                         ログアウト
                       </a>

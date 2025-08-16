@@ -20,7 +20,7 @@ export function HamburgerMenu({
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
-  // ESCキーでメニューを閉じる
+  // ESCキーでメニューを閉じる + メニュー外クリックで閉じる
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -28,20 +28,28 @@ export function HamburgerMenu({
       }
     };
 
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        closeMenu();
+      }
+    };
+
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
+      document.addEventListener("mousedown", handleClickOutside);
       // メニューが開いている間はボディのスクロールを無効にする
       document.body.style.overflow = "hidden";
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("mousedown", handleClickOutside);
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   return (
-    <div className="md:hidden relative" ref={menuRef}>
+    <div className="md:hidden relative">
       {/* ハンバーガーメニューボタン */}
       <button
         onClick={toggleMenu}
@@ -73,17 +81,10 @@ export function HamburgerMenu({
         </svg>
       </button>
 
-      {/* オーバーレイ */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={closeMenu}
-        />
-      )}
-
       {/* メニューコンテンツ */}
       <div
-        className={`fixed top-0 left-0 h-full w-full max-w-sm bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        ref={menuRef}
+        className={`fixed top-0 left-0 h-full w-full max-w-sm bg-white shadow-2xl border-r border-gray-200 z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -240,7 +241,7 @@ export function HamburgerMenu({
                 {isAuthenticated ? (
                   <a
                     href={LOGOUT_URL}
-                    className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+                    className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
                   >
                     <svg
                       className="w-4 h-4 mr-2"
