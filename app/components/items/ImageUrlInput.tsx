@@ -16,7 +16,7 @@ export function ImageUrlInput({
       <label htmlFor="imageUrl" className="block font-medium text-gray-700">
         画像URL
       </label>
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <input
           type="url"
           id="imageUrl"
@@ -24,13 +24,14 @@ export function ImageUrlInput({
           value={imageUrl}
           onChange={(e) => onImageUrlChange(e.target.value)}
           required
-          className="mt-1 flex-1 border border-gray-300 rounded-md shadow-sm p-2"
+          className="flex-1 border border-gray-300 rounded-md shadow-sm p-3 h-10 text-sm"
+          placeholder="画像のURLを入力してください"
         />
         <button
           type="button"
           onClick={onAiAnalyze}
           disabled={isAnalyzing || !imageUrl.trim()}
-          className="mt-1 bg-purple-600 text-white font-bold py-2 px-4 rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+          className="bg-purple-600 text-white font-medium py-2 px-3 rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 h-10 text-sm whitespace-nowrap flex-shrink-0"
         >
           {isAnalyzing ? (
             <>

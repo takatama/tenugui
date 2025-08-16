@@ -1,4 +1,6 @@
 import type { AnalysisResult } from "../../hooks/useItemForm";
+import { InputField } from "../common/InputField";
+import { Button } from "../common/Button";
 
 interface ProductAnalysisProps {
   productUrl: string;
@@ -17,34 +19,27 @@ export function ProductAnalysis({
 }: ProductAnalysisProps) {
   return (
     <div>
-      <label htmlFor="productUrl" className="block font-medium text-gray-700">
-        商品URL
-      </label>
-      <div className="flex gap-2">
-        <input
-          type="url"
-          id="productUrl"
-          name="productUrl"
-          value={productUrl}
-          onChange={(e) => onProductUrlChange(e.target.value)}
-          className="mt-1 flex-1 border border-gray-300 rounded-md shadow-sm p-2"
-        />
-        <button
-          type="button"
-          onClick={onAnalyze}
-          disabled={isAnalyzing}
-          className="mt-1 bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-        >
-          {isAnalyzing ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              商品分析中…
-            </>
-          ) : (
-            "商品分析"
-          )}
-        </button>
-      </div>
+      <InputField
+        label="商品URL"
+        id="productUrl"
+        name="productUrl"
+        type="url"
+        value={productUrl}
+        placeholder="商品のURLを入力してください"
+        onChange={(e) => onProductUrlChange(e.target.value)}
+        rightElement={
+          <Button
+            variant="success"
+            size="md"
+            disabled={isAnalyzing}
+            loading={isAnalyzing}
+            onClick={onAnalyze}
+            className="whitespace-nowrap flex-shrink-0"
+          >
+            {isAnalyzing ? "商品分析中…" : "商品分析"}
+          </Button>
+        }
+      />
 
       {/* 分析結果表示エリア */}
       {analysisResult && (
