@@ -1,4 +1,5 @@
 import type { ActionFunctionArgs } from "react-router-dom";
+import { requireAuthForAction } from "../lib/auth-guard";
 
 // OG API レスポンス型
 interface OgApiResponse {
@@ -95,6 +96,9 @@ export async function loader() {
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
+  // 認証チェック
+  await requireAuthForAction(request, context);
+
   if (request.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
