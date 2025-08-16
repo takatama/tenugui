@@ -36,6 +36,7 @@ function isImageUrl(s: string): boolean {
 async function fetchOg(
   targetUrl: string,
   ogApiUrl: string,
+  apiKey: string,
   maxImages = 10
 ): Promise<AnalyzeResult | null> {
   const apiUrl = new URL(ogApiUrl);
@@ -48,6 +49,9 @@ async function fetchOg(
     });
 
     const res = await fetch(apiUrl.toString(), {
+      headers: {
+        "X-API-Key": apiKey,
+      },
       signal: AbortSignal.timeout(15000), // 15秒
     });
 
@@ -113,16 +117,22 @@ export async function action({ request, context }: ActionFunctionArgs) {
       return new Response("Product URL is required", { status: 400 });
     }
 
-    // OG APIエンドポイントを環境変数から取得
+    // OG APIエンドポイントとAPIキーを環境変数から取得
     const ogApiUrl = context?.cloudflare?.env?.OG_API_URL as string | undefined;
+    const ogApiKey = context?.cloudflare?.env?.OG_API_KEY as string | undefined;
 
     if (!ogApiUrl) {
       return new Response("OG API URL is not configured", { status: 500 });
     }
 
+    if (!ogApiKey) {
+      return new Response("OG API Key is not configured", { status: 500 });
+    }
+
     const result = await fetchOg(
       productUrl,
       ogApiUrl,
+      ogApiKey,
       Math.min(maxImages || 10, 20)
     );
     if (!result) {
