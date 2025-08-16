@@ -4,8 +4,8 @@
 # AI API設定
 GEMINI_API_KEY=your-gemini-api-key
 
-# スクレイピング・OG情報取得
-MICROLINK_API_KEY=your-microlink-api-key
+# OG情報取得
+OG_API_URL=your-microlink-api-key
 
 # Google OAuth設定
 GOOGLE_CLIENT_ID=your-google-client-id
