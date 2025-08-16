@@ -1,8 +1,25 @@
-// UI定数とスタイルクラスの定義
+/**
+ * 手ぬぐい帖アプリケーション - UI定数とスタイルユーティリティ
+ *
+ * 統一されたデザインシステムを提供するための定数とヘルパー関数集
+ *
+ * @example
+ * // ボタンクラスの生成
+ * const classes = getButtonClasses('primary', 'lg');
+ *
+ * @example
+ * // 入力フィールドクラスの生成
+ * const inputClasses = getInputClasses('md', 'w-full');
+ */
 
 // ========================================
 // 色の定義
 // ========================================
+
+/**
+ * アプリケーション全体で使用する色の定義
+ * TailwindCSSクラス形式で統一
+ */
 export const colors = {
   primary: {
     50: "bg-blue-50",
@@ -104,7 +121,24 @@ export const spacing = {
 // ========================================
 
 /**
- * ボタンクラスを生成する
+ * ボタンのCSSクラスを生成する
+ *
+ * @param variant - ボタンのスタイルバリアント
+ * @param size - ボタンのサイズ
+ * @param additionalClasses - 追加のCSSクラス
+ * @returns 結合されたCSSクラス文字列
+ *
+ * @example
+ * // プライマリボタン（デフォルト）
+ * getButtonClasses() // "font-medium rounded-md ... bg-blue-600 text-white ..."
+ *
+ * @example
+ * // 大きな成功ボタン
+ * getButtonClasses('success', 'lg') // "... bg-green-600 text-white ... px-4 py-2 ..."
+ *
+ * @example
+ * // カスタムクラス付き
+ * getButtonClasses('secondary', 'md', 'w-full') // "... bg-gray-200 ... w-full"
  */
 export function getButtonClasses(
   variant: keyof typeof buttonStyles.variants = "primary",
@@ -122,7 +156,23 @@ export function getButtonClasses(
 }
 
 /**
- * 入力フィールドクラスを生成する
+ * 入力フィールドのCSSクラスを生成する
+ *
+ * @param size - 入力フィールドのサイズ
+ * @param additionalClasses - 追加のCSSクラス
+ * @returns 結合されたCSSクラス文字列
+ *
+ * @example
+ * // 標準サイズの入力フィールド
+ * getInputClasses() // "border border-gray-300 rounded-md ... p-3 text-sm h-10"
+ *
+ * @example
+ * // 小さな入力フィールド
+ * getInputClasses('sm') // "... p-2 text-sm h-8"
+ *
+ * @example
+ * // 全幅の入力フィールド
+ * getInputClasses('md', 'w-full') // "... p-3 text-sm h-10 w-full"
  */
 export function getInputClasses(
   size: keyof typeof inputStyles.sizes = "md",
