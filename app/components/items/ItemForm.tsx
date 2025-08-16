@@ -53,16 +53,18 @@ export function ItemForm({
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{title}</h1>
-      <Form method="post" className="space-y-4">
-        <ProductAnalysis
-          productUrl={formState.productUrl}
-          isAnalyzing={formState.isAnalyzing}
-          analysisResult={formState.analysisResult}
-          onProductUrlChange={formState.setProductUrl}
-          onAnalyze={handleAnalyze}
-        />
+      <Form method="post" className="space-y-6">
+        <div className="space-y-1">
+          <ProductAnalysis
+            productUrl={formState.productUrl}
+            isAnalyzing={formState.isAnalyzing}
+            analysisResult={formState.analysisResult}
+            onProductUrlChange={formState.setProductUrl}
+            onAnalyze={handleAnalyze}
+          />
+        </div>
 
-        <div>
+        <div className="space-y-1">
           <label htmlFor="name" className="block font-medium text-gray-700">
             名前
           </label>
@@ -73,47 +75,56 @@ export function ItemForm({
             value={formState.name}
             onChange={(e) => formState.setName(e.target.value)}
             required
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            className="w-full border border-gray-300 rounded-md shadow-sm p-3 h-10 text-sm"
+            placeholder="商品の名前を入力してください"
           />
         </div>
 
         {formState.candidateImages.length > 1 && (
-          <ImageSelection
-            candidateImages={formState.candidateImages}
-            selectedImageUrl={formState.imageUrl}
-            onImageSelect={formState.handleImageSelect}
-          />
+          <div className="space-y-1">
+            <ImageSelection
+              candidateImages={formState.candidateImages}
+              selectedImageUrl={formState.imageUrl}
+              onImageSelect={formState.handleImageSelect}
+            />
+          </div>
         )}
 
-        <ImageUrlInput
-          imageUrl={formState.imageUrl}
-          isAnalyzing={formState.isAnalyzing}
-          onImageUrlChange={formState.setImageUrl}
-          onAiAnalyze={handleAiAnalyze}
-        />
+        <div className="space-y-1">
+          <ImageUrlInput
+            imageUrl={formState.imageUrl}
+            isAnalyzing={formState.isAnalyzing}
+            onImageUrlChange={formState.setImageUrl}
+            onAiAnalyze={handleAiAnalyze}
+          />
+        </div>
 
         {formState.tagAnalysis && (
-          <TagAnalysisResult
-            tagAnalysis={formState.tagAnalysis}
-            selectedTags={formState.selectedTags}
-            onTagToggle={formState.handleTagToggle}
-            onAddAllTags={formState.handleAddAllAiTags}
-            onClearAllTags={formState.handleClearAllTags}
-          />
+          <div className="space-y-1">
+            <TagAnalysisResult
+              tagAnalysis={formState.tagAnalysis}
+              selectedTags={formState.selectedTags}
+              onTagToggle={formState.handleTagToggle}
+              onAddAllTags={formState.handleAddAllAiTags}
+              onClearAllTags={formState.handleClearAllTags}
+            />
+          </div>
         )}
 
-        <TagSelection
-          existingTags={existingTags}
-          selectedTags={formState.selectedTags}
-          tags={formState.tags}
-          newTagInput={formState.newTagInput}
-          onTagToggle={formState.handleTagToggle}
-          onNewTagInputChange={formState.setNewTagInput}
-          onAddNewTag={formState.handleAddNewTag}
-          onKeyPress={formState.handleKeyPress}
-        />
+        <div className="space-y-1">
+          <TagSelection
+            existingTags={existingTags}
+            selectedTags={formState.selectedTags}
+            tags={formState.tags}
+            newTagInput={formState.newTagInput}
+            onTagToggle={formState.handleTagToggle}
+            onNewTagInputChange={formState.setNewTagInput}
+            onAddNewTag={formState.handleAddNewTag}
+            onKeyPress={formState.handleKeyPress}
+          />
+        </div>
 
-        <div>
+        <div className="space-y-1">
           <label htmlFor="memo" className="block font-medium text-gray-700">
             メモ
           </label>
@@ -123,7 +134,7 @@ export function ItemForm({
             rows={4}
             placeholder="手ぬぐいに関するメモや説明を入力してください"
             defaultValue={initialItem?.memo || ""}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            className="w-full border border-gray-300 rounded-md shadow-sm p-3 text-sm resize-vertical"
           />
         </div>
 
@@ -131,17 +142,17 @@ export function ItemForm({
         <input type="hidden" name="productUrl" value={formState.productUrl} />
         <input type="hidden" name="tags" value={formState.tags} />
 
-        <div className="flex gap-4">
+        <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            className="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700"
+            className="bg-blue-600 text-white font-medium py-3 px-6 rounded-md hover:bg-blue-700 transition-colors text-sm"
           >
             {submitLabel}
           </button>
           {cancelUrl && (
             <a
               href={cancelUrl}
-              className="bg-gray-600 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-700 inline-block"
+              className="bg-gray-600 text-white font-medium py-3 px-6 rounded-md hover:bg-gray-700 transition-colors text-sm inline-block"
             >
               キャンセル
             </a>

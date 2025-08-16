@@ -20,20 +20,21 @@ export function ProductAnalysis({
       <label htmlFor="productUrl" className="block font-medium text-gray-700">
         商品URL
       </label>
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <input
           type="url"
           id="productUrl"
           name="productUrl"
           value={productUrl}
           onChange={(e) => onProductUrlChange(e.target.value)}
-          className="mt-1 flex-1 border border-gray-300 rounded-md shadow-sm p-2"
+          className="flex-1 border border-gray-300 rounded-md shadow-sm p-3 h-10 text-sm"
+          placeholder="商品のURLを入力してください"
         />
         <button
           type="button"
           onClick={onAnalyze}
           disabled={isAnalyzing}
-          className="mt-1 bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+          className="bg-green-600 text-white font-medium py-2 px-3 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 h-10 text-sm whitespace-nowrap flex-shrink-0"
         >
           {isAnalyzing ? (
             <>
