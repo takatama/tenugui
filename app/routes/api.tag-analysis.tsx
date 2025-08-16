@@ -1,5 +1,6 @@
 import type { ActionFunctionArgs } from "react-router-dom";
 import { getAllTags } from "../data/items";
+import { requireAuthForAction } from "../lib/auth-guard";
 import {
   analyzeTagWithGemini,
   validateAndCleanAnalysisResult,
@@ -11,6 +12,9 @@ interface RequestBody {
 
 export async function action({ context, request }: ActionFunctionArgs) {
   console.log("タグ分析APIが呼び出されました");
+
+  // 認証チェック
+  await requireAuthForAction(request, context);
 
   try {
     // リクエストボディの解析
