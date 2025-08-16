@@ -5,7 +5,8 @@
 GEMINI_API_KEY=your-gemini-api-key
 
 # OG情報取得
-OG_API_URL=your-microlink-api-key
+OG_API_URL=your-og-api-url
+OG_API_KEY=your-og-api-key
 
 # Google OAuth設定
 GOOGLE_CLIENT_ID=your-google-client-id

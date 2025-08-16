@@ -12,6 +12,7 @@ declare namespace Cloudflare {
     ALLOWED_EMAILS?: string;
     GEMINI_API_KEY?: string;
     OG_API_URL?: string;
+    OG_API_KEY?: string;
   }
 }
 interface Env extends Cloudflare.Env {}
