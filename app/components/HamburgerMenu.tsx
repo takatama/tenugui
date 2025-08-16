@@ -41,7 +41,7 @@ export function HamburgerMenu({
   }, [isOpen]);
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="md:hidden relative" ref={menuRef}>
       {/* ハンバーガーメニューボタン */}
       <button
         onClick={toggleMenu}
@@ -83,8 +83,8 @@ export function HamburgerMenu({
 
       {/* メニューコンテンツ */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 left-0 h-full w-full max-w-sm bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
