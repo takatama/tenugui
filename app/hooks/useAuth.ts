@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getAuthState, type AuthState } from "../lib/cloudflare-auth";
+import { handleError } from "../lib/errorHandler";
 
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
@@ -13,7 +14,11 @@ export function useAuth() {
       const state = await getAuthState();
       setAuthState(state);
     } catch (error) {
-      console.error("認証チェックエラー:", error);
+      const userMessage = handleError(error, {
+        operation: "認証チェック",
+      });
+
+      console.error("認証チェックエラー:", userMessage);
       setAuthState({
         isAuthenticated: false,
         user: null,

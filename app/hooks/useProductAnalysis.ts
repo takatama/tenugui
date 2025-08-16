@@ -1,6 +1,27 @@
+import { useApiRequest } from "./useApiRequest";
+import { useAsyncOperation } from "./useAsyncOperation";
+import { handleError } from "../lib/errorHandler";
 import type { AnalysisResult } from "./useItemForm";
 
+interface ProductAnalysisResponse {
+  name?: string;
+  imageUrls?: string[];
+}
+
 export function useProductAnalysis() {
+  const { request } = useApiRequest<ProductAnalysisResponse>();
+
+  const productAnalysis = useAsyncOperation(async (productUrl: string) => {
+    if (!productUrl.trim()) {
+      throw new Error("商品URLを入力してください");
+    }
+
+    return await request("/api/product-analysis", {
+      method: "POST",
+      body: JSON.stringify({ productUrl }),
+    });
+  });
+
   const analyzeProduct = async (
     productUrl: string,
     setIsAnalyzing: (analyzing: boolean) => void,
@@ -9,75 +30,61 @@ export function useProductAnalysis() {
     setImageUrl: (url: string) => void,
     setAnalysisResult: (result: AnalysisResult | null) => void
   ) => {
-    if (!productUrl.trim()) {
-      setAnalysisResult({
-        success: false,
-        message: "商品URLを入力してください",
-      });
-      return;
-    }
-
-    setIsAnalyzing(true);
+    // 初期化
     setCandidateImages([]);
     setAnalysisResult(null);
 
     try {
-      const response = await fetch("/api/product-analysis", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ productUrl }),
-      });
+      setIsAnalyzing(true);
+      const data = await productAnalysis.execute(productUrl);
 
-      if (response.ok) {
-        const data = (await response.json()) as {
-          name?: string;
-          imageUrls?: string[];
-        };
-        console.log("Product analysis response:", data);
-        if (data.name) {
-          setName(data.name);
-          if (data.imageUrls && data.imageUrls.length > 0) {
-            setCandidateImages(data.imageUrls);
-            setImageUrl(data.imageUrls[0]);
-            if (data.imageUrls.length === 1) {
-              setAnalysisResult({
-                success: true,
-                message: "分析完了！商品名と画像を取得しました。",
-              });
-            } else {
-              setAnalysisResult({
-                success: true,
-                message: `分析完了！商品名を取得し、${data.imageUrls.length}件の画像候補を見つけました。下記から画像を選択してください。`,
-              });
-            }
-          } else {
-            setCandidateImages([]);
+      if (!data) {
+        throw new Error("分析結果を取得できませんでした");
+      }
+
+      console.log("Product analysis response:", data);
+
+      if (data.name) {
+        setName(data.name);
+
+        if (data.imageUrls && data.imageUrls.length > 0) {
+          setCandidateImages(data.imageUrls);
+          setImageUrl(data.imageUrls[0]);
+
+          if (data.imageUrls.length === 1) {
             setAnalysisResult({
               success: true,
-              message:
-                "分析完了！商品名を取得しました。画像候補は見つかりませんでしたので、手動で画像URLを入力してください。",
+              message: "分析完了！商品名と画像を取得しました。",
+            });
+          } else {
+            setAnalysisResult({
+              success: true,
+              message: `分析完了！商品名を取得し、${data.imageUrls.length}件の画像候補を見つけました。下記から画像を選択してください。`,
             });
           }
         } else {
+          setCandidateImages([]);
           setAnalysisResult({
-            success: false,
-            message: "商品情報を取得できませんでした",
+            success: true,
+            message:
+              "分析完了！商品名を取得しました。画像候補は見つかりませんでしたので、手動で画像URLを入力してください。",
           });
         }
       } else {
-        const errorText = await response.text();
         setAnalysisResult({
           success: false,
-          message: `分析に失敗しました: ${errorText}`,
+          message: "商品情報を取得できませんでした",
         });
       }
     } catch (error) {
-      console.error("Error:", error);
+      const userMessage = handleError(error, {
+        operation: "商品分析",
+        additionalData: { productUrl },
+      });
+
       setAnalysisResult({
         success: false,
-        message: "エラーが発生しました。もう一度お試しください。",
+        message: userMessage,
       });
     } finally {
       setIsAnalyzing(false);
