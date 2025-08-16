@@ -2,7 +2,7 @@ import { data, type LoaderFunctionArgs, useLoaderData } from "react-router";
 import { getAllTags, getItems } from "../data/items";
 import { requireAuth } from "../lib/auth-guard";
 import { useState } from "react";
-import { TagList } from "../components/common/TagDisplay";
+import { TagManagement } from "../components/items/TagManagement";
 import { ItemSortableList } from "../components/items/ItemSortableList";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -90,6 +90,49 @@ export default function Settings() {
     }
   };
 
+  const handleRenameTag = async (oldTagName: string, newTagName: string) => {
+    try {
+      const response = await fetch("/api/tag-rename", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ oldTagName, newTagName }),
+      });
+
+      if (response.ok) {
+        const result = (await response.json()) as {
+          success: boolean;
+          oldTagName: string;
+          newTagName: string;
+          updatedItemsCount: number;
+        };
+
+        // タグ一覧で古いタグ名を新しいタグ名に置き換え
+        setTags(tags.map((tag) => (tag === oldTagName ? newTagName : tag)));
+
+        alert(
+          `タグ名を「${result.oldTagName}」から「${result.newTagName}」に変更しました。\n${result.updatedItemsCount}個のアイテムが更新されました。`
+        );
+      } else {
+        const errorData = (await response.json()) as { error?: string };
+        alert(
+          `タグ名の変更に失敗しました: ${errorData.error || "不明なエラー"}`
+        );
+        throw new Error(errorData.error || "Unknown error");
+      }
+    } catch (error) {
+      console.error("Tag rename failed:", error);
+      if (error instanceof Error && !error.message.includes("fetch")) {
+        // サーバーエラーの場合はすでにalertが表示されているので、再度表示しない
+        throw error;
+      } else {
+        alert("タグ名の変更に失敗しました");
+        throw error;
+      }
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-800 mb-8">設定</h1>
@@ -97,23 +140,11 @@ export default function Settings() {
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">タグ管理</h2>
 
-        {tags.length === 0 ? (
-          <p className="text-gray-500">現在、タグがありません。</p>
-        ) : (
-          <div>
-            <p className="text-gray-600 mb-4">
-              現在 {tags.length} 個のタグがあります。削除したいタグの ×
-              ボタンをクリックしてください。
-            </p>
-            <div className="min-h-[40px] block w-full border border-gray-300 rounded-md shadow-sm p-3 bg-gray-50">
-              <TagList
-                tags={tags}
-                variant="removable"
-                onTagRemove={handleDeleteTag}
-              />
-            </div>
-          </div>
-        )}
+        <TagManagement
+          tags={tags}
+          onTagDelete={handleDeleteTag}
+          onTagRename={handleRenameTag}
+        />
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-6">

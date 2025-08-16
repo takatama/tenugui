@@ -2,7 +2,7 @@ import React from "react";
 
 interface TagDisplayProps {
   tag: string;
-  variant?: "default" | "selected" | "filter" | "removable";
+  variant?: "default" | "selected" | "filter" | "removable" | "editable";
   selected?: boolean;
   onClick?: () => void;
   onRemove?: () => void;
@@ -27,6 +27,7 @@ export function TagDisplay({
       ? "bg-blue-500 text-white border-blue-500"
       : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200",
     removable: "bg-blue-100 text-blue-800",
+    editable: "bg-gray-100 text-gray-700 border border-gray-300",
   };
 
   const hoverClasses = {
@@ -34,6 +35,7 @@ export function TagDisplay({
     selected: onClick ? "hover:bg-blue-200 cursor-pointer" : "",
     filter: !selected ? "hover:bg-gray-200" : "",
     removable: "",
+    editable: onClick ? "hover:bg-blue-100 cursor-pointer" : "",
   };
 
   const classes = `${baseClasses} ${variantClasses[variant]} ${hoverClasses[variant]} ${className}`;
