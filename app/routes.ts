@@ -15,6 +15,7 @@ export default [
   route("api/tag-analysis", "routes/api.tag-analysis.tsx"),
   route("api/tag-delete", "routes/api.tag-delete.tsx"),
   route("api/item-order", "routes/api.item-order.tsx"),
+  route("api/tag-rename", "routes/api.tag-rename.tsx"),
   route("api/auth/me", "routes/api.auth.me.tsx"),
   route("auth", "routes/auth.tsx"),
   route("auth/callback", "routes/auth.callback.tsx"),

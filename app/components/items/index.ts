@@ -3,5 +3,6 @@ export { ImageSelection } from "./ImageSelection";
 export { ImageUrlInput } from "./ImageUrlInput";
 export { TagAnalysisResult } from "./TagAnalysisResult";
 export { TagSelection } from "./TagSelection";
+export { TagManagement } from "./TagManagement";
 export { ItemForm } from "./ItemForm";
 export { ItemDetailView } from "./ItemDetailView";
