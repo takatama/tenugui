@@ -2,6 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import type { CloudflareUser } from "../lib/cloudflare-auth";
 import { LOGOUT_URL } from "../lib/cloudflare-auth";
+import { Button } from "./common/Button";
+import {
+  HamburgerIcon,
+  CloseIcon,
+  ListIcon,
+  PlusIcon,
+  SettingsIcon,
+  LogoutIcon,
+  LoginIcon,
+} from "./common/Icons";
+import { spacing } from "../lib/styles";
 
 interface HamburgerMenuProps {
   user: CloudflareUser | null;
@@ -51,35 +62,15 @@ export function HamburgerMenu({
   return (
     <div className="md:hidden relative">
       {/* ハンバーガーメニューボタン */}
-      <button
+      <Button
+        variant="ghost"
+        size="md"
         onClick={toggleMenu}
-        className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+        className="p-2"
+        icon={isOpen ? <CloseIcon size="lg" /> : <HamburgerIcon size="lg" />}
         aria-label="メニューを開く"
         aria-expanded={isOpen}
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          {isOpen ? (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          ) : (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          )}
-        </svg>
-      </button>
+      />
 
       {/* メニューコンテンツ */}
       <div
@@ -92,25 +83,13 @@ export function HamburgerMenu({
           {/* ヘッダー */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">メニュー</h2>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={closeMenu}
-              className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              icon={<CloseIcon size="md" />}
               aria-label="メニューを閉じる"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+            />
           </div>
 
           {/* ユーザー情報セクション */}
@@ -138,25 +117,13 @@ export function HamburgerMenu({
 
           {/* ナビゲーションメニュー */}
           <nav className="flex-1 p-4">
-            <div className="space-y-1">
+            <div className={spacing.menu}>
               <Link
                 to="/"
                 onClick={closeMenu}
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors"
               >
-                <svg
-                  className="w-5 h-5 mr-3 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
+                <ListIcon size="md" className="mr-3 text-gray-400" />
                 手ぬぐい一覧
               </Link>
 
@@ -169,19 +136,7 @@ export function HamburgerMenu({
                         onClick={closeMenu}
                         className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors"
                       >
-                        <svg
-                          className="w-5 h-5 mr-3 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          />
-                        </svg>
+                        <PlusIcon size="md" className="mr-3 text-gray-400" />
                         手ぬぐい追加
                       </Link>
                       <Link
@@ -189,43 +144,16 @@ export function HamburgerMenu({
                         onClick={closeMenu}
                         className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors"
                       >
-                        <svg
-                          className="w-5 h-5 mr-3 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
+                        <SettingsIcon
+                          size="md"
+                          className="mr-3 text-gray-400"
+                        />
                         設定
                       </Link>
                     </>
                   ) : (
                     <div className="flex items-center px-3 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">
-                      <svg
-                        className="w-5 h-5 mr-3 text-gray-300"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
+                      <PlusIcon size="md" className="mr-3 text-gray-300" />
                       手ぬぐい追加（ログインが必要）
                     </div>
                   )}
@@ -239,45 +167,27 @@ export function HamburgerMenu({
             {!isLoading && (
               <>
                 {isAuthenticated ? (
-                  <a
-                    href={LOGOUT_URL}
-                    className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors border border-gray-300"
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                    icon={<LogoutIcon size="sm" />}
+                    onClick={() => (window.location.href = LOGOUT_URL)}
                   >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                      />
-                    </svg>
                     ログアウト
-                  </a>
+                  </Button>
                 ) : (
-                  <a
-                    href="/auth?action=login"
-                    className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
+                    icon={<LoginIcon size="sm" />}
+                    onClick={() =>
+                      (window.location.href = "/auth?action=login")
+                    }
                   >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                      />
-                    </svg>
                     Googleでログイン
-                  </a>
+                  </Button>
                 )}
               </>
             )}
