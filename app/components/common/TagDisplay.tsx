@@ -41,18 +41,40 @@ export function TagDisplay({
   const classes = `${baseClasses} ${variantClasses[variant]} ${hoverClasses[variant]} ${className}`;
 
   if (variant === "removable" && onRemove) {
+    const Component = onClick ? "button" : "span";
+    const extraProps = onClick ? { type: "button" as const, onClick } : {};
+
     return (
-      <span className={classes}>
+      <Component
+        {...extraProps}
+        className={`${classes} relative pr-8 ${onClick ? "cursor-pointer" : ""}`}
+      >
         {tag}
         <button
           type="button"
-          onClick={onRemove}
-          className="text-blue-600 hover:text-blue-800 hover:bg-blue-200 rounded-full p-0.5 transition-colors ml-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          className="absolute right-1 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full p-0.5 transition-colors"
           title={`「${tag}」を削除`}
         >
-          ×
+          <svg
+            className="w-3 h-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
         </button>
-      </span>
+      </Component>
     );
   }
 

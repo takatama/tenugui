@@ -110,10 +110,6 @@ export default function Settings() {
 
         // タグ一覧で古いタグ名を新しいタグ名に置き換え
         setTags(tags.map((tag) => (tag === oldTagName ? newTagName : tag)));
-
-        alert(
-          `タグ名を「${result.oldTagName}」から「${result.newTagName}」に変更しました。\n${result.updatedItemsCount}個のアイテムが更新されました。`
-        );
       } else {
         const errorData = (await response.json()) as { error?: string };
         alert(

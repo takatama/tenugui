@@ -89,22 +89,13 @@ export function TagManagement({
                   )}
                 </div>
               ) : (
-                <div className="flex items-center">
-                  <TagDisplay
-                    tag={tag}
-                    variant="editable"
-                    onClick={() => handleStartEdit(tag)}
-                    className="cursor-pointer hover:bg-blue-100"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => onTagDelete(tag)}
-                    className="text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full p-0.5 transition-colors ml-1"
-                    title={`「${tag}」を削除`}
-                  >
-                    ×
-                  </button>
-                </div>
+                <TagDisplay
+                  tag={tag}
+                  variant="removable"
+                  onClick={() => handleStartEdit(tag)}
+                  onRemove={() => onTagDelete(tag)}
+                  className="cursor-pointer hover:bg-blue-100"
+                />
               )}
             </div>
           ))}
