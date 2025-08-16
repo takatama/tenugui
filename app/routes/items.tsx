@@ -30,7 +30,7 @@ export default function Items() {
     useLoaderData() as LoaderData;
 
   return (
-    <div className="font-sans p-4 sm:p-6 md:p-8 mx-auto max-w-5xl">
+    <div className="font-sans max-w-5xl mx-auto">
       {/* 一覧タイトルは視覚的に非表示（スクリーンリーダー向けに残す） */}
       <h1 className="sr-only">手ぬぐい一覧</h1>
 
