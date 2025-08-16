@@ -5,12 +5,16 @@ interface ItemGalleryPreviewProps {
   items: Item[];
   onOrderChange: (newOrder: string[]) => void;
   isLoading?: boolean;
+  hasUnsavedChanges?: boolean;
+  onUnsavedChangesChange?: (hasChanges: boolean) => void;
 }
 
 export function ItemGalleryPreview({
   items,
   onOrderChange,
   isLoading = false,
+  hasUnsavedChanges = false,
+  onUnsavedChangesChange,
 }: ItemGalleryPreviewProps) {
   const [localItems, setLocalItems] = useState(items);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
@@ -20,6 +24,14 @@ export function ItemGalleryPreview({
   useEffect(() => {
     setLocalItems(items);
   }, [items]);
+
+  // 変更があったかチェック
+  const checkForChanges = (newItems: Item[]) => {
+    const hasChanges = newItems.some(
+      (item, index) => items[index]?.id !== item.id
+    );
+    onUnsavedChangesChange?.(hasChanges);
+  };
 
   const handleDragStart = (e: React.DragEvent, itemId: string) => {
     setDraggedItemId(itemId);
@@ -39,6 +51,7 @@ export function ItemGalleryPreview({
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
+    e.stopPropagation();
 
     if (!draggedItemId) return;
 
@@ -50,19 +63,35 @@ export function ItemGalleryPreview({
       return;
     }
 
+    // スクロール位置を保存
+    const scrollPosition = window.scrollY;
+    const scrollElement = document.documentElement;
+
     const newItems = [...localItems];
     const [draggedItem] = newItems.splice(dragIndex, 1);
     newItems.splice(dropIndex, 0, draggedItem);
 
     setLocalItems(newItems);
-    onOrderChange(newItems.map((item) => item.id));
+    checkForChanges(newItems);
+
     setDraggedItemId(null);
     setDragOverIndex(null);
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setDraggedItemId(null);
     setDragOverIndex(null);
+  };
+
+  const handleSave = () => {
+    onOrderChange(localItems.map((item) => item.id));
+  };
+
+  const handleReset = () => {
+    setLocalItems(items);
+    onUnsavedChangesChange?.(false);
   };
 
   if (isLoading) {
@@ -83,6 +112,36 @@ export function ItemGalleryPreview({
 
   return (
     <div className="space-y-6">
+      {/* 保存ボタン（変更がある場合のみ表示） */}
+      {hasUnsavedChanges && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 animate-pulse"></div>
+              <span className="text-yellow-800 font-medium">
+                並び順に変更があります
+              </span>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={handleReset}
+                className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                disabled={isLoading}
+              >
+                リセット
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isLoading}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? "保存中..." : "変更を保存"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ギャラリープレビュー表示（モバイルサイズ固定） */}
       <div className="bg-gray-50 p-4 rounded-lg">
         <h3 className="text-sm font-medium text-gray-700 mb-3">
