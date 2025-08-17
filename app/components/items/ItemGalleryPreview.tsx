@@ -235,9 +235,16 @@ export function ItemGalleryPreview({
     setDraggedItemId(itemId);
     setIsDragging(false);
 
-    // ハプティックフィードバック（対応デバイスのみ）
-    if ("vibrate" in navigator) {
-      navigator.vibrate(50);
+    // ハプティックフィードバック（ユーザーの操作後のみ実行）
+    // Chrome の介入ポリシーにより、ユーザーがフレームをタップした後でないと振動は実行されません
+    try {
+      if ("vibrate" in navigator) {
+        // ユーザーの直接的な操作に対してのみ振動を実行
+        navigator.vibrate(50);
+      }
+    } catch (error) {
+      // 振動が失敗しても処理は継続（ブラウザのセキュリティポリシーでブロックされる場合がある）
+      console.debug("Vibration not supported or blocked by browser policy");
     }
 
     // ドラッグ開始のための長押し効果を追加（100ms後にドラッグモード開始）
