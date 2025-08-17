@@ -9,6 +9,7 @@ interface GalleryGridProps {
   touchStartPos: { x: number; y: number } | null;
   isDragging: boolean;
   setDragOverIndex: (index: number | null) => void;
+  setIsDragging: (isDragging: boolean) => void;
   onDragStart: (e: React.DragEvent, itemId: string) => void;
   onDragOver: (e: React.DragEvent, index: number) => void;
   onDragLeave: () => void;
@@ -27,6 +28,7 @@ export function GalleryGrid({
   touchStartPos,
   isDragging,
   setDragOverIndex,
+  setIsDragging,
   onDragStart,
   onDragOver,
   onDragLeave,
@@ -54,6 +56,8 @@ export function GalleryGrid({
       // より敏感な移動検出（5px以上で移動とみなす）
       if (deltaX > 5 || deltaY > 5) {
         if (!isDragging) {
+          // ドラッグ状態を有効にする
+          setIsDragging(true);
           // ドラッグ開始時にbodyのスクロールを無効化
           document.body.style.overflow = "hidden";
         }
@@ -91,6 +95,7 @@ export function GalleryGrid({
     isDragging,
     onAutoScroll,
     setDragOverIndex,
+    setIsDragging,
   ]);
 
   // コンポーネントアンマウント時のクリーンアップ

@@ -101,15 +101,8 @@ export function useDragAndDrop({
       setTouchStartPos({ x: touch.clientX, y: touch.clientY });
       setDraggedItemId(itemId);
       setIsDragging(false);
-
-      // ドラッグ開始のための長押し効果を追加（100ms後にドラッグモード開始）
-      setTimeout(() => {
-        if (draggedItemId === itemId) {
-          setIsDragging(true);
-        }
-      }, 100);
     },
-    [draggedItemId]
+    []
   );
 
   const handleTouchEnd = useCallback(
@@ -162,6 +155,7 @@ export function useDragAndDrop({
     touchStartPos,
     isDragging,
     setDragOverIndex,
+    setIsDragging,
     handleDragStart,
     handleDragOver,
     handleDragLeave,

@@ -46,17 +46,21 @@ export function ItemCard({
         relative cursor-move bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200
         ${
           isDraggedItem && isDragging
-            ? "opacity-60 scale-95 shadow-xl ring-2 ring-blue-500"
+            ? "opacity-80 scale-110 shadow-2xl ring-4 ring-blue-500 z-50 transform rotate-2"
             : ""
         }
         ${
           isDragOverTarget && !isDraggedItem
-            ? "ring-2 ring-blue-400 scale-105"
+            ? "ring-2 ring-blue-400 scale-105 bg-blue-50"
+            : ""
+        }
+        ${
+          isDraggedItem && !isDragging
+            ? "ring-2 ring-yellow-400 bg-yellow-50"
             : ""
         }
         hover:ring-2 hover:ring-gray-300
         touch-manipulation
-        ${isDraggedItem && isDragging ? "z-50" : ""}
       `}
       style={{
         touchAction: isDragging ? "none" : "auto",
@@ -70,14 +74,28 @@ export function ItemCard({
       />
 
       {/* 順序番号 */}
-      <div className="absolute top-1 left-1 bg-black bg-opacity-70 text-white text-xs px-1.5 py-0.5 rounded">
+      <div
+        className={`absolute top-1 left-1 text-white text-xs px-1.5 py-0.5 rounded ${
+          isDraggedItem && isDragging
+            ? "bg-blue-500 bg-opacity-90 font-bold"
+            : "bg-black bg-opacity-70"
+        }`}
+      >
         {index + 1}
       </div>
 
       {/* ドラッグインジケーター */}
-      <div className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1">
+      <div
+        className={`absolute top-1 right-1 rounded-full p-1 ${
+          isDraggedItem && isDragging
+            ? "bg-blue-500 bg-opacity-90"
+            : "bg-white bg-opacity-80"
+        }`}
+      >
         <svg
-          className="w-3 h-3 text-gray-600"
+          className={`w-3 h-3 ${
+            isDraggedItem && isDragging ? "text-white" : "text-gray-600"
+          }`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

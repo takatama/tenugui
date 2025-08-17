@@ -27,6 +27,7 @@ export function ItemGalleryPreview({
     touchStartPos,
     isDragging,
     setDragOverIndex,
+    setIsDragging,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
@@ -76,6 +77,7 @@ export function ItemGalleryPreview({
         touchStartPos={touchStartPos}
         isDragging={isDragging}
         setDragOverIndex={setDragOverIndex}
+        setIsDragging={setIsDragging}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
