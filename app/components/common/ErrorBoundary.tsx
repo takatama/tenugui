@@ -18,6 +18,20 @@ interface ErrorBoundaryProps {
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
+/**
+ * 汎用エラー境界コンポーネント
+ *
+ * Reactコンポーネントツリー内で発生したJavaScriptエラーをキャッチし、
+ * アプリケーション全体のクラッシュを防ぎます。統一されたエラーハンドリングと
+ * ユーザーフレンドリーなフォールバックUIを提供します。
+ *
+ * @example
+ * ```tsx
+ * <ErrorBoundary context={{ operation: "データ表示" }}>
+ *   <DataVisualization />
+ * </ErrorBoundary>
+ * ```
+ */
 export class ErrorBoundary extends React.Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
@@ -118,7 +132,30 @@ export class ErrorBoundary extends React.Component<
   }
 }
 
-// 関数型コンポーネント向けのカスタムフック
+/**
+ * 関数型コンポーネント向けのエラー境界フック
+ *
+ * 関数型コンポーネント内でエラーをエラー境界にスローするためのフックです。
+ * 非同期処理やイベントハンドラー内で発生したエラーを
+ * エラー境界でキャッチできるようにします。
+ *
+ * @returns captureError - エラーをエラー境界にスローする関数
+ *
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const captureError = useErrorBoundary();
+ *
+ *   const handleAsyncError = async () => {
+ *     try {
+ *       await riskyAsyncOperation();
+ *     } catch (error) {
+ *       captureError(error);
+ *     }
+ *   };
+ * }
+ * ```
+ */
 export function useErrorBoundary() {
   const [error, setError] = React.useState<Error | null>(null);
 

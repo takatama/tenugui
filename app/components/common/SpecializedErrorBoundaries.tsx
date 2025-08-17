@@ -7,6 +7,19 @@ interface ApiErrorBoundaryProps {
   onError?: (error: Error) => void;
 }
 
+/**
+ * API関連のエラーに特化したエラー境界コンポーネント
+ *
+ * 外部API呼び出しや非同期処理でエラーが発生した際に、
+ * ユーザーフレンドリーなエラーメッセージと再試行ボタンを表示します。
+ *
+ * @example
+ * ```tsx
+ * <ApiErrorBoundary operation="商品分析">
+ *   <ProductAnalysisForm />
+ * </ApiErrorBoundary>
+ * ```
+ */
 export function ApiErrorBoundary({
   children,
   operation,
@@ -66,6 +79,19 @@ interface ImageErrorBoundaryProps {
   imageName?: string;
 }
 
+/**
+ * 画像表示に特化したエラー境界コンポーネント
+ *
+ * 画像の読み込みエラーやレンダリングエラーが発生した際に、
+ * 代替表示とエラーメッセージを提供します。
+ *
+ * @example
+ * ```tsx
+ * <ImageErrorBoundary imageName="商品画像">
+ *   <img src={imageUrl} alt="商品" />
+ * </ImageErrorBoundary>
+ * ```
+ */
 export function ImageErrorBoundary({
   children,
   imageName,

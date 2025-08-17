@@ -8,7 +8,7 @@ export { StatusBadge } from "./StatusBadge";
 export { LiveAnnouncer, useAnnouncer } from "./LiveAnnouncer";
 export * from "./Icons";
 
-// エラー境界関連
+// エラー境界コンポーネント
 export { ErrorBoundary, useErrorBoundary } from "./ErrorBoundary";
 export {
   ApiErrorBoundary,
