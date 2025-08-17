@@ -4,6 +4,7 @@ export interface ParsedFormData {
   productUrl?: string;
   tags: string[];
   memo: string;
+  status: "purchased" | "unpurchased";
 }
 
 export function parseFormData(request: Request): Promise<ParsedFormData> {
@@ -13,6 +14,7 @@ export function parseFormData(request: Request): Promise<ParsedFormData> {
     const productUrl = formData.get("productUrl");
     const tagsString = formData.get("tags");
     const memo = formData.get("memo");
+    const status = formData.get("status");
 
     if (!name || !imageUrl) {
       throw new Response("名前と画像URLは必須です", { status: 400 });
@@ -32,12 +34,16 @@ export function parseFormData(request: Request): Promise<ParsedFormData> {
             .filter((tag: string) => tag.length > 0)
         : [];
 
+    const statusValue =
+      status === "purchased" || status === "unpurchased" ? status : "purchased";
+
     return {
       name: String(name),
       imageUrl: String(imageUrl),
       productUrl: productUrlValue,
       tags,
       memo: String(memo || ""),
+      status: statusValue,
     };
   });
 }

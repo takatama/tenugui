@@ -47,7 +47,7 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
 
   const result = await parseFormData(request);
 
-  const { name, imageUrl, productUrl, tags, memo } = result;
+  const { name, imageUrl, productUrl, tags, memo, status } = result;
 
   const updatedItem = {
     name,
@@ -55,6 +55,7 @@ export async function action({ context, request, params }: ActionFunctionArgs) {
     productUrl,
     tags,
     memo,
+    status,
   };
 
   await updateItem(kv, itemId, updatedItem);

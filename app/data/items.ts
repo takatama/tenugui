@@ -6,6 +6,7 @@ export interface Item {
   tags: string[];
   memo: string;
   order?: number;
+  status?: "purchased" | "unpurchased";
 }
 
 export interface TagAnalysis {
@@ -23,7 +24,12 @@ export interface TagAnalysis {
  * @returns すべての手ぬぐいの配列
  */
 async function getAllItemsFromKV(kv: KVNamespace): Promise<Item[]> {
-  return (await kv.get("items", "json")) || [];
+  const items: Item[] = (await kv.get("items", "json")) || [];
+  // 既存のアイテムでstatusが未設定の場合は"purchased"をデフォルトとして設定
+  return items.map((item) => ({
+    ...item,
+    status: item.status || "purchased",
+  }));
 }
 
 /**
@@ -60,6 +66,7 @@ export async function createItem(
     productUrl?: string;
     tags: string[];
     memo: string;
+    status?: "purchased" | "unpurchased";
   }
 ): Promise<Item> {
   const items = await getAllItemsFromKV(kv);
@@ -71,6 +78,7 @@ export async function createItem(
     productUrl: data.productUrl,
     tags: data.tags,
     memo: data.memo,
+    status: data.status || "purchased",
   };
   // 新しいアイテムを配列の先頭に追加
   items.unshift(newItem);
@@ -119,6 +127,7 @@ export async function updateItem(
     productUrl?: string;
     tags: string[];
     memo: string;
+    status?: "purchased" | "unpurchased";
   }
 ): Promise<Item | undefined> {
   const items = await getAllItemsFromKV(kv);
@@ -136,6 +145,7 @@ export async function updateItem(
     productUrl: data.productUrl,
     tags: data.tags,
     memo: data.memo,
+    status: data.status || items[itemIndex].status || "purchased",
   };
 
   items[itemIndex] = updatedItem;

@@ -83,6 +83,40 @@ export function ItemForm({
           />
         </div>
 
+        <div className="space-y-1">
+          <fieldset>
+            <legend className="block font-medium text-gray-700 mb-2">
+              ステータス
+            </legend>
+            <div className="flex gap-6">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="status"
+                  value="purchased"
+                  defaultChecked={
+                    (initialItem?.status || "purchased") === "purchased"
+                  }
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-gray-700">購入済み</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="status"
+                  value="unpurchased"
+                  defaultChecked={
+                    (initialItem?.status || "purchased") === "unpurchased"
+                  }
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-gray-700">未購入</span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
+
         {formState.candidateImages.length > 1 && (
           <div className="space-y-1">
             <ImageSelection
