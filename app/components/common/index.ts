@@ -5,6 +5,7 @@ export { AnalysisField } from "./AnalysisField";
 export { RadioGroup } from "./RadioGroup";
 export { TagDisplay } from "./TagDisplay";
 export { StatusBadge } from "./StatusBadge";
+export { LiveAnnouncer, useAnnouncer } from "./LiveAnnouncer";
 export * from "./Icons";
 
 // 型定義のエクスポート

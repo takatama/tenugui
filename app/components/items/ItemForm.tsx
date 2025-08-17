@@ -57,36 +57,53 @@ export function ItemForm({
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{title}</h1>
-      <Form method="post" className="space-y-6">
-        <div className="space-y-1">
-          <ProductUrlAnalysis
-            productUrl={formState.productUrl}
-            isAnalyzing={formState.isAnalyzing}
-            analysisResult={formState.analysisResult}
-            onProductUrlChange={formState.setProductUrl}
-            onAnalyze={handleAnalyze}
+      <Form method="post" className="space-y-6" noValidate>
+        <fieldset>
+          <legend className="sr-only">商品情報の入力</legend>
+
+          <div className="space-y-1">
+            <ProductUrlAnalysis
+              productUrl={formState.productUrl}
+              isAnalyzing={formState.isAnalyzing}
+              analysisResult={formState.analysisResult}
+              onProductUrlChange={formState.setProductUrl}
+              onAnalyze={handleAnalyze}
+            />
+          </div>
+
+          <InputField
+            label="名前"
+            id="name"
+            name="name"
+            value={formState.name}
+            onChange={(e) => formState.setName(e.target.value)}
+            required
+            placeholder="商品の名前を入力してください"
+            aria-describedby="name-description"
           />
-        </div>
+          <div id="name-description" className="sr-only">
+            手ぬぐいの商品名を入力してください。この項目は必須です。
+          </div>
 
-        <InputField
-          label="名前"
-          id="name"
-          name="name"
-          value={formState.name}
-          onChange={(e) => formState.setName(e.target.value)}
-          required
-          placeholder="商品の名前を入力してください"
-        />
-
-        <RadioGroup
-          label="ステータス"
-          name="status"
-          defaultValue={initialItem?.status || DEFAULT_STATUS}
-          options={[
-            { value: "purchased", label: "購入済み" },
-            { value: "unpurchased", label: "未購入" },
-          ]}
-        />
+          <RadioGroup
+            label="ステータス"
+            name="status"
+            defaultValue={initialItem?.status || DEFAULT_STATUS}
+            options={[
+              {
+                value: "purchased",
+                label: "購入済み",
+                description: "既に購入した商品",
+              },
+              {
+                value: "unpurchased",
+                label: "未購入",
+                description: "購入予定または検討中の商品",
+              },
+            ]}
+            required
+          />
+        </fieldset>
 
         {formState.candidateImages.length > 1 && (
           <div className="space-y-1">

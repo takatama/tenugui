@@ -14,6 +14,7 @@ export { useAuth } from "./useAuth";
  */
 export { useDragAndDrop } from "./useDragAndDrop";
 export { useAutoScroll } from "./useAutoScroll";
+export { useFocusTrap } from "./useFocusTrap";
 
 /**
  * フォーム・タグ管理関連

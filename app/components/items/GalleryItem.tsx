@@ -10,29 +10,33 @@ interface GalleryItemProps {
 
 export function GalleryItem({ item }: GalleryItemProps) {
   return (
-    <Link
-      to={`/items/${item.id}`}
-      className="block group focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-md"
-      aria-label={item.name}
-    >
-      <div
-        className={`
-          relative overflow-hidden rounded-md transition-all duration-200
-          ${getItemStatusStyles(item.status)}
-          group-hover:ring-2 group-hover:ring-gray-300
-        `}
+    <article>
+      <Link
+        to={`/items/${item.id}`}
+        className="block group focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md transition-all duration-200"
+        aria-label={`${item.name}の詳細を表示`}
+        aria-describedby={`status-${item.id}`}
       >
-        <img
-          src={item.imageUrl}
-          alt={item.name}
-          loading="lazy"
-          decoding="async"
-          className="block w-full h-auto"
-        />
+        <div
+          className={`
+            relative overflow-hidden rounded-md transition-all duration-200
+            ${getItemStatusStyles(item.status)}
+            group-hover:ring-2 group-hover:ring-gray-300 group-hover:shadow-md
+            group-focus:ring-2 group-focus:ring-blue-500
+          `}
+        >
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            loading="lazy"
+            decoding="async"
+            className="block w-full h-auto"
+          />
 
-        {/* 未購入ステータスインジケーター */}
-        <StatusBadge status={item.status} />
-      </div>
-    </Link>
+          {/* 未購入ステータスインジケーター */}
+          <StatusBadge status={item.status} id={`status-${item.id}`} />
+        </div>
+      </Link>
+    </article>
   );
 }
