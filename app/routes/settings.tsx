@@ -1,9 +1,14 @@
-import { data, type LoaderFunctionArgs, useLoaderData } from "react-router";
+import {
+  data,
+  type LoaderFunctionArgs,
+  useLoaderData,
+  useBlocker,
+} from "react-router";
 import { getAllTags, getItems } from "../data/items";
 import { requireAuth } from "../lib/auth-guard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TagManagement } from "../components/items/TagManagement";
-import { ItemSortableList } from "../components/items/ItemSortableList";
+import { ItemGalleryPreview } from "../components/items/ItemGalleryPreview";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // 認証チェック
@@ -33,12 +38,50 @@ export default function Settings() {
     useLoaderData<typeof loader>();
   const [tags, setTags] = useState(initialTags);
   const [isOrderSaving, setIsOrderSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // ページ離脱時の警告
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = ""; // Chrome では空文字列が必要
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  // React Routerでのページ遷移をブロック
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  // ブロッカーの状態を監視してアラートを表示
+  useEffect(() => {
+    if (blocker.state === "blocked") {
+      const shouldProceed = window.confirm(
+        "並び順に未保存の変更があります。\n変更を破棄してページを移動しますか？"
+      );
+
+      if (shouldProceed) {
+        setHasUnsavedChanges(false);
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker, setHasUnsavedChanges]);
 
   const handleOrderChange = async (newOrder: string[]) => {
     setIsOrderSaving(true);
 
     try {
-      // 新しい配列ベースの並び替えAPIを使用
       const response = await fetch("/api/item-order", {
         method: "PUT",
         headers: {
@@ -49,11 +92,24 @@ export default function Settings() {
 
       if (!response.ok) {
         const errorData = (await response.json()) as { error?: string };
-        alert(`順序の保存に失敗しました: ${errorData.error || "不明なエラー"}`);
+        console.error("API Error Response:", {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+        });
+        alert(
+          `順序の保存に失敗しました: ${errorData.error || `HTTP ${response.status}: ${response.statusText}`}`
+        );
+      } else {
+        const result = await response.json();
+        console.log("Order save successful:", result);
+        setHasUnsavedChanges(false); // 保存成功時に未保存フラグをクリア
       }
     } catch (error) {
       console.error("Order save failed:", error);
-      alert("順序の保存に失敗しました");
+      alert(
+        `順序の保存に失敗しました: ${error instanceof Error ? error.message : "ネットワークエラー"}`
+      );
     } finally {
       setIsOrderSaving(false);
     }
@@ -148,24 +204,22 @@ export default function Settings() {
           <h2 className="text-xl font-semibold text-gray-800">
             アイテムの並び替え
           </h2>
-          {isOrderSaving && (
-            <div className="text-sm text-blue-600">保存中...</div>
-          )}
         </div>
         <div className="space-y-2 mb-4">
           <p className="text-gray-600">
-            アイテムをドラッグ・アンド・ドロップして順序を変更できます。変更は自動的に保存されます。
+            写真をドラッグして並び順を変更できます。変更後は保存ボタンで確定してください。
           </p>
           <p className="text-sm text-gray-500">
-            📱 スマホ・タブレット: ≡ マークを長押ししてドラッグ
-            <br />
-            🖱️ PC: ≡ マークをクリック＆ドラッグ
+            ✨
+            モバイルサイズのギャラリー表示で実際の見た目を確認しながら並び替えできます
           </p>
         </div>
-        <ItemSortableList
+        <ItemGalleryPreview
           items={initialItems}
           onOrderChange={handleOrderChange}
           isLoading={isOrderSaving}
+          hasUnsavedChanges={hasUnsavedChanges}
+          onUnsavedChangesChange={setHasUnsavedChanges}
         />
       </div>
     </div>

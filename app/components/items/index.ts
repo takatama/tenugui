@@ -6,3 +6,7 @@ export { TagSelection } from "./TagSelection";
 export { TagManagement } from "./TagManagement";
 export { ItemForm } from "./ItemForm";
 export { ItemDetailView } from "./ItemDetailView";
+export { ItemGalleryPreview } from "./ItemGalleryPreview";
+export { SaveButton } from "./SaveButton";
+export { GalleryGrid } from "./GalleryGrid";
+export { ItemCard } from "./ItemCard";
