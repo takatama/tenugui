@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Item } from "../data/items";
+import { useTagManager } from "./useTagManager";
 
 export function useEditItemForm(item: Item, existingTags: string[]) {
   const [productUrl, setProductUrl] = useState(item.productUrl || "");
@@ -12,49 +13,14 @@ export function useEditItemForm(item: Item, existingTags: string[]) {
     message: string;
   } | null>(null);
 
-  // タグ関連の状態
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(
-    new Set(item.tags || [])
-  );
-  const [newTagInput, setNewTagInput] = useState("");
-
-  const updateTags = (newSelectedTags: Set<string>) => {
-    setSelectedTags(newSelectedTags);
-  };
-
-  const handleTagToggle = (tag: string) => {
-    const newSelectedTags = new Set(selectedTags);
-    if (newSelectedTags.has(tag)) {
-      newSelectedTags.delete(tag);
-    } else {
-      newSelectedTags.add(tag);
-    }
-    updateTags(newSelectedTags);
-  };
-
-  const handleAddNewTag = () => {
-    const trimmedTag = newTagInput.trim();
-    if (trimmedTag && !selectedTags.has(trimmedTag)) {
-      const newSelectedTags = new Set(selectedTags);
-      newSelectedTags.add(trimmedTag);
-      updateTags(newSelectedTags);
-      setNewTagInput("");
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddNewTag();
-    }
-  };
+  // タグ管理フック
+  const tagManager = useTagManager({
+    initialTags: item.tags || [],
+  });
 
   const handleImageSelect = (selectedImageUrl: string) => {
     setImageUrl(selectedImageUrl);
   };
-
-  // タグを文字列として取得
-  const tags = Array.from(selectedTags).join(", ");
 
   return {
     // 既存の状態
@@ -65,10 +31,10 @@ export function useEditItemForm(item: Item, existingTags: string[]) {
     candidateImages,
     analysisResult,
 
-    // タグ関連の状態
-    selectedTags,
-    newTagInput,
-    tags,
+    // タグ関連の状態（useTagManagerから）
+    selectedTags: tagManager.selectedTags,
+    newTagInput: tagManager.newTagInput,
+    tags: tagManager.tagsString,
 
     // セッター
     setProductUrl,
@@ -77,12 +43,12 @@ export function useEditItemForm(item: Item, existingTags: string[]) {
     setIsAnalyzing,
     setCandidateImages,
     setAnalysisResult,
-    setNewTagInput,
+    setNewTagInput: tagManager.setNewTagInput,
 
-    // ハンドラー
-    handleTagToggle,
-    handleAddNewTag,
-    handleKeyPress,
+    // ハンドラー（useTagManagerから）
+    handleTagToggle: tagManager.handleTagToggle,
+    handleAddNewTag: tagManager.handleAddNewTag,
+    handleKeyPress: tagManager.handleKeyPress,
     handleImageSelect,
   };
 }

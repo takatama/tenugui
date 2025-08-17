@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { TagAnalysis, Item } from "../data/items";
+import { useTagManager } from "./useTagManager";
 
 export interface AnalysisResult {
   success: boolean;
@@ -27,73 +28,32 @@ export function useItemForm(options: UseItemFormOptions = {}) {
     null
   );
 
-  // タグ関連の状態
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(
-    new Set(initialItem?.tags || [])
-  );
-  const [newTagInput, setNewTagInput] = useState("");
-
-  const updateTags = (newSelectedTags: Set<string>) => {
-    setSelectedTags(newSelectedTags);
-  };
-
-  const handleTagToggle = (tag: string) => {
-    const newSelectedTags = new Set(selectedTags);
-    if (newSelectedTags.has(tag)) {
-      newSelectedTags.delete(tag);
-    } else {
-      newSelectedTags.add(tag);
-    }
-    updateTags(newSelectedTags);
-  };
-
-  const handleAddAllAiTags = () => {
-    if (!tagAnalysis?.tags) return;
-    const newSelectedTags = new Set(selectedTags);
-    tagAnalysis.tags.forEach((tag) => newSelectedTags.add(tag));
-    updateTags(newSelectedTags);
-  };
-
-  const handleClearAllTags = () => {
-    setSelectedTags(new Set());
-  };
-
-  const handleAddNewTag = () => {
-    const trimmedTag = newTagInput.trim();
-    if (trimmedTag && !selectedTags.has(trimmedTag)) {
-      const newSelectedTags = new Set(selectedTags);
-      newSelectedTags.add(trimmedTag);
-      updateTags(newSelectedTags);
-      setNewTagInput("");
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddNewTag();
-    }
-  };
+  // タグ管理フック
+  const tagManager = useTagManager({
+    initialTags: initialItem?.tags || [],
+  });
 
   const handleImageSelect = (selectedImageUrl: string) => {
     setImageUrl(selectedImageUrl);
   };
 
-  // タグを文字列として取得
-  const tags = Array.from(selectedTags).join(", ");
+  // AI分析からタグを追加するためのヘルパー関数
+  const handleAddAllAiTags = () => {
+    tagManager.handleAddAllAiTags(tagAnalysis);
+  };
 
   return {
     // State
     productUrl,
     name,
     imageUrl,
-    tags,
+    tags: tagManager.tagsString,
     isAnalyzing,
     candidateImages,
     tagAnalysis,
     analysisResult,
-    selectedTags,
-    newTagInput,
+    selectedTags: tagManager.selectedTags,
+    newTagInput: tagManager.newTagInput,
 
     // Setters
     setProductUrl,
@@ -103,14 +63,14 @@ export function useItemForm(options: UseItemFormOptions = {}) {
     setCandidateImages,
     setTagAnalysis,
     setAnalysisResult,
-    setNewTagInput,
+    setNewTagInput: tagManager.setNewTagInput,
 
     // Handlers
-    handleTagToggle,
+    handleTagToggle: tagManager.handleTagToggle,
     handleAddAllAiTags,
-    handleClearAllTags,
+    handleClearAllTags: tagManager.handleClearAllTags,
     handleImageSelect,
-    handleAddNewTag,
-    handleKeyPress,
+    handleAddNewTag: tagManager.handleAddNewTag,
+    handleKeyPress: tagManager.handleKeyPress,
   };
 }

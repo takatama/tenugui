@@ -1,6 +1,6 @@
 import { Form } from "react-router-dom";
 import type { Item, TagAnalysis } from "../../data/items";
-import { useItemForm } from "../../hooks/useItemFormShared";
+import { useItemForm } from "../../hooks";
 import { useProductAnalysis } from "../../hooks/useProductAnalysis";
 import { useTagAnalysis } from "../../hooks/useTagAnalysis";
 import { Button, InputField, RadioGroup } from "../common";
