@@ -41,13 +41,24 @@ export function TagDisplay({
   const classes = `${baseClasses} ${variantClasses[variant]} ${hoverClasses[variant]} ${className}`;
 
   if (variant === "removable" && onRemove) {
-    const Component = onClick ? "button" : "span";
-    const extraProps = onClick ? { type: "button" as const, onClick } : {};
-
+    // removableバリアントでは、タグ全体をクリック可能にする場合でも
+    // ボタンのネストを避けるためにdivを使用し、適切なイベントハンドリングを行う
     return (
-      <Component
-        {...extraProps}
+      <div
+        onClick={onClick}
         className={`${classes} relative pr-8 ${onClick ? "cursor-pointer" : ""}`}
+        role={onClick ? "button" : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        onKeyDown={
+          onClick
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onClick();
+                }
+              }
+            : undefined
+        }
       >
         {tag}
         <button
@@ -74,7 +85,7 @@ export function TagDisplay({
             />
           </svg>
         </button>
-      </Component>
+      </div>
     );
   }
 
