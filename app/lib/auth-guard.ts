@@ -1,5 +1,6 @@
 import { redirect } from "react-router";
 import { getAuthStateFromRequest, type AuthState } from "./cloudflare-auth";
+import { AUTH_URLS } from "../config";
 
 export interface AuthGuardOptions {
   redirectTo?: string;
@@ -14,7 +15,7 @@ export async function requireAuth(
   context: { cloudflare: { env: any } },
   options: AuthGuardOptions = {}
 ): Promise<AuthState> {
-  const { redirectTo = "/auth?action=login", requireAuth = true } = options;
+  const { redirectTo = AUTH_URLS.LOGIN, requireAuth = true } = options;
 
   const sessionsKv = context.cloudflare.env.SESSIONS;
   const authState = await getAuthStateFromRequest(request, sessionsKv);

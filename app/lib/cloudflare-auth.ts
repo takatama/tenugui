@@ -1,3 +1,5 @@
+import { SESSION_DURATION, AUTH_URLS } from "../config";
+
 export interface CloudflareUser {
   email: string;
   name?: string;
@@ -13,9 +15,6 @@ export interface SessionData {
   user: CloudflareUser;
   expires: number;
 }
-
-// セッションの有効期限（7日間）
-const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000;
 
 // セッション管理
 export async function createSession(
@@ -157,5 +156,5 @@ export function generateGoogleAuthUrl(
   return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 }
 
-// ログアウトURL
-export const LOGOUT_URL = "/auth?action=logout";
+// ログアウトURL（設定から取得）
+export const LOGOUT_URL = AUTH_URLS.LOGOUT;
