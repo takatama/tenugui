@@ -1,5 +1,4 @@
-import { AnalysisField } from "../common";
-import { ApiErrorBoundary } from "../common";
+import { AnalysisField, ApiErrorBoundary } from "../common";
 
 interface ImageUrlFieldProps {
   imageUrl: string;
