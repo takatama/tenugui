@@ -1,6 +1,7 @@
 import { useLoaderData, Link, type LoaderFunctionArgs } from "react-router-dom";
 import { getItems, type Item } from "../data/items";
 import { TagList } from "../components/common/TagDisplay";
+import { GalleryItem } from "../components/items/GalleryItem";
 
 export async function loader({ context, request }: LoaderFunctionArgs) {
   const kv = context.cloudflare.env.TENUGUI_KV;
@@ -72,22 +73,7 @@ export default function Items() {
       {/* ギャラリー表示：モバイル含め3列／余白は現状の約2倍 */}
       <div className="grid grid-cols-3 gap-6 sm:gap-8 md:gap-12">
         {items.map((item) => (
-          <Link
-            to={`/items/${item.id}`}
-            key={item.id}
-            className="block group focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-md"
-            aria-label={item.name}
-          >
-            <div className="relative overflow-hidden rounded-md">
-              <img
-                src={item.imageUrl}
-                alt={item.name}
-                loading="lazy"
-                decoding="async"
-                className="block w-full h-auto"
-              />
-            </div>
-          </Link>
+          <GalleryItem key={item.id} item={item} />
         ))}
       </div>
 

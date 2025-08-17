@@ -1,9 +1,13 @@
+import type { ItemStatus } from "../types/status";
+import { DEFAULT_STATUS } from "../types/status";
+
 export interface ParsedFormData {
   name: string;
   imageUrl: string;
   productUrl?: string;
   tags: string[];
   memo: string;
+  status: ItemStatus;
 }
 
 export function parseFormData(request: Request): Promise<ParsedFormData> {
@@ -13,6 +17,7 @@ export function parseFormData(request: Request): Promise<ParsedFormData> {
     const productUrl = formData.get("productUrl");
     const tagsString = formData.get("tags");
     const memo = formData.get("memo");
+    const status = formData.get("status");
 
     if (!name || !imageUrl) {
       throw new Response("名前と画像URLは必須です", { status: 400 });
@@ -32,12 +37,18 @@ export function parseFormData(request: Request): Promise<ParsedFormData> {
             .filter((tag: string) => tag.length > 0)
         : [];
 
+    const statusValue =
+      status === "purchased" || status === "unpurchased"
+        ? status
+        : DEFAULT_STATUS;
+
     return {
       name: String(name),
       imageUrl: String(imageUrl),
       productUrl: productUrlValue,
       tags,
       memo: String(memo || ""),
+      status: statusValue,
     };
   });
 }

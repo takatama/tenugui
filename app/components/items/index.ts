@@ -10,3 +10,4 @@ export { ItemGalleryPreview } from "./ItemGalleryPreview";
 export { SaveButton } from "./SaveButton";
 export { GalleryGrid } from "./GalleryGrid";
 export { ItemCard } from "./ItemCard";
+export { GalleryItem } from "./GalleryItem";

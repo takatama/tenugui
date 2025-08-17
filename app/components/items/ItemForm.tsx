@@ -4,6 +4,7 @@ import { useItemForm } from "../../hooks/useItemFormShared";
 import { useProductAnalysis } from "../../hooks/useProductAnalysis";
 import { useTagAnalysis } from "../../hooks/useTagAnalysis";
 import { Button } from "../common/Button";
+import { DEFAULT_STATUS } from "../../types/status";
 import {
   ProductAnalysis,
   ImageSelection,
@@ -81,6 +82,40 @@ export function ItemForm({
             className="w-full border border-gray-300 rounded-md shadow-sm p-3 h-10 text-sm"
             placeholder="商品の名前を入力してください"
           />
+        </div>
+
+        <div className="space-y-1">
+          <fieldset>
+            <legend className="block font-medium text-gray-700 mb-2">
+              ステータス
+            </legend>
+            <div className="flex gap-6">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="status"
+                  value="purchased"
+                  defaultChecked={
+                    (initialItem?.status || DEFAULT_STATUS) === "purchased"
+                  }
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-gray-700">購入済み</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="status"
+                  value="unpurchased"
+                  defaultChecked={
+                    (initialItem?.status || DEFAULT_STATUS) === "unpurchased"
+                  }
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-gray-700">未購入</span>
+              </label>
+            </div>
+          </fieldset>
         </div>
 
         {formState.candidateImages.length > 1 && (

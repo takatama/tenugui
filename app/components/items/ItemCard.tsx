@@ -1,5 +1,8 @@
 import React from "react";
 import type { Item } from "../../data/items";
+import { StatusBadge } from "../common/StatusBadge";
+import { getItemStatusStyles } from "../../lib/itemStyles";
+import { isUnpurchased } from "../../types/status";
 
 interface ItemCardProps {
   item: Item;
@@ -59,6 +62,7 @@ export function ItemCard({
             ? "ring-2 ring-yellow-400 bg-yellow-50"
             : ""
         }
+        ${getItemStatusStyles(item.status)}
         hover:ring-2 hover:ring-gray-300
         touch-manipulation
       `}
@@ -73,9 +77,12 @@ export function ItemCard({
         draggable={false}
       />
 
+      {/* ステータスインジケーター */}
+      <StatusBadge status={item.status} position="topLeft" />
+
       {/* 順序番号 */}
       <div
-        className={`absolute top-1 left-1 text-white text-xs px-1.5 py-0.5 rounded ${
+        className={`absolute top-1 right-1 text-white text-xs px-1.5 py-0.5 rounded ${
           isDraggedItem && isDragging
             ? "bg-blue-500 bg-opacity-90 font-bold"
             : "bg-black bg-opacity-70"
@@ -86,7 +93,7 @@ export function ItemCard({
 
       {/* ドラッグインジケーター */}
       <div
-        className={`absolute top-1 right-1 rounded-full p-1 ${
+        className={`absolute bottom-1 right-1 rounded-full p-1 ${
           isDraggedItem && isDragging
             ? "bg-blue-500 bg-opacity-90"
             : "bg-white bg-opacity-80"
