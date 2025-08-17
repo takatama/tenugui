@@ -9,6 +9,7 @@ import { requireAuth } from "../lib/auth-guard";
 import { useState, useEffect } from "react";
 import { TagManagement } from "../components/items/TagManagement";
 import { ItemGalleryPreview } from "../components/items/ItemGalleryPreview";
+import { ApiErrorBoundary } from "../components/common";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // 認証チェック
@@ -186,42 +187,52 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">設定</h1>
+    <ApiErrorBoundary
+      operation="設定管理"
+      onError={(error) => {
+        // 設定エラー時のクリーンアップ処理
+        setIsOrderSaving(false);
+        setHasUnsavedChanges(false);
+        console.error("Settings component error:", error);
+      }}
+    >
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">設定</h1>
 
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">タグ管理</h2>
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">タグ管理</h2>
 
-        <TagManagement
-          tags={tags}
-          onTagDelete={handleDeleteTag}
-          onTagRename={handleRenameTag}
-        />
-      </div>
-
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">
-            アイテムの並び替え
-          </h2>
+          <TagManagement
+            tags={tags}
+            onTagDelete={handleDeleteTag}
+            onTagRename={handleRenameTag}
+          />
         </div>
-        <div className="space-y-2 mb-4">
-          <p className="text-gray-600">
-            写真をドラッグして並び順を変更できます。変更後は保存ボタンで確定してください。
-          </p>
-          <p className="text-sm text-gray-500">
-            ✨
-            モバイルサイズのギャラリー表示で実際の見た目を確認しながら並び替えできます
-          </p>
+
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">
+              アイテムの並び替え
+            </h2>
+          </div>
+          <div className="space-y-2 mb-4">
+            <p className="text-gray-600">
+              写真をドラッグして並び順を変更できます。変更後は保存ボタンで確定してください。
+            </p>
+            <p className="text-sm text-gray-500">
+              ✨
+              モバイルサイズのギャラリー表示で実際の見た目を確認しながら並び替えできます
+            </p>
+          </div>
+          <ItemGalleryPreview
+            items={initialItems}
+            onOrderChange={handleOrderChange}
+            isLoading={isOrderSaving}
+            hasUnsavedChanges={hasUnsavedChanges}
+            onUnsavedChangesChange={setHasUnsavedChanges}
+          />
         </div>
-        <ItemGalleryPreview
-          items={initialItems}
-          onOrderChange={handleOrderChange}
-          isLoading={isOrderSaving}
-          hasUnsavedChanges={hasUnsavedChanges}
-          onUnsavedChangesChange={setHasUnsavedChanges}
-        />
       </div>
-    </div>
+    </ApiErrorBoundary>
   );
 }
