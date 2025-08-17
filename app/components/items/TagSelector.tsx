@@ -2,7 +2,7 @@ import React from "react";
 import { TagList } from "../common/TagDisplay";
 import { InputField, Button, PlusIcon } from "../common";
 
-interface TagSelectionProps {
+interface TagSelectorProps {
   existingTags: string[];
   selectedTags: Set<string>;
   tags: string;
@@ -13,7 +13,7 @@ interface TagSelectionProps {
   onKeyPress: (e: React.KeyboardEvent) => void;
 }
 
-export function TagSelection({
+export function TagSelector({
   existingTags,
   selectedTags,
   tags,
@@ -22,7 +22,7 @@ export function TagSelection({
   onNewTagInputChange,
   onAddNewTag,
   onKeyPress,
-}: TagSelectionProps) {
+}: TagSelectorProps) {
   return (
     <div className="space-y-4">
       {/* タグ選択・追加エリア */}

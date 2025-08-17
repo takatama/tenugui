@@ -6,11 +6,11 @@ import { useTagAnalysis } from "../../hooks/useTagAnalysis";
 import { Button, InputField, RadioGroup } from "../common";
 import { DEFAULT_STATUS } from "../../types/status";
 import {
-  ProductAnalysis,
+  ProductUrlAnalysis,
   ImageSelection,
-  ImageUrlInput,
+  ImageUrlField,
   TagAnalysisResult,
-  TagSelection,
+  TagSelector,
 } from "./index";
 
 interface ItemFormProps {
@@ -59,7 +59,7 @@ export function ItemForm({
       <h1 className="text-2xl font-bold mb-6">{title}</h1>
       <Form method="post" className="space-y-6">
         <div className="space-y-1">
-          <ProductAnalysis
+          <ProductUrlAnalysis
             productUrl={formState.productUrl}
             isAnalyzing={formState.isAnalyzing}
             analysisResult={formState.analysisResult}
@@ -99,7 +99,7 @@ export function ItemForm({
         )}
 
         <div className="space-y-1">
-          <ImageUrlInput
+          <ImageUrlField
             imageUrl={formState.imageUrl}
             isAnalyzing={formState.isAnalyzing}
             onImageUrlChange={formState.setImageUrl}
@@ -120,7 +120,7 @@ export function ItemForm({
         )}
 
         <div className="space-y-1">
-          <TagSelection
+          <TagSelector
             existingTags={existingTags}
             selectedTags={formState.selectedTags}
             tags={formState.tags}

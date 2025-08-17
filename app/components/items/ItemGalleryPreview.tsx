@@ -2,7 +2,7 @@ import React from "react";
 import type { Item } from "../../data/items";
 import { useDragAndDrop } from "../../hooks/useDragAndDrop";
 import { useAutoScroll } from "../../hooks/useAutoScroll";
-import { SaveButton } from "./SaveButton";
+import { UnsavedChangesNotification } from "./UnsavedChangesNotification";
 import { GalleryGrid } from "./GalleryGrid";
 
 interface ItemGalleryPreviewProps {
@@ -63,7 +63,7 @@ export function ItemGalleryPreview({
 
   return (
     <div className="space-y-6 relative">
-      <SaveButton
+      <UnsavedChangesNotification
         hasUnsavedChanges={hasUnsavedChanges}
         isLoading={isLoading}
         onSave={handleSave}

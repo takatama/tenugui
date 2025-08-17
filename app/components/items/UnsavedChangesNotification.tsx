@@ -1,19 +1,19 @@
 import React from "react";
 import { Button } from "../common";
 
-interface SaveButtonProps {
+interface UnsavedChangesNotificationProps {
   hasUnsavedChanges: boolean;
   isLoading: boolean;
   onSave: () => void;
   onReset: () => void;
 }
 
-export function SaveButton({
+export function UnsavedChangesNotification({
   hasUnsavedChanges,
   isLoading,
   onSave,
   onReset,
-}: SaveButtonProps) {
+}: UnsavedChangesNotificationProps) {
   if (!hasUnsavedChanges) return null;
 
   return (

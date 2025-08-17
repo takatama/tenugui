@@ -1,7 +1,7 @@
 // 共通コンポーネントのエクスポート
 export { Button } from "./Button";
 export { InputField } from "./InputField";
-export { AnalysisInputField } from "./AnalysisInputField";
+export { AnalysisField } from "./AnalysisField";
 export { RadioGroup } from "./RadioGroup";
 export { TagDisplay } from "./TagDisplay";
 export { StatusBadge } from "./StatusBadge";

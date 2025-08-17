@@ -3,7 +3,7 @@ import { InputField, Button } from "../common";
 /**
  * 分析ボタン付き入力フィールドのプロパティ
  */
-interface AnalysisInputFieldProps {
+interface AnalysisFieldProps {
   /** フィールドのラベルテキスト */
   label: string;
 
@@ -52,7 +52,7 @@ interface AnalysisInputFieldProps {
  *
  * @example
  * // 商品URL分析
- * <AnalysisInputField
+ * <AnalysisField
  *   label="商品URL"
  *   type="url"
  *   value={productUrl}
@@ -66,7 +66,7 @@ interface AnalysisInputFieldProps {
  *
  * @example
  * // タグ分析
- * <AnalysisInputField
+ * <AnalysisField
  *   label="画像URL"
  *   type="url"
  *   value={imageUrl}
@@ -78,7 +78,7 @@ interface AnalysisInputFieldProps {
  *   required
  * />
  */
-export function AnalysisInputField({
+export function AnalysisField({
   label,
   id,
   name,
@@ -92,7 +92,7 @@ export function AnalysisInputField({
   onChange,
   onAnalyze,
   className = "",
-}: AnalysisInputFieldProps) {
+}: AnalysisFieldProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   };
