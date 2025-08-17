@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { Item } from "../../data/items";
 
 interface ItemGalleryPreviewProps {
@@ -19,11 +19,63 @@ export function ItemGalleryPreview({
   const [localItems, setLocalItems] = useState(items);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [touchStartPos, setTouchStartPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // itemsが更新されたらlocalItemsも更新
   useEffect(() => {
     setLocalItems(items);
   }, [items]);
+
+  // 非パッシブタッチイベントリスナーの追加
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartPos || !draggedItemId) return;
+
+      const touch = e.touches[0];
+      const deltaX = Math.abs(touch.clientX - touchStartPos.x);
+      const deltaY = Math.abs(touch.clientY - touchStartPos.y);
+
+      // より敏感な移動検出（5px以上で移動とみなす）
+      if (deltaX > 5 || deltaY > 5) {
+        if (!isDragging) {
+          setIsDragging(true);
+          // ドラッグ開始時にbodyのスクロールを無効化
+          document.body.style.overflow = "hidden";
+        }
+        e.preventDefault(); // スクロールを防ぐ
+
+        // ドラッグ中は要素の上にある位置を検出
+        const elementBelow = document.elementFromPoint(
+          touch.clientX,
+          touch.clientY
+        );
+        const gridItem = elementBelow?.closest("[data-item-index]");
+        if (gridItem) {
+          const index = parseInt(
+            gridItem.getAttribute("data-item-index") || "0"
+          );
+          setDragOverIndex(index);
+        }
+      }
+    };
+
+    // 非パッシブモードでイベントリスナーを追加
+    container.addEventListener("touchmove", handleTouchMove, {
+      passive: false,
+    });
+
+    return () => {
+      container.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [touchStartPos, draggedItemId, isDragging]);
 
   // 変更があったかチェック
   const checkForChanges = (newItems: Item[]) => {
@@ -94,6 +146,55 @@ export function ItemGalleryPreview({
     onUnsavedChangesChange?.(false);
   };
 
+  // タッチイベントハンドラー（モバイル対応）
+  const handleTouchStart = (e: React.TouchEvent, itemId: string) => {
+    const touch = e.touches[0];
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY });
+    setDraggedItemId(itemId);
+    setIsDragging(false);
+
+    // ハプティックフィードバック（対応デバイスのみ）
+    if ("vibrate" in navigator) {
+      navigator.vibrate(50);
+    }
+
+    // ドラッグ開始のための長押し効果を追加（100ms後にドラッグモード開始）
+    setTimeout(() => {
+      if (draggedItemId === itemId) {
+        setIsDragging(true);
+      }
+    }, 100);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    // bodyのスクロールを復元
+    document.body.style.overflow = "";
+
+    if (!isDragging || !draggedItemId || dragOverIndex === null) {
+      setDraggedItemId(null);
+      setDragOverIndex(null);
+      setTouchStartPos(null);
+      setIsDragging(false);
+      return;
+    }
+
+    const dragIndex = localItems.findIndex((item) => item.id === draggedItemId);
+
+    if (dragIndex !== dragOverIndex) {
+      const newItems = [...localItems];
+      const [draggedItem] = newItems.splice(dragIndex, 1);
+      newItems.splice(dragOverIndex, 0, draggedItem);
+
+      setLocalItems(newItems);
+      checkForChanges(newItems);
+    }
+
+    setDraggedItemId(null);
+    setDragOverIndex(null);
+    setTouchStartPos(null);
+    setIsDragging(false);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
@@ -152,26 +253,38 @@ export function ItemGalleryPreview({
           ギャラリー表示プレビュー
         </h3>
         <div className="max-w-sm mx-auto">
-          <div className="grid grid-cols-3 gap-2">
+          <div ref={containerRef} className="grid grid-cols-3 gap-2">
             {localItems.map((item, index) => (
               <div
                 key={item.id}
+                data-item-index={index}
                 draggable
                 onDragStart={(e) => handleDragStart(e, item.id)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
+                onTouchStart={(e) => handleTouchStart(e, item.id)}
+                onTouchEnd={handleTouchEnd}
                 className={`
-                  relative cursor-move rounded-md overflow-hidden transition-all duration-200
-                  ${draggedItemId === item.id ? "opacity-50 scale-95" : ""}
+                  relative cursor-move bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200
+                  ${
+                    draggedItemId === item.id && isDragging
+                      ? "opacity-60 scale-95 shadow-xl ring-2 ring-blue-500"
+                      : ""
+                  }
                   ${
                     dragOverIndex === index && draggedItemId !== item.id
                       ? "ring-2 ring-blue-400 scale-105"
                       : ""
                   }
                   hover:ring-2 hover:ring-gray-300
+                  touch-manipulation
+                  ${draggedItemId === item.id && isDragging ? "z-50" : ""}
                 `}
+                style={{
+                  touchAction: isDragging ? "none" : "auto",
+                }}
               >
                 <img
                   src={item.imageUrl}
@@ -208,8 +321,18 @@ export function ItemGalleryPreview({
       </div>
 
       {/* 操作説明 */}
-      <div className="text-center py-2 text-gray-500 text-sm">
-        写真をドラッグして並び順を変更できます
+      <div className="text-center py-2 text-gray-500 text-sm space-y-1">
+        <div className="hidden sm:block">
+          写真をドラッグして並び順を変更できます
+        </div>
+        <div className="block sm:hidden">
+          写真をタッチして軽く動かすと並び順を変更できます
+        </div>
+        {isDragging && (
+          <div className="text-blue-500 font-medium">
+            ドラッグ中... 目標の位置でタッチを離してください
+          </div>
+        )}
       </div>
     </div>
   );
