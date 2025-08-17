@@ -19,6 +19,7 @@ interface GalleryGridProps {
   onTouchEnd: (e: React.TouchEvent) => void;
   onAutoScroll: (clientY: number) => void;
   onStopAutoScroll: () => void;
+  onContextMenu: (e: React.MouseEvent) => void;
 }
 
 export function GalleryGrid({
@@ -38,6 +39,7 @@ export function GalleryGrid({
   onTouchEnd,
   onAutoScroll,
   onStopAutoScroll,
+  onContextMenu,
 }: GalleryGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -74,7 +76,8 @@ export function GalleryGrid({
         const gridItem = elementBelow?.closest("[data-item-index]");
         if (gridItem) {
           const index = parseInt(
-            gridItem.getAttribute("data-item-index") || "0"
+            gridItem.getAttribute("data-item-index") || "0",
+            10
           );
           setDragOverIndex(index);
         }
@@ -153,6 +156,7 @@ export function GalleryGrid({
               onDragEnd={handleDragEndWithStopScroll}
               onTouchStart={onTouchStart}
               onTouchEnd={handleTouchEndWithStopScroll}
+              onContextMenu={onContextMenu}
             />
           ))}
         </div>

@@ -2,7 +2,6 @@ import React from "react";
 import type { Item } from "../../data/items";
 import { StatusBadge } from "../common/StatusBadge";
 import { getItemStatusStyles } from "../../lib/itemStyles";
-import { isUnpurchased } from "../../types/status";
 
 interface ItemCardProps {
   item: Item;
@@ -17,6 +16,7 @@ interface ItemCardProps {
   onDragEnd: (e: React.DragEvent) => void;
   onTouchStart: (e: React.TouchEvent, itemId: string) => void;
   onTouchEnd: (e: React.TouchEvent) => void;
+  onContextMenu: (e: React.MouseEvent) => void;
 }
 
 export function ItemCard({
@@ -32,6 +32,7 @@ export function ItemCard({
   onDragEnd,
   onTouchStart,
   onTouchEnd,
+  onContextMenu,
 }: ItemCardProps) {
   return (
     <div
@@ -45,8 +46,9 @@ export function ItemCard({
       onDragEnd={onDragEnd}
       onTouchStart={(e) => onTouchStart(e, item.id)}
       onTouchEnd={onTouchEnd}
+      onContextMenu={onContextMenu}
       className={`
-        relative cursor-move bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200
+        relative cursor-move bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 active:cursor-grabbing
         ${
           isDraggedItem && isDragging
             ? "opacity-80 scale-110 shadow-2xl ring-4 ring-blue-500 z-50 transform rotate-2"
@@ -68,6 +70,8 @@ export function ItemCard({
       `}
       style={{
         touchAction: isDragging ? "none" : "auto",
+        WebkitTouchCallout: "none",
+        userSelect: "none",
       }}
     >
       <img
