@@ -74,6 +74,16 @@ npx wrangler versions deploy
 
 This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
 
+## Error Handling
+
+This application includes comprehensive error boundary components for enhanced stability:
+
+- **ErrorBoundary**: Base error boundary component with unified error handling
+- **ApiErrorBoundary**: Specialized for API call errors with retry functionality
+- **ImageErrorBoundary**: Handles image loading and rendering errors
+
+See [docs/error-boundary-implementation.md](./docs/error-boundary-implementation.md) for implementation details.
+
 ---
 
 Built with ❤️ using React Router.

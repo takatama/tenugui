@@ -1,5 +1,6 @@
 import type { AnalysisResult } from "../../hooks/useItemForm";
 import { AnalysisField } from "../common";
+import { ApiErrorBoundary } from "../common";
 
 interface ProductUrlAnalysisProps {
   productUrl: string;
@@ -17,39 +18,47 @@ export function ProductUrlAnalysis({
   onAnalyze,
 }: ProductUrlAnalysisProps) {
   return (
-    <div>
-      <AnalysisField
-        label="商品URL"
-        id="productUrl"
-        name="productUrl"
-        type="url"
-        value={productUrl}
-        placeholder="商品のURLを入力してください"
-        isAnalyzing={isAnalyzing}
-        analyzeButtonText="商品分析"
-        analyzingButtonText="商品分析中…"
-        onChange={onProductUrlChange}
-        onAnalyze={onAnalyze}
-      />
+    <ApiErrorBoundary
+      operation="商品URL分析"
+      onError={(error) => {
+        // 商品分析エラー時のクリーンアップ処理
+        console.error("ProductUrlAnalysis component error:", error);
+      }}
+    >
+      <div>
+        <AnalysisField
+          label="商品URL"
+          id="productUrl"
+          name="productUrl"
+          type="url"
+          value={productUrl}
+          placeholder="商品のURLを入力してください"
+          isAnalyzing={isAnalyzing}
+          analyzeButtonText="商品分析"
+          analyzingButtonText="商品分析中…"
+          onChange={onProductUrlChange}
+          onAnalyze={onAnalyze}
+        />
 
-      {/* 分析結果表示エリア */}
-      {analysisResult && (
-        <div
-          className={`mt-4 p-4 rounded-md ${
-            analysisResult.success
-              ? "bg-green-50 border border-green-200"
-              : "bg-red-50 border border-red-200"
-          }`}
-        >
+        {/* 分析結果表示エリア */}
+        {analysisResult && (
           <div
-            className={`text-sm ${
-              analysisResult.success ? "text-green-800" : "text-red-800"
+            className={`mt-4 p-4 rounded-md ${
+              analysisResult.success
+                ? "bg-green-50 border border-green-200"
+                : "bg-red-50 border border-red-200"
             }`}
           >
-            {analysisResult.message}
+            <div
+              className={`text-sm ${
+                analysisResult.success ? "text-green-800" : "text-red-800"
+              }`}
+            >
+              {analysisResult.message}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </ApiErrorBoundary>
   );
 }
