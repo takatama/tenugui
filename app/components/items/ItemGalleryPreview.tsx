@@ -25,11 +25,67 @@ export function ItemGalleryPreview({
   } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const autoScrollRef = useRef<number | null>(null);
 
   // itemsが更新されたらlocalItemsも更新
   useEffect(() => {
     setLocalItems(items);
   }, [items]);
+
+  // 自動スクロール機能
+  const handleAutoScroll = (clientY: number) => {
+    const scrollThreshold = 80; // スクロール開始のしきい値（px）
+    const scrollSpeed = 8; // スクロール速度（px/frame）
+    const viewportHeight = window.innerHeight;
+
+    // 上端近くにいる場合
+    if (clientY < scrollThreshold) {
+      const scrollDistance = Math.max(
+        scrollSpeed,
+        (scrollThreshold - clientY) / 5
+      );
+      if (autoScrollRef.current) {
+        cancelAnimationFrame(autoScrollRef.current);
+      }
+      autoScrollRef.current = requestAnimationFrame(() => {
+        window.scrollBy(0, -scrollDistance);
+        if (isDragging) {
+          handleAutoScroll(clientY);
+        }
+      });
+    }
+    // 下端近くにいる場合
+    else if (clientY > viewportHeight - scrollThreshold) {
+      const scrollDistance = Math.max(
+        scrollSpeed,
+        (clientY - (viewportHeight - scrollThreshold)) / 5
+      );
+      if (autoScrollRef.current) {
+        cancelAnimationFrame(autoScrollRef.current);
+      }
+      autoScrollRef.current = requestAnimationFrame(() => {
+        window.scrollBy(0, scrollDistance);
+        if (isDragging) {
+          handleAutoScroll(clientY);
+        }
+      });
+    }
+    // 中央にいる場合はスクロール停止
+    else {
+      if (autoScrollRef.current) {
+        cancelAnimationFrame(autoScrollRef.current);
+        autoScrollRef.current = null;
+      }
+    }
+  };
+
+  // ドラッグ終了時にスクロールを停止
+  const stopAutoScroll = () => {
+    if (autoScrollRef.current) {
+      cancelAnimationFrame(autoScrollRef.current);
+      autoScrollRef.current = null;
+    }
+  };
 
   // 非パッシブタッチイベントリスナーの追加
   useEffect(() => {
@@ -51,6 +107,9 @@ export function ItemGalleryPreview({
           document.body.style.overflow = "hidden";
         }
         e.preventDefault(); // スクロールを防ぐ
+
+        // 自動スクロール処理
+        handleAutoScroll(touch.clientY);
 
         // ドラッグ中は要素の上にある位置を検出
         const elementBelow = document.elementFromPoint(
@@ -77,6 +136,15 @@ export function ItemGalleryPreview({
     };
   }, [touchStartPos, draggedItemId, isDragging]);
 
+  // コンポーネントアンマウント時のクリーンアップ
+  useEffect(() => {
+    return () => {
+      stopAutoScroll();
+      // bodyのスクロール復元（念のため）
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   // 変更があったかチェック
   const checkForChanges = (newItems: Item[]) => {
     const hasChanges = newItems.some(
@@ -87,6 +155,7 @@ export function ItemGalleryPreview({
 
   const handleDragStart = (e: React.DragEvent, itemId: string) => {
     setDraggedItemId(itemId);
+    setIsDragging(true);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/html", itemId);
   };
@@ -95,6 +164,9 @@ export function ItemGalleryPreview({
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     setDragOverIndex(index);
+
+    // マウスドラッグでの自動スクロール
+    handleAutoScroll(e.clientY);
   };
 
   const handleDragLeave = () => {
@@ -105,6 +177,9 @@ export function ItemGalleryPreview({
     e.preventDefault();
     e.stopPropagation();
 
+    // 自動スクロールを停止
+    stopAutoScroll();
+
     if (!draggedItemId) return;
 
     const dragIndex = localItems.findIndex((item) => item.id === draggedItemId);
@@ -112,6 +187,7 @@ export function ItemGalleryPreview({
     if (dragIndex === dropIndex) {
       setDraggedItemId(null);
       setDragOverIndex(null);
+      setIsDragging(false);
       return;
     }
 
@@ -128,13 +204,19 @@ export function ItemGalleryPreview({
 
     setDraggedItemId(null);
     setDragOverIndex(null);
+    setIsDragging(false);
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // 自動スクロールを停止
+    stopAutoScroll();
+
     setDraggedItemId(null);
     setDragOverIndex(null);
+    setIsDragging(false);
   };
 
   const handleSave = () => {
@@ -167,6 +249,9 @@ export function ItemGalleryPreview({
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    // 自動スクロールを停止
+    stopAutoScroll();
+
     // bodyのスクロールを復元
     document.body.style.overflow = "";
 
@@ -323,10 +408,10 @@ export function ItemGalleryPreview({
       {/* 操作説明 */}
       <div className="text-center py-2 text-gray-500 text-sm space-y-1">
         <div className="hidden sm:block">
-          写真をドラッグして並び順を変更できます
+          写真をドラッグして並び順を変更できます（画面端で自動スクロール）
         </div>
         <div className="block sm:hidden">
-          写真をタッチして軽く動かすと並び順を変更できます
+          写真をタッチして軽く動かすと並び順を変更できます（画面端で自動スクロール）
         </div>
         {isDragging && (
           <div className="text-blue-500 font-medium">
