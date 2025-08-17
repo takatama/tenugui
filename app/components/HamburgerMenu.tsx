@@ -13,6 +13,7 @@ import {
   LoginIcon,
 } from "./common/Icons";
 import { spacing } from "../lib/styles";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 
 interface HamburgerMenuProps {
   user: CloudflareUser | null;
@@ -27,6 +28,7 @@ export function HamburgerMenu({
 }: HamburgerMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const focusTrapRef = useFocusTrap(isOpen);
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
@@ -74,15 +76,26 @@ export function HamburgerMenu({
 
       {/* メニューコンテンツ */}
       <div
-        ref={menuRef}
+        ref={(el) => {
+          menuRef.current = el;
+          if (focusTrapRef) {
+            focusTrapRef.current = el;
+          }
+        }}
         className={`fixed top-0 left-0 h-full w-full max-w-sm bg-white shadow-2xl border-r border-gray-200 z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="menu-title"
+        aria-hidden={!isOpen}
       >
         <div className="flex flex-col h-full">
           {/* ヘッダー */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">メニュー</h2>
+            <h2 id="menu-title" className="text-lg font-semibold text-gray-900">
+              メニュー
+            </h2>
             <Button
               variant="ghost"
               size="sm"

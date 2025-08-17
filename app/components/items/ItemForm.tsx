@@ -1,16 +1,16 @@
 import { Form } from "react-router-dom";
 import type { Item, TagAnalysis } from "../../data/items";
-import { useItemForm } from "../../hooks/useItemFormShared";
+import { useItemForm } from "../../hooks";
 import { useProductAnalysis } from "../../hooks/useProductAnalysis";
 import { useTagAnalysis } from "../../hooks/useTagAnalysis";
-import { Button } from "../common/Button";
+import { Button, InputField, RadioGroup } from "../common";
 import { DEFAULT_STATUS } from "../../types/status";
 import {
-  ProductAnalysis,
+  ProductUrlAnalysis,
   ImageSelection,
-  ImageUrlInput,
+  ImageUrlField,
   TagAnalysisResult,
-  TagSelection,
+  TagSelector,
 } from "./index";
 
 interface ItemFormProps {
@@ -57,66 +57,53 @@ export function ItemForm({
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{title}</h1>
-      <Form method="post" className="space-y-6">
-        <div className="space-y-1">
-          <ProductAnalysis
-            productUrl={formState.productUrl}
-            isAnalyzing={formState.isAnalyzing}
-            analysisResult={formState.analysisResult}
-            onProductUrlChange={formState.setProductUrl}
-            onAnalyze={handleAnalyze}
-          />
-        </div>
+      <Form method="post" className="space-y-6" noValidate>
+        <fieldset>
+          <legend className="sr-only">商品情報の入力</legend>
 
-        <div className="space-y-1">
-          <label htmlFor="name" className="block font-medium text-gray-700">
-            名前
-          </label>
-          <input
-            type="text"
+          <div className="space-y-1">
+            <ProductUrlAnalysis
+              productUrl={formState.productUrl}
+              isAnalyzing={formState.isAnalyzing}
+              analysisResult={formState.analysisResult}
+              onProductUrlChange={formState.setProductUrl}
+              onAnalyze={handleAnalyze}
+            />
+          </div>
+
+          <InputField
+            label="名前"
             id="name"
             name="name"
             value={formState.name}
             onChange={(e) => formState.setName(e.target.value)}
             required
-            className="w-full border border-gray-300 rounded-md shadow-sm p-3 h-10 text-sm"
             placeholder="商品の名前を入力してください"
+            aria-describedby="name-description"
           />
-        </div>
+          <div id="name-description" className="sr-only">
+            手ぬぐいの商品名を入力してください。この項目は必須です。
+          </div>
 
-        <div className="space-y-1">
-          <fieldset>
-            <legend className="block font-medium text-gray-700 mb-2">
-              ステータス
-            </legend>
-            <div className="flex gap-6">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="status"
-                  value="purchased"
-                  defaultChecked={
-                    (initialItem?.status || DEFAULT_STATUS) === "purchased"
-                  }
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="ml-2 text-sm text-gray-700">購入済み</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="status"
-                  value="unpurchased"
-                  defaultChecked={
-                    (initialItem?.status || DEFAULT_STATUS) === "unpurchased"
-                  }
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="ml-2 text-sm text-gray-700">未購入</span>
-              </label>
-            </div>
-          </fieldset>
-        </div>
+          <RadioGroup
+            label="ステータス"
+            name="status"
+            defaultValue={initialItem?.status || DEFAULT_STATUS}
+            options={[
+              {
+                value: "purchased",
+                label: "購入済み",
+                description: "既に購入した商品",
+              },
+              {
+                value: "unpurchased",
+                label: "未購入",
+                description: "購入予定または検討中の商品",
+              },
+            ]}
+            required
+          />
+        </fieldset>
 
         {formState.candidateImages.length > 1 && (
           <div className="space-y-1">
@@ -129,7 +116,7 @@ export function ItemForm({
         )}
 
         <div className="space-y-1">
-          <ImageUrlInput
+          <ImageUrlField
             imageUrl={formState.imageUrl}
             isAnalyzing={formState.isAnalyzing}
             onImageUrlChange={formState.setImageUrl}
@@ -150,7 +137,7 @@ export function ItemForm({
         )}
 
         <div className="space-y-1">
-          <TagSelection
+          <TagSelector
             existingTags={existingTags}
             selectedTags={formState.selectedTags}
             tags={formState.tags}

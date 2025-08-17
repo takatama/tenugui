@@ -5,6 +5,7 @@ import {
   analyzeTagWithGemini,
   validateAndCleanAnalysisResult,
 } from "../lib/tagAnalysis";
+import { createAppConfig, validateGeminiConfig } from "../config";
 
 interface RequestBody {
   imageUrl: string;
@@ -15,6 +16,25 @@ export async function action({ context, request }: ActionFunctionArgs) {
 
   // 認証チェック
   await requireAuthForAction(request, context);
+
+  // 設定の構築と検証
+  const config = createAppConfig(context.cloudflare.env);
+
+  try {
+    validateGeminiConfig(config);
+  } catch (error) {
+    console.error("Configuration validation failed:", error);
+    return new Response(
+      JSON.stringify({
+        error: "サービスが利用できません",
+        details: error instanceof Error ? error.message : "Configuration error",
+      }),
+      {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 
   try {
     // リクエストボディの解析
@@ -30,24 +50,13 @@ export async function action({ context, request }: ActionFunctionArgs) {
 
     console.log("分析対象画像URL:", imageUrl);
 
-    // 環境変数からAPIキーを取得
-    const apiKey = context.cloudflare.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error("GEMINI_API_KEY が設定されていません");
-      return new Response(JSON.stringify({ error: "API key not configured" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
     // 既存タグを取得
-    const kv = context.cloudflare.env.TENUGUI_KV;
-    const existingTags = await getAllTags(kv);
+    const existingTags = await getAllTags(config.kv.tenugui);
 
     // 画像分析実行
     const analysisResult = await analyzeTagWithGemini(
       imageUrl,
-      apiKey,
+      config.geminiApiKey!,
       existingTags
     );
 

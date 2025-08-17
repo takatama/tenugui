@@ -1,72 +1,45 @@
 import { useState } from "react";
-import type { TagAnalysis } from "../data/items";
+import type { TagAnalysis, Item } from "../data/items";
+import { useTagManager } from "./useTagManager";
 
 export interface AnalysisResult {
   success: boolean;
   message: string;
 }
 
-export function useItemForm() {
-  const [productUrl, setProductUrl] = useState("");
-  const [name, setName] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [tags, setTags] = useState("");
+interface UseItemFormOptions {
+  initialItem?: Item;
+  initialProductUrl?: string;
+}
+
+export function useItemForm(options: UseItemFormOptions = {}) {
+  const { initialItem, initialProductUrl } = options;
+
+  // 基本フォーム状態
+  const [productUrl, setProductUrl] = useState(
+    initialProductUrl || initialItem?.productUrl || ""
+  );
+  const [name, setName] = useState(initialItem?.name || "");
+  const [imageUrl, setImageUrl] = useState(initialItem?.imageUrl || "");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [candidateImages, setCandidateImages] = useState<string[]>([]);
   const [tagAnalysis, setTagAnalysis] = useState<TagAnalysis | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
     null
   );
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
-  const [newTagInput, setNewTagInput] = useState("");
 
-  const updateTags = (newSelectedTags: Set<string>) => {
-    setSelectedTags(newSelectedTags);
-    const tagsArray = Array.from(newSelectedTags);
-    setTags(tagsArray.join(", "));
-  };
-
-  const handleTagToggle = (tag: string) => {
-    const newSelectedTags = new Set(selectedTags);
-    if (newSelectedTags.has(tag)) {
-      newSelectedTags.delete(tag);
-    } else {
-      newSelectedTags.add(tag);
-    }
-    updateTags(newSelectedTags);
-  };
-
-  const handleAddAllTags = () => {
-    if (!tagAnalysis?.tags) return;
-    const newSelectedTags = new Set(selectedTags);
-    tagAnalysis.tags.forEach((tag) => newSelectedTags.add(tag));
-    updateTags(newSelectedTags);
-  };
-
-  const handleClearAllTags = () => {
-    setSelectedTags(new Set());
-    setTags("");
-  };
+  // タグ管理フック
+  const tagManager = useTagManager({
+    initialTags: initialItem?.tags || [],
+  });
 
   const handleImageSelect = (selectedImageUrl: string) => {
     setImageUrl(selectedImageUrl);
   };
 
-  const handleAddNewTag = () => {
-    const trimmedTag = newTagInput.trim();
-    if (trimmedTag && !selectedTags.has(trimmedTag)) {
-      const newSelectedTags = new Set(selectedTags);
-      newSelectedTags.add(trimmedTag);
-      updateTags(newSelectedTags);
-      setNewTagInput("");
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddNewTag();
-    }
+  // AI分析からタグを追加するためのヘルパー関数
+  const handleAddAllAiTags = () => {
+    tagManager.handleAddAllAiTags(tagAnalysis);
   };
 
   return {
@@ -74,13 +47,13 @@ export function useItemForm() {
     productUrl,
     name,
     imageUrl,
-    tags,
+    tags: tagManager.tagsString,
     isAnalyzing,
     candidateImages,
     tagAnalysis,
     analysisResult,
-    selectedTags,
-    newTagInput,
+    selectedTags: tagManager.selectedTags,
+    newTagInput: tagManager.newTagInput,
 
     // Setters
     setProductUrl,
@@ -90,14 +63,14 @@ export function useItemForm() {
     setCandidateImages,
     setTagAnalysis,
     setAnalysisResult,
-    setNewTagInput,
+    setNewTagInput: tagManager.setNewTagInput,
 
     // Handlers
-    handleTagToggle,
-    handleAddAllTags,
-    handleClearAllTags,
+    handleTagToggle: tagManager.handleTagToggle,
+    handleAddAllAiTags,
+    handleClearAllTags: tagManager.handleClearAllTags,
     handleImageSelect,
-    handleAddNewTag,
-    handleKeyPress,
+    handleAddNewTag: tagManager.handleAddNewTag,
+    handleKeyPress: tagManager.handleKeyPress,
   };
 }

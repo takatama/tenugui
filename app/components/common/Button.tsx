@@ -117,7 +117,10 @@ export function Button({
   );
 
   const loadingSpinner = (
-    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+    <div
+      className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"
+      aria-hidden="true"
+    />
   );
 
   // アイコンのみの場合
@@ -140,8 +143,15 @@ export function Button({
         className={buttonClasses}
         aria-label={ariaLabel}
         aria-expanded={ariaExpanded}
+        aria-busy={loading}
+        aria-describedby={loading ? "loading-status" : undefined}
       >
         {loading ? loadingSpinner : icon}
+        {loading && (
+          <span id="loading-status" className="sr-only">
+            読み込み中
+          </span>
+        )}
       </button>
     );
     return element;
@@ -179,8 +189,17 @@ export function Button({
       className={buttonClasses}
       aria-label={ariaLabel}
       aria-expanded={ariaExpanded}
+      aria-busy={loading}
+      aria-describedby={loading ? "loading-status" : undefined}
     >
-      <div className="flex items-center justify-center gap-2">{content}</div>
+      <div className="flex items-center justify-center gap-2">
+        {content}
+        {loading && (
+          <span id="loading-status" className="sr-only">
+            読み込み中
+          </span>
+        )}
+      </div>
     </button>
   );
 }

@@ -1,18 +1,19 @@
 import React from "react";
+import { Button } from "../common";
 
-interface SaveButtonProps {
+interface UnsavedChangesNotificationProps {
   hasUnsavedChanges: boolean;
   isLoading: boolean;
   onSave: () => void;
   onReset: () => void;
 }
 
-export function SaveButton({
+export function UnsavedChangesNotification({
   hasUnsavedChanges,
   isLoading,
   onSave,
   onReset,
-}: SaveButtonProps) {
+}: UnsavedChangesNotificationProps) {
   if (!hasUnsavedChanges) return null;
 
   return (
@@ -26,22 +27,25 @@ export function SaveButton({
             </span>
           </div>
           <div className="flex space-x-2 ml-3">
-            <button
+            <Button
               onClick={onReset}
-              className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800 transition-colors"
+              variant="ghost"
+              size="sm"
               disabled={isLoading}
-              title="変更をリセット"
+              className="text-xs text-gray-600"
             >
               リセット
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={onSave}
+              variant="primary"
+              size="sm"
               disabled={isLoading}
-              className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              title="変更を保存"
+              loading={isLoading}
+              className="text-xs"
             >
-              {isLoading ? "保存中..." : "保存"}
-            </button>
+              保存
+            </Button>
           </div>
         </div>
       </div>

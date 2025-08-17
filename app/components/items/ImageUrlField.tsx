@@ -1,18 +1,18 @@
 import { AnalysisField } from "../common";
 
-interface ImageUrlInputProps {
+interface ImageUrlFieldProps {
   imageUrl: string;
   isAnalyzing: boolean;
   onImageUrlChange: (url: string) => void;
   onAiAnalyze: () => void;
 }
 
-export function ImageUrlInput({
+export function ImageUrlField({
   imageUrl,
   isAnalyzing,
   onImageUrlChange,
   onAiAnalyze,
-}: ImageUrlInputProps) {
+}: ImageUrlFieldProps) {
   return (
     <div>
       <AnalysisField

@@ -1,7 +1,7 @@
 import type { AnalysisResult } from "../../hooks/useItemForm";
 import { AnalysisField } from "../common";
 
-interface ProductAnalysisProps {
+interface ProductUrlAnalysisProps {
   productUrl: string;
   isAnalyzing: boolean;
   analysisResult: AnalysisResult | null;
@@ -9,13 +9,13 @@ interface ProductAnalysisProps {
   onAnalyze: () => void;
 }
 
-export function ProductAnalysis({
+export function ProductUrlAnalysis({
   productUrl,
   isAnalyzing,
   analysisResult,
   onProductUrlChange,
   onAnalyze,
-}: ProductAnalysisProps) {
+}: ProductUrlAnalysisProps) {
   return (
     <div>
       <AnalysisField
