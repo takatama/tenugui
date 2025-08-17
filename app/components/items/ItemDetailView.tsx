@@ -3,6 +3,8 @@ import { useAuth } from "../../hooks/useAuth";
 import type { Item } from "../../data/items";
 import { TagList } from "../common/TagDisplay";
 import { Button } from "../common/Button";
+import { StatusBadge } from "../common/StatusBadge";
+import { getItemStatusStyles } from "../../lib/itemStyles";
 
 interface ItemDetailViewProps {
   item: Item;
@@ -77,18 +79,28 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
 function ItemImage({ item }: { item: Item }) {
   return (
     <div className="item-image-container">
-      <img
-        src={item.imageUrl}
-        alt={item.name}
-        className="item-image"
+      <div
+        className={`relative inline-block ${getItemStatusStyles(item.status)}`}
         style={{
-          width: "100%",
-          maxWidth: "400px",
-          height: "auto",
           borderRadius: "8px",
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+          overflow: "hidden",
         }}
-      />
+      >
+        <img
+          src={item.imageUrl}
+          alt={item.name}
+          className="item-image"
+          style={{
+            width: "100%",
+            maxWidth: "400px",
+            height: "auto",
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+            display: "block",
+          }}
+        />
+        <StatusBadge status={item.status} />
+      </div>
     </div>
   );
 }
@@ -112,10 +124,32 @@ function ItemInfo({
       >
         {item.name}
       </h1>
+      <ItemStatus status={item.status} />
       <ItemTags tags={item.tags} />
       <ItemProductUrl productUrl={item.productUrl} />
       <ItemMemo memo={item.memo} />
       <ItemActions item={item} isAuthenticated={isAuthenticated} />
+    </div>
+  );
+}
+
+function ItemStatus({ status }: { status?: "purchased" | "unpurchased" }) {
+  return (
+    <div style={{ marginBottom: "1.5rem" }}>
+      <span
+        style={{
+          display: "inline-block",
+          padding: "0.5rem 1rem",
+          borderRadius: "1rem",
+          fontSize: "0.875rem",
+          fontWeight: "500",
+          backgroundColor: status === "unpurchased" ? "#dbeafe" : "#f0fdf4",
+          color: status === "unpurchased" ? "#1e40af" : "#166534",
+          border: `1px solid ${status === "unpurchased" ? "#bfdbfe" : "#bbf7d0"}`,
+        }}
+      >
+        {status === "unpurchased" ? "未購入" : "購入済み"}
+      </span>
     </div>
   );
 }

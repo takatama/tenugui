@@ -7,10 +7,10 @@ interface StatusBadgeProps {
   className?: string;
 }
 
-export function StatusBadge({ 
-  status, 
-  position = "topRight", 
-  className = "" 
+export function StatusBadge({
+  status,
+  position = "topRight",
+  className = "",
 }: StatusBadgeProps) {
   if (status !== "unpurchased") {
     return null;
@@ -19,7 +19,9 @@ export function StatusBadge({
   const positionStyle = STATUS_BADGE_STYLES.position[position];
 
   return (
-    <div className={`${positionStyle} ${STATUS_BADGE_STYLES.base} ${className}`}>
+    <div
+      className={`${positionStyle} ${STATUS_BADGE_STYLES.base} ${className}`}
+    >
       {STATUS_BADGE_STYLES.unpurchased}
     </div>
   );
