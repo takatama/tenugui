@@ -78,11 +78,11 @@ export function ItemCard({
       />
 
       {/* ステータスインジケーター */}
-      <StatusBadge status={item.status} />
+      <StatusBadge status={item.status} position="topLeft" />
 
       {/* 順序番号 */}
       <div
-        className={`absolute ${isUnpurchased(item.status) ? "top-8" : "top-1"} left-1 text-white text-xs px-1.5 py-0.5 rounded ${
+        className={`absolute top-1 right-1 text-white text-xs px-1.5 py-0.5 rounded ${
           isDraggedItem && isDragging
             ? "bg-blue-500 bg-opacity-90 font-bold"
             : "bg-black bg-opacity-70"
@@ -93,7 +93,7 @@ export function ItemCard({
 
       {/* ドラッグインジケーター */}
       <div
-        className={`absolute ${isUnpurchased(item.status) ? "bottom-1" : "top-1"} right-1 rounded-full p-1 ${
+        className={`absolute bottom-1 right-1 rounded-full p-1 ${
           isDraggedItem && isDragging
             ? "bg-blue-500 bg-opacity-90"
             : "bg-white bg-opacity-80"
