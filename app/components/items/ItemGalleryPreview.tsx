@@ -45,6 +45,10 @@ export function ItemGalleryPreview({
 
   const { handleAutoScroll, stopAutoScroll } = useAutoScroll();
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
@@ -87,6 +91,7 @@ export function ItemGalleryPreview({
         onTouchEnd={handleTouchEnd}
         onAutoScroll={handleAutoScroll}
         onStopAutoScroll={stopAutoScroll}
+        onContextMenu={handleContextMenu}
       />
 
       {/* 操作説明 */}
