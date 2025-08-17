@@ -1,8 +1,10 @@
 import React from "react";
 import { STATUS_BADGE_STYLES } from "../../lib/itemStyles";
+import type { ItemStatus } from "../../types/status";
+import { isUnpurchased } from "../../types/status";
 
 interface StatusBadgeProps {
-  status?: "purchased" | "unpurchased";
+  status?: ItemStatus;
   position?: keyof typeof STATUS_BADGE_STYLES.position;
   className?: string;
 }
@@ -12,7 +14,7 @@ export function StatusBadge({
   position = "topRight",
   className = "",
 }: StatusBadgeProps) {
-  if (status !== "unpurchased") {
+  if (!isUnpurchased(status)) {
     return null;
   }
 

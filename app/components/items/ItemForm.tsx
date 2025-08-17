@@ -4,6 +4,7 @@ import { useItemForm } from "../../hooks/useItemFormShared";
 import { useProductAnalysis } from "../../hooks/useProductAnalysis";
 import { useTagAnalysis } from "../../hooks/useTagAnalysis";
 import { Button } from "../common/Button";
+import { DEFAULT_STATUS } from "../../types/status";
 import {
   ProductAnalysis,
   ImageSelection,
@@ -95,7 +96,7 @@ export function ItemForm({
                   name="status"
                   value="purchased"
                   defaultChecked={
-                    (initialItem?.status || "purchased") === "purchased"
+                    (initialItem?.status || DEFAULT_STATUS) === "purchased"
                   }
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
                 />
@@ -107,7 +108,7 @@ export function ItemForm({
                   name="status"
                   value="unpurchased"
                   defaultChecked={
-                    (initialItem?.status || "purchased") === "unpurchased"
+                    (initialItem?.status || DEFAULT_STATUS) === "unpurchased"
                   }
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
                 />

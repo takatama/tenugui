@@ -1,10 +1,13 @@
+import type { ItemStatus } from "../types/status";
+import { DEFAULT_STATUS } from "../types/status";
+
 export interface ParsedFormData {
   name: string;
   imageUrl: string;
   productUrl?: string;
   tags: string[];
   memo: string;
-  status: "purchased" | "unpurchased";
+  status: ItemStatus;
 }
 
 export function parseFormData(request: Request): Promise<ParsedFormData> {
@@ -35,7 +38,9 @@ export function parseFormData(request: Request): Promise<ParsedFormData> {
         : [];
 
     const statusValue =
-      status === "purchased" || status === "unpurchased" ? status : "purchased";
+      status === "purchased" || status === "unpurchased"
+        ? status
+        : DEFAULT_STATUS;
 
     return {
       name: String(name),

@@ -5,6 +5,8 @@ import { TagList } from "../common/TagDisplay";
 import { Button } from "../common/Button";
 import { StatusBadge } from "../common/StatusBadge";
 import { getItemStatusStyles } from "../../lib/itemStyles";
+import type { ItemStatus } from "../../types/status";
+import { getStatusLabel, isUnpurchased } from "../../types/status";
 
 interface ItemDetailViewProps {
   item: Item;
@@ -133,7 +135,9 @@ function ItemInfo({
   );
 }
 
-function ItemStatus({ status }: { status?: "purchased" | "unpurchased" }) {
+function ItemStatus({ status }: { status?: ItemStatus }) {
+  const isUnpurchasedStatus = isUnpurchased(status);
+
   return (
     <div style={{ marginBottom: "1.5rem" }}>
       <span
@@ -143,12 +147,12 @@ function ItemStatus({ status }: { status?: "purchased" | "unpurchased" }) {
           borderRadius: "1rem",
           fontSize: "0.875rem",
           fontWeight: "500",
-          backgroundColor: status === "unpurchased" ? "#dbeafe" : "#f0fdf4",
-          color: status === "unpurchased" ? "#1e40af" : "#166534",
-          border: `1px solid ${status === "unpurchased" ? "#bfdbfe" : "#bbf7d0"}`,
+          backgroundColor: isUnpurchasedStatus ? "#dbeafe" : "#f0fdf4",
+          color: isUnpurchasedStatus ? "#1e40af" : "#166534",
+          border: `1px solid ${isUnpurchasedStatus ? "#bfdbfe" : "#bbf7d0"}`,
         }}
       >
-        {status === "unpurchased" ? "未購入" : "購入済み"}
+        {getStatusLabel(status)}
       </span>
     </div>
   );

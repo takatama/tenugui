@@ -1,8 +1,11 @@
+import type { ItemStatus } from "../types/status";
+import { isUnpurchased, STATUS_LABELS } from "../types/status";
+
 /**
  * アイテムのステータスに基づくスタイルを生成する関数
  */
-export function getItemStatusStyles(status?: "purchased" | "unpurchased") {
-  if (status === "unpurchased") {
+export function getItemStatusStyles(status?: ItemStatus) {
+  if (isUnpurchased(status)) {
     return "ring-2 ring-gray-300 bg-gray-50 opacity-75";
   }
   return "";
@@ -19,5 +22,5 @@ export const STATUS_BADGE_STYLES = {
     bottomRight: "absolute bottom-1 right-1",
     bottomLeft: "absolute bottom-1 left-1",
   },
-  unpurchased: "未購入",
+  unpurchased: STATUS_LABELS.unpurchased,
 } as const;
