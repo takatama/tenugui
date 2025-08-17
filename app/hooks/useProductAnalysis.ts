@@ -1,7 +1,7 @@
 import { useApiRequest } from "./useApiRequest";
 import { useAsyncOperation } from "./useAsyncOperation";
 import { handleError } from "../lib/errorHandler";
-import type { AnalysisResult } from "./useItemFormShared";
+import type { AnalysisResult } from "./useItemForm";
 
 interface ProductAnalysisResponse {
   name?: string;

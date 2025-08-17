@@ -2,7 +2,7 @@ import { useApiRequest } from "./useApiRequest";
 import { useAsyncOperation } from "./useAsyncOperation";
 import { handleError } from "../lib/errorHandler";
 import type { TagAnalysis } from "../data/items";
-import type { AnalysisResult } from "./useItemFormShared";
+import type { AnalysisResult } from "./useItemForm";
 
 export function useTagAnalysis() {
   const { request } = useApiRequest<TagAnalysis>();

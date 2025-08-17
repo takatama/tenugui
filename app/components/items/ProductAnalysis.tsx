@@ -1,4 +1,4 @@
-import type { AnalysisResult } from "../../hooks/useItemFormShared";
+import type { AnalysisResult } from "../../hooks/useItemForm";
 import { AnalysisField } from "../common";
 
 interface ProductAnalysisProps {
