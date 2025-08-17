@@ -20,7 +20,7 @@ import { useState, useCallback } from "react";
  * };
  * ```
  */
-export function useApiRequest<T = any>() {
+export function useApiRequest<T = unknown>() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,7 +61,6 @@ export function useApiRequest<T = any>() {
               errorMessage = `${errorMessage}: ${response.statusText}`;
             }
           }
-
           throw new Error(errorMessage);
         }
 

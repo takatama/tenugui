@@ -1,7 +1,10 @@
 /**
  * JSON レスポンス作成のユーティリティ
  */
-export function createJsonResponse(data: any, status = 200): Response {
+export function createJsonResponse<T = unknown>(
+  data: T,
+  status = 200
+): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {

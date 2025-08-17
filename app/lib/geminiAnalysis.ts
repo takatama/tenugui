@@ -123,19 +123,11 @@ export function parseGeminiResponse(
   }
 
   try {
-    const result = JSON.parse(jsonMatch[0]) as TagAnalysisResult;
+    const result = JSON.parse(jsonMatch[0]) as unknown;
 
-    // データの検証
-    if (
-      !result.tags ||
-      !Array.isArray(result.tags) ||
-      result.tags.length === 0
-    ) {
-      throw new Error("Invalid tags in response");
-    }
-
-    if (!result.description || typeof result.description !== "string") {
-      throw new Error("Invalid description in response");
+    // 型安全な検証
+    if (!isTagAnalysisResult(result)) {
+      throw new Error("Invalid response format from Gemini API");
     }
 
     // デフォルト値の設定
@@ -149,4 +141,19 @@ export function parseGeminiResponse(
     console.error("JSON parse error:", error);
     throw new Error("Failed to parse analysis result");
   }
+}
+
+/**
+ * TagAnalysisResult の型ガード
+ */
+function isTagAnalysisResult(obj: unknown): obj is TagAnalysisResult {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "tags" in obj &&
+    Array.isArray((obj as TagAnalysisResult).tags) &&
+    (obj as TagAnalysisResult).tags.length > 0 &&
+    "description" in obj &&
+    typeof (obj as TagAnalysisResult).description === "string"
+  );
 }
