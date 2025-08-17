@@ -1,6 +1,5 @@
 import type { AnalysisResult } from "../../hooks/useItemForm";
-import { InputField } from "../common/InputField";
-import { Button } from "../common/Button";
+import { AnalysisInputField } from "../common";
 
 interface ProductAnalysisProps {
   productUrl: string;
@@ -19,26 +18,18 @@ export function ProductAnalysis({
 }: ProductAnalysisProps) {
   return (
     <div>
-      <InputField
+      <AnalysisInputField
         label="商品URL"
         id="productUrl"
         name="productUrl"
         type="url"
         value={productUrl}
         placeholder="商品のURLを入力してください"
-        onChange={(e) => onProductUrlChange(e.target.value)}
-        rightElement={
-          <Button
-            variant="success"
-            size="md"
-            disabled={isAnalyzing}
-            loading={isAnalyzing}
-            onClick={onAnalyze}
-            className="whitespace-nowrap flex-shrink-0"
-          >
-            {isAnalyzing ? "商品分析中…" : "商品分析"}
-          </Button>
-        }
+        isAnalyzing={isAnalyzing}
+        analyzeButtonText="商品分析"
+        analyzingButtonText="商品分析中…"
+        onChange={onProductUrlChange}
+        onAnalyze={onAnalyze}
       />
 
       {/* 分析結果表示エリア */}

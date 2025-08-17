@@ -3,7 +3,7 @@ import type { Item, TagAnalysis } from "../../data/items";
 import { useItemForm } from "../../hooks/useItemFormShared";
 import { useProductAnalysis } from "../../hooks/useProductAnalysis";
 import { useTagAnalysis } from "../../hooks/useTagAnalysis";
-import { Button } from "../common/Button";
+import { Button, InputField, RadioGroup } from "../common";
 import { DEFAULT_STATUS } from "../../types/status";
 import {
   ProductAnalysis,
@@ -68,55 +68,25 @@ export function ItemForm({
           />
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="name" className="block font-medium text-gray-700">
-            名前
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formState.name}
-            onChange={(e) => formState.setName(e.target.value)}
-            required
-            className="w-full border border-gray-300 rounded-md shadow-sm p-3 h-10 text-sm"
-            placeholder="商品の名前を入力してください"
-          />
-        </div>
+        <InputField
+          label="名前"
+          id="name"
+          name="name"
+          value={formState.name}
+          onChange={(e) => formState.setName(e.target.value)}
+          required
+          placeholder="商品の名前を入力してください"
+        />
 
-        <div className="space-y-1">
-          <fieldset>
-            <legend className="block font-medium text-gray-700 mb-2">
-              ステータス
-            </legend>
-            <div className="flex gap-6">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="status"
-                  value="purchased"
-                  defaultChecked={
-                    (initialItem?.status || DEFAULT_STATUS) === "purchased"
-                  }
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="ml-2 text-sm text-gray-700">購入済み</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="status"
-                  value="unpurchased"
-                  defaultChecked={
-                    (initialItem?.status || DEFAULT_STATUS) === "unpurchased"
-                  }
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="ml-2 text-sm text-gray-700">未購入</span>
-              </label>
-            </div>
-          </fieldset>
-        </div>
+        <RadioGroup
+          label="ステータス"
+          name="status"
+          defaultValue={initialItem?.status || DEFAULT_STATUS}
+          options={[
+            { value: "purchased", label: "購入済み" },
+            { value: "unpurchased", label: "未購入" },
+          ]}
+        />
 
         {formState.candidateImages.length > 1 && (
           <div className="space-y-1">

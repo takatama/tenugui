@@ -1,5 +1,6 @@
 import React from "react";
 import { TagList } from "../common/TagDisplay";
+import { InputField, Button, PlusIcon } from "../common";
 
 interface TagSelectionProps {
   existingTags: string[];
@@ -58,26 +59,25 @@ export function TagSelection({
           {/* 新規タグ追加（コンパクト版） */}
           <div>
             <div className="text-xs text-gray-600 mb-2">新しいタグを追加</div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newTagInput}
-                onChange={(e) => onNewTagInputChange(e.target.value)}
-                onKeyPress={onKeyPress}
-                placeholder="新しいタグ..."
-                className="flex-1 border border-gray-300 rounded-md shadow-sm px-2 py-1 text-sm"
-              />
-              <button
-                type="button"
-                onClick={onAddNewTag}
-                disabled={
-                  !newTagInput.trim() || selectedTags.has(newTagInput.trim())
-                }
-                className="bg-blue-600 text-white font-medium py-1 px-3 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
-              >
-                +
-              </button>
-            </div>
+            <InputField
+              value={newTagInput}
+              onChange={(e) => onNewTagInputChange(e.target.value)}
+              onKeyPress={onKeyPress}
+              placeholder="新しいタグ..."
+              size="sm"
+              rightElement={
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={onAddNewTag}
+                  disabled={
+                    !newTagInput.trim() || selectedTags.has(newTagInput.trim())
+                  }
+                  icon={<PlusIcon />}
+                  aria-label="タグを追加"
+                />
+              }
+            />
           </div>
         </div>
 

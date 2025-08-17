@@ -17,9 +17,36 @@
 ```
 app/
 ├── components/
-│   └── common/          # 共通コンポーネント
+│   └── common/  ### 4. メンテナンス性向上のための改善
+
+**新しいコンポーネントや改善を追加する際は：**
+
+1. 既存のパターンに従う
+2. TypeScript型定義を完備
+3. アクセシビリティを考慮
+4. ドキュメントを更新
+
+### 🔄 最近の改善点
+
+**2025年8月版: メンテナンス性向上**
+
+1. **SaveButton**: インラインボタンスタイル → 共通Buttonコンポーネント使用
+2. **ItemForm**: 手動input/radio → InputField/RadioGroupコンポーネント使用
+3. **TagSelection**: インラインボタン → Buttonコンポーネント + PlusIconアイコン使用
+4. **分析系コンポーネント**: 重複パターン → AnalysisInputFieldコンポーネント作成
+5. **RadioGroup**: 新規コンポーネント追加（ラジオボタンパターンの共通化）
+6. **AnalysisInputField**: 新規コンポーネント追加（分析ボタン付きInputFieldパターンの共通化）
+
+**効果:**
+- **コード削減**: 約200行のインラインスタイルを共通コンポーネントに置き換え
+- **一貫性向上**: 全てのボタンと入力フィールドが統一されたデザインシステムを使用
+- **保守性向上**: スタイル変更時の影響範囲が共通コンポーネントのみに限定
+- **型安全性向上**: TypeScriptによる厳密な型チェック
+- **再利用性向上**: 新機能開発時の開発速度向上# 共通コンポーネント
 │       ├── Button.tsx   # ボタンコンポーネント
 │       ├── InputField.tsx # 入力フィールド
+│       ├── AnalysisInputField.tsx # 分析ボタン付き入力フィールド
+│       ├── RadioGroup.tsx # ラジオボタングループ
 │       ├── Icons.tsx    # アイコンライブラリ
 │       ├── TagDisplay.tsx # タグ表示
 │       └── index.ts     # エクスポート集約
@@ -74,6 +101,69 @@ import { InputField } from '../components/common';
       分析
     </Button>
   }
+/>
+```
+
+### 分析ボタン付き入力フィールド
+
+```tsx
+import { AnalysisInputField } from '../components/common';
+
+// 商品URL分析
+<AnalysisInputField
+  label="商品URL"
+  type="url"
+  value={productUrl}
+  placeholder="分析したい商品のURLを入力"
+  isAnalyzing={isAnalyzing}
+  analyzeButtonText="商品分析"
+  analyzingButtonText="分析中..."
+  onChange={setProductUrl}
+  onAnalyze={handleProductAnalysis}
+/>
+
+// タグ分析
+<AnalysisInputField
+  label="画像URL"
+  type="url"
+  value={imageUrl}
+  placeholder="タグ分析したい画像のURLを入力"
+  isAnalyzing={isTagAnalyzing}
+  analyzeButtonText="タグ分析"
+  onChange={setImageUrl}
+  onAnalyze={handleTagAnalysis}
+  required
+/>
+```
+
+### ラジオボタングループ
+
+```tsx
+import { RadioGroup } from '../components/common';
+
+// 基本的なラジオボタングループ
+<RadioGroup
+  label="ステータス"
+  name="status"
+  defaultValue="unpurchased"
+  options={[
+    { value: "purchased", label: "購入済み" },
+    { value: "unpurchased", label: "未購入" },
+  ]}
+/>
+
+// 縦配置で説明付き
+<RadioGroup
+  label="優先度"
+  name="priority"
+  value={priority}
+  onChange={setPriority}
+  direction="vertical"
+  options={[
+    { value: "high", label: "高", description: "緊急対応が必要" },
+    { value: "medium", label: "中", description: "通常の対応" },
+    { value: "low", label: "低", description: "時間があるときに対応" },
+  ]}
 />
 ```
 

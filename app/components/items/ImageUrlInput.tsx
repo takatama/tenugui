@@ -1,5 +1,4 @@
-import { InputField } from "../common/InputField";
-import { Button } from "../common/Button";
+import { AnalysisInputField } from "../common";
 
 interface ImageUrlInputProps {
   imageUrl: string;
@@ -16,27 +15,19 @@ export function ImageUrlInput({
 }: ImageUrlInputProps) {
   return (
     <div>
-      <InputField
+      <AnalysisInputField
         label="画像URL"
         id="imageUrl"
         name="imageUrl"
         type="url"
         value={imageUrl}
         placeholder="画像のURLを入力してください"
-        onChange={(e) => onImageUrlChange(e.target.value)}
         required
-        rightElement={
-          <Button
-            variant="analysis"
-            size="md"
-            disabled={isAnalyzing || !imageUrl.trim()}
-            loading={isAnalyzing}
-            onClick={onAiAnalyze}
-            className="whitespace-nowrap flex-shrink-0"
-          >
-            {isAnalyzing ? "タグ分析中…" : "タグ分析"}
-          </Button>
-        }
+        isAnalyzing={isAnalyzing}
+        analyzeButtonText="タグ分析"
+        analyzingButtonText="タグ分析中…"
+        onChange={onImageUrlChange}
+        onAnalyze={onAiAnalyze}
       />
 
       {/* 画像プレビュー */}
