@@ -235,17 +235,20 @@ export function ItemGalleryPreview({
     setDraggedItemId(itemId);
     setIsDragging(false);
 
-    // ハプティックフィードバック（ユーザーの操作後のみ実行）
-    // Chrome の介入ポリシーにより、ユーザーがフレームをタップした後でないと振動は実行されません
-    try {
-      if ("vibrate" in navigator) {
-        // ユーザーの直接的な操作に対してのみ振動を実行
-        navigator.vibrate(50);
+    // ハプティックフィードバック機能は、ブラウザのセキュリティポリシーにより
+    // 初回アクセス時に警告が表示される可能性があるため、一旦無効化
+    // 必要に応じて後で有効化可能
+    /*
+    if (userHasInteracted) {
+      try {
+        if ("vibrate" in navigator) {
+          navigator.vibrate(50);
+        }
+      } catch (error) {
+        console.debug("Vibration not supported or blocked by browser policy");
       }
-    } catch (error) {
-      // 振動が失敗しても処理は継続（ブラウザのセキュリティポリシーでブロックされる場合がある）
-      console.debug("Vibration not supported or blocked by browser policy");
     }
+    */
 
     // ドラッグ開始のための長押し効果を追加（100ms後にドラッグモード開始）
     setTimeout(() => {
