@@ -65,6 +65,7 @@
   "share_target": {
     "action": "/items/new",
     "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
     "params": {
       "url": "url",
       "title": "title",
