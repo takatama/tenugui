@@ -8,10 +8,23 @@
   padding: 0 var(--shell-gutter);
 }
 .shell-header {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 30;
   border-bottom: 1px solid var(--line);
   background: var(--paper);
+  transition: transform 180ms ease;
+}
+.shell-header-hidden {
+  transform: translateY(-100%);
+}
+.shell-header:focus-within {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-header {
+    transition: none;
+  }
 }
 .shell-header-inner {
   display: flex;

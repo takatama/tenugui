@@ -10,6 +10,8 @@ export default function Layout() {
   const { favorites } = useFavorites();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const isFavorites =
@@ -17,6 +19,22 @@ export default function Layout() {
     new URLSearchParams(location.search).get("view") === "favorites";
   const collectionActive = location.pathname === "/" && !isFavorites;
   const closeMenu = () => setMenuOpen(false);
+
+  useEffect(() => {
+    let previousY = Math.max(0, window.scrollY);
+    setHeaderHidden(false);
+    const onScroll = () => {
+      // Clamp rubber-band scrolling on mobile to the actual page bounds.
+      const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const y = Math.min(maxY, Math.max(0, window.scrollY));
+      if (y !== previousY) {
+        setHeaderHidden(y > (headerRef.current?.offsetHeight ?? 82) && y > previousY);
+        previousY = y;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [location.key]);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -81,7 +99,8 @@ export default function Layout() {
         本文へ移動
       </a>
       <header
-        className="shell-header"
+        ref={headerRef}
+        className={`shell-header${headerHidden && !menuOpen ? " shell-header-hidden" : ""}`}
         inert={menuOpen || undefined}
         aria-hidden={menuOpen || undefined}
       >
