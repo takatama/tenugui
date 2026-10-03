@@ -11,8 +11,12 @@ import type { Route } from "./+types/root";
 import "./app.css";
 
 export const meta: Route.MetaFunction = () => [
-  { title: "Tenugui Collection" },
-  { name: "description", content: "手ぬぐいコレクション管理アプリ" },
+  { title: "手ぬぐい帖 — 私の小さな美術館" },
+  {
+    name: "description",
+    content:
+      "好きな一枚を集めて、眺めて、分かち合う。てぬぐいと日々をつづる、私の小さな美術館。",
+  },
   // キャッシュ制御のメタタグ
   {
     httpEquiv: "Cache-Control",
@@ -31,7 +35,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Sans+JP:wght@400;500;600&family=Noto+Serif+JP:wght@400;500&display=swap",
   },
   // PWA対応
   { rel: "manifest", href: "/manifest.json" },
@@ -53,6 +57,12 @@ export const links: Route.LinksFunction = () => [
     sizes: "16x16",
     href: "/icons/icon-16x16.png",
   },
+  {
+    rel: "icon",
+    type: "image/svg+xml",
+    sizes: "any",
+    href: "/icons/favicon.svg",
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -61,7 +71,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#3b82f6" />
+        <meta name="theme-color" content="#edf0e8" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

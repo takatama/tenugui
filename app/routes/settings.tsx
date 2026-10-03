@@ -1,238 +1,426 @@
+import { useEffect, useRef, useState } from "react";
 import {
+  Form,
   data,
-  type LoaderFunctionArgs,
+  useActionData,
   useLoaderData,
+  useNavigation,
   useBlocker,
+  useBeforeUnload,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
 } from "react-router";
-import { getAllTags, getItems } from "../data/items";
-import { requireAuth } from "../lib/auth-guard";
-import { useState, useEffect } from "react";
-import { TagManagement } from "../components/items/TagManagement";
-import { ItemGalleryPreview } from "../components/items/ItemGalleryPreview";
-import { ApiErrorBoundary } from "../components/common";
+import { getItems, reorderItems } from "../data/items";
+import {
+  changeTag,
+  getShelvedRecords,
+  restoreShelvedRecord,
+} from "../data/collection-tools";
+import { requireAuth, requireAuthForAction } from "../lib/auth-guard";
+import { Artwork } from "../components/gallery/Artwork";
+import { Icon } from "../components/gallery/Icon";
+import "../components/gallery/settings.css";
 
+export function meta() {
+  return [
+    { title: "コレクションを整える — 手ぬぐい帖" },
+    { name: "robots", content: "noindex" },
+  ];
+}
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  // 認証チェック
-  await requireAuth(request, context, { requireAuth: true });
-
-  // Cloudflare Pages のコンテキストから環境を取得
+  await requireAuth(request, context);
   const kv = context.cloudflare.env.TENUGUI_KV;
-
+  const [collection, shelved] = await Promise.all([
+    getItems(kv),
+    getShelvedRecords(kv),
+  ]);
+  return data(
+    { ...collection, shelved },
+    { headers: { "Cache-Control": "no-store" } },
+  );
+}
+export async function action({ request, context }: ActionFunctionArgs) {
+  await requireAuthForAction(request, context);
+  const kv = context.cloudflare.env.TENUGUI_KV;
+  const form = await request.formData();
   try {
-    const [tags, itemsData] = await Promise.all([getAllTags(kv), getItems(kv)]);
-
-    return data({
-      tags,
-      items: itemsData.items,
-    });
-  } catch (error) {
-    console.error("Settings loader error:", error);
-    return data({
-      tags: [],
-      items: [],
-    });
+    switch (form.get("intent")) {
+      case "reorder": {
+        const current = await getItems(kv);
+        const ids = form.getAll("itemIds").map(String);
+        const present = new Set(current.items.map((item) => item.id));
+        if (
+          new Set(ids).size !== present.size ||
+          ids.length !== present.size ||
+          ids.some((id) => !present.has(id))
+        )
+          return data(
+            {
+              error:
+                "コレクションが変更されました。ページを更新して並べ直してください。",
+            },
+            { status: 409 },
+          );
+        await reorderItems(kv, ids);
+        return data({ message: "好きな並びを保存しました。" });
+      }
+      case "rename":
+      case "remove-tag": {
+        const oldTag = String(form.get("oldTag") || "").trim();
+        const newTag =
+          form.get("intent") === "rename"
+            ? String(form.get("newTag") || "").trim()
+            : undefined;
+        if (
+          !oldTag ||
+          (newTag !== undefined && (!newTag || newTag.length > 40))
+        )
+          return data(
+            { error: "タグの名前を40文字以内で入力してください。" },
+            { status: 400 },
+          );
+        await changeTag(kv, oldTag, newTag);
+        return data({
+          message: newTag
+            ? `「${oldTag}」を「${newTag}」に整えました。`
+            : `「${oldTag}」を外しました。写真と記録はそのままです。`,
+        });
+      }
+      case "restore": {
+        if (!(await restoreShelvedRecord(kv, String(form.get("key") || ""))))
+          return data(
+            { error: "戻す一枚が見つかりませんでした。" },
+            { status: 404 },
+          );
+        return data({ message: "大切な一枚を棚に戻しました。" });
+      }
+      default:
+        return data({ error: "操作を確認してください。" }, { status: 400 });
+    }
+  } catch {
+    return data(
+      { error: "保存できませんでした。もう一度お試しください。" },
+      { status: 503 },
+    );
   }
 }
 
 export default function Settings() {
-  const { tags: initialTags, items: initialItems } =
-    useLoaderData<typeof loader>();
-  const [tags, setTags] = useState(initialTags);
-  const [isOrderSaving, setIsOrderSaving] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  // ページ離脱時の警告
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
-        e.preventDefault();
-        e.returnValue = ""; // Chrome では空文字列が必要
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [hasUnsavedChanges]);
-
-  // React Routerでのページ遷移をブロック
+  const { items, allTags, shelved } = useLoaderData<typeof loader>();
+  const result = useActionData<typeof action>();
+  const navigation = useNavigation();
+  const [order, setOrder] = useState(items.map((item) => item.id));
+  const loadedOrder = useRef(items.map((item) => item.id));
+  const [editingTag, setEditingTag] = useState<string | null>(null);
+  const [exportMessage, setExportMessage] = useState("");
+  const saving = navigation.state !== "idle";
+  const dirty = order.join(",") !== items.map((item) => item.id).join(",");
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+      dirty && currentLocation.pathname !== nextLocation.pathname,
   );
-
-  // ブロッカーの状態を監視してアラートを表示
+  useBeforeUnload((event) => {
+    if (dirty) event.preventDefault();
+  });
+  useEffect(() => {
+    // Preserve an unfinished arrangement across tag edits/restores and merge new IDs.
+    const previousLoadedOrder = loadedOrder.current;
+    const nextLoadedOrder = items.map((item) => item.id);
+    loadedOrder.current = nextLoadedOrder;
+    setOrder((previous) => {
+      if (previous.join(",") === previousLoadedOrder.join(","))
+        return nextLoadedOrder;
+      const available = new Set(items.map((item) => item.id));
+      const retained = previous.filter((id) => available.has(id));
+      return [
+        ...retained,
+        ...items.map((item) => item.id).filter((id) => !retained.includes(id)),
+      ];
+    });
+  }, [items]);
   useEffect(() => {
     if (blocker.state === "blocked") {
-      const shouldProceed = window.confirm(
-        "並び順に未保存の変更があります。\n変更を破棄してページを移動しますか？"
-      );
-
-      if (shouldProceed) {
-        setHasUnsavedChanges(false);
-        blocker.proceed();
-      } else {
-        blocker.reset();
-      }
-    }
-  }, [blocker, setHasUnsavedChanges]);
-
-  const handleOrderChange = async (newOrder: string[]) => {
-    setIsOrderSaving(true);
-
-    try {
-      const response = await fetch("/api/item-order", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ itemIds: newOrder }),
-      });
-
-      if (!response.ok) {
-        const errorData = (await response.json()) as { error?: string };
-        console.error("API Error Response:", {
-          status: response.status,
-          statusText: response.statusText,
-          errorData,
-        });
-        alert(
-          `順序の保存に失敗しました: ${errorData.error || `HTTP ${response.status}: ${response.statusText}`}`
-        );
-      } else {
-        const result = await response.json();
-        console.log("Order save successful:", result);
-        setHasUnsavedChanges(false); // 保存成功時に未保存フラグをクリア
-      }
-    } catch (error) {
-      console.error("Order save failed:", error);
-      alert(
-        `順序の保存に失敗しました: ${error instanceof Error ? error.message : "ネットワークエラー"}`
-      );
-    } finally {
-      setIsOrderSaving(false);
-    }
-  };
-
-  const handleDeleteTag = async (tagToDelete: string) => {
-    if (
-      !confirm(
-        `「${tagToDelete}」タグを削除しますか？\nこのタグが付いているすべてのアイテムからタグが削除されます。`
+      if (
+        window.confirm(
+          "並び順はまだ保存していません。変更を破棄して移動しますか？",
+        )
       )
-    ) {
-      return;
+        blocker.proceed();
+      else blocker.reset();
     }
-
+  }, [blocker]);
+  function move(index: number, offset: number) {
+    const next = [...order];
+    [next[index], next[index + offset]] = [next[index + offset], next[index]];
+    setOrder(next);
+  }
+  function exportCollection() {
     try {
-      const response = await fetch("/api/tag-delete", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ tagToDelete }),
-      });
-
-      if (response.ok) {
-        // タグ一覧から削除されたタグを除去
-        setTags(tags.filter((tag) => tag !== tagToDelete));
-      } else {
-        const errorData = (await response.json()) as { error?: string };
-        alert(`タグの削除に失敗しました: ${errorData.error || "不明なエラー"}`);
-      }
-    } catch (error) {
-      console.error("Tag deletion failed:", error);
-      alert("タグの削除に失敗しました");
+      const blob = new Blob(
+        [
+          JSON.stringify(
+            { version: 1, exportedAt: new Date().toISOString(), items },
+            null,
+            2,
+          ),
+        ],
+        { type: "application/json" },
+      );
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `tenugui-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setExportMessage(
+        "写真の参照URLと記録を保存しました。写真ファイル自体は含まれません。",
+      );
+    } catch {
+      setExportMessage(
+        "書き出せませんでした。ブラウザの設定をご確認ください。",
+      );
     }
-  };
-
-  const handleRenameTag = async (oldTagName: string, newTagName: string) => {
-    try {
-      const response = await fetch("/api/tag-rename", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ oldTagName, newTagName }),
-      });
-
-      if (response.ok) {
-        const result = (await response.json()) as {
-          success: boolean;
-          oldTagName: string;
-          newTagName: string;
-          updatedItemsCount: number;
-        };
-
-        // タグ一覧で古いタグ名を新しいタグ名に置き換え
-        setTags(tags.map((tag) => (tag === oldTagName ? newTagName : tag)));
-      } else {
-        const errorData = (await response.json()) as { error?: string };
-        alert(
-          `タグ名の変更に失敗しました: ${errorData.error || "不明なエラー"}`
-        );
-        throw new Error(errorData.error || "Unknown error");
-      }
-    } catch (error) {
-      console.error("Tag rename failed:", error);
-      if (error instanceof Error && !error.message.includes("fetch")) {
-        // サーバーエラーの場合はすでにalertが表示されているので、再度表示しない
-        throw error;
-      } else {
-        alert("タグ名の変更に失敗しました");
-        throw error;
-      }
-    }
-  };
-
+  }
+  const itemMap = new Map(items.map((item) => [item.id, item]));
   return (
-    <ApiErrorBoundary
-      operation="設定管理"
-      onError={(error) => {
-        // 設定エラー時のクリーンアップ処理
-        setIsOrderSaving(false);
-        setHasUnsavedChanges(false);
-        console.error("Settings component error:", error);
-      }}
-    >
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">設定</h1>
-
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">タグ管理</h2>
-
-          <TagManagement
-            tags={tags}
-            onTagDelete={handleDeleteTag}
-            onTagRename={handleRenameTag}
-          />
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">
-              アイテムの並び替え
-            </h2>
+    <div className="settings-page">
+      <header className="settings-intro">
+        <span className="eyebrow">MAKE ROOM FOR WHAT YOU LOVE</span>
+        <h1>コレクションを整える</h1>
+        <p>
+          好きな順に並べたり、言葉を整えたり。
+          <br />
+          あなたらしい棚を、少しずつ。
+        </p>
+      </header>
+      {result && (
+        <p
+          className={`settings-feedback ${"error" in result ? "is-error" : ""}`}
+          role={"error" in result ? "alert" : "status"}
+        >
+          {"error" in result ? result.error : result.message}
+        </p>
+      )}
+      <section className="settings-panel">
+        <div className="settings-panel-heading">
+          <div>
+            <span className="eyebrow">YOUR FAVORITE ORDER</span>
+            <h2>好きな並びに</h2>
           </div>
-          <div className="space-y-2 mb-4">
-            <p className="text-gray-600">
-              写真をドラッグして並び順を変更できます。変更後は保存ボタンで確定してください。
-            </p>
-            <p className="text-sm text-gray-500">
-              ✨
-              モバイルサイズのギャラリー表示で実際の見た目を確認しながら並び替えできます
-            </p>
-          </div>
-          <ItemGalleryPreview
-            items={initialItems}
-            onOrderChange={handleOrderChange}
-            isLoading={isOrderSaving}
-            hasUnsavedChanges={hasUnsavedChanges}
-            onUnsavedChangesChange={setHasUnsavedChanges}
-          />
+          <span>{items.length}枚</span>
         </div>
-      </div>
-    </ApiErrorBoundary>
+        <p className="settings-description">
+          矢印で一枚ずつ動かして、コレクションの順番を決められます。
+        </p>
+        <Form method="post">
+          <input type="hidden" name="intent" value="reorder" />
+          <ol className="settings-order-list">
+            {order.map((id, index) => {
+              const item = itemMap.get(id);
+              return item ? (
+                <li key={id}>
+                  <input type="hidden" name="itemIds" value={id} />
+                  <span className="settings-order-number">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className="settings-order-art">
+                    <Artwork item={item} />
+                  </div>
+                  <span className="settings-order-name">
+                    {item.name}
+                    <small>{item.tags.slice(0, 3).join(" / ")}</small>
+                  </span>
+                  <div className="settings-order-buttons">
+                    <button
+                      type="button"
+                      className="icon-button"
+                      disabled={saving || index === 0}
+                      onClick={() => move(index, -1)}
+                      aria-label={`${item.name}を前に移動`}
+                    >
+                      <Icon
+                        name="arrow"
+                        size={17}
+                        style={{ transform: "rotate(-90deg)" }}
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-button"
+                      disabled={saving || index === order.length - 1}
+                      onClick={() => move(index, 1)}
+                      aria-label={`${item.name}を後に移動`}
+                    >
+                      <Icon
+                        name="arrow"
+                        size={17}
+                        style={{ transform: "rotate(90deg)" }}
+                      />
+                    </button>
+                  </div>
+                </li>
+              ) : null;
+            })}
+          </ol>
+          {!items.length && (
+            <p className="settings-description">
+              まだ一枚もありません。新しい一枚を迎えたら、ここで並べましょう。
+            </p>
+          )}
+          <div className="settings-panel-actions">
+            <span role="status">
+              {dirty ? "並び順はまだ保存していません" : "今の並び順です"}
+            </span>
+            <button className="primary-button" disabled={saving || !dirty}>
+              <Icon name="check" size={16} />
+              {saving ? "保存しています…" : "並びを保存"}
+            </button>
+          </div>
+        </Form>
+      </section>
+      <section className="settings-panel">
+        <div className="settings-panel-heading">
+          <div>
+            <span className="eyebrow">WORDS FOR YOUR COLLECTION</span>
+            <h2>タグを整える</h2>
+          </div>
+          <Icon name="leaf" size={22} />
+        </div>
+        <div className="settings-tags">
+          {allTags.map((tag) => (
+            <div className="settings-tag-row" key={tag}>
+              {editingTag === tag ? (
+                <Form
+                  method="post"
+                  onSubmit={() => setEditingTag(null)}
+                  className="settings-tag-edit"
+                >
+                  <input type="hidden" name="intent" value="rename" />
+                  <input type="hidden" name="oldTag" value={tag} />
+                  <label>
+                    <span className="sr-only">「{tag}」の新しい名前</span>
+                    <input
+                      name="newTag"
+                      defaultValue={tag}
+                      maxLength={40}
+                      required
+                      autoFocus
+                    />
+                  </label>
+                  <button className="text-link" disabled={saving}>
+                    保存
+                  </button>
+                  <button
+                    type="button"
+                    className="icon-button"
+                    onClick={() => setEditingTag(null)}
+                    aria-label="名前の変更をやめる"
+                  >
+                    <Icon name="close" size={16} />
+                  </button>
+                </Form>
+              ) : (
+                <>
+                  <span>
+                    {tag}
+                    <small>
+                      {items.filter((item) => item.tags.includes(tag)).length}枚
+                    </small>
+                  </span>
+                  <button
+                    className="icon-button"
+                    aria-label={`${tag}の名前を変える`}
+                    onClick={() => setEditingTag(tag)}
+                  >
+                    <Icon name="edit" size={15} />
+                  </button>
+                  <Form
+                    method="post"
+                    onSubmit={(event) => {
+                      if (
+                        !window.confirm(
+                          `「${tag}」をすべての一枚から外しますか？写真と記録はそのまま残ります。`,
+                        )
+                      )
+                        event.preventDefault();
+                    }}
+                  >
+                    <input type="hidden" name="intent" value="remove-tag" />
+                    <input type="hidden" name="oldTag" value={tag} />
+                    <button
+                      className="icon-button"
+                      aria-label={`${tag}を外す`}
+                      disabled={saving}
+                    >
+                      <Icon name="close" size={15} />
+                    </button>
+                  </Form>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+        {!allTags.length && (
+          <p className="settings-description">
+            一枚の記録から、好きな言葉をタグにできます。
+          </p>
+        )}
+      </section>
+      <section className="settings-panel">
+        <div className="settings-panel-heading">
+          <div>
+            <span className="eyebrow">KEEP YOUR MEMORIES SAFE</span>
+            <h2>大切な記録を手元に</h2>
+          </div>
+          <Icon name="download" size={22} />
+        </div>
+        <p className="settings-description">
+          名前・タグ・思い出と写真の参照URLを、JSONファイルに書き出します。写真ファイル自体は含まれません。
+        </p>
+        <button className="outline-button" onClick={exportCollection}>
+          <Icon name="download" size={17} />
+          コレクションを書き出す
+        </button>
+        {exportMessage && (
+          <p className="settings-description" role="status">
+            {exportMessage}
+          </p>
+        )}
+      </section>
+      <section className="settings-panel">
+        <div className="settings-panel-heading">
+          <div>
+            <span className="eyebrow">A PLACE TO RETURN</span>
+            <h2>棚から外した一枚</h2>
+          </div>
+          <span>{shelved.length}枚</span>
+        </div>
+        <p className="settings-description">
+          ここから、写真と記録をそのまま棚に戻せます。
+        </p>
+        {shelved.length ? (
+          <div className="settings-shelved">
+            {shelved.map((record) => (
+              <div className="settings-shelved-row" key={record.key}>
+                <div className="settings-order-art">
+                  <Artwork item={record.item} />
+                </div>
+                <span>{record.item.name}</span>
+                <Form method="post">
+                  <input type="hidden" name="intent" value="restore" />
+                  <input type="hidden" name="key" value={record.key} />
+                  <button className="outline-button" disabled={saving}>
+                    <Icon name="plus" size={15} />
+                    棚に戻す
+                  </button>
+                </Form>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="settings-description">棚から外した一枚はありません。</p>
+        )}
+      </section>
+    </div>
   );
 }

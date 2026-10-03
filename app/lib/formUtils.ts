@@ -10,45 +10,116 @@ export interface ParsedFormData {
   status: ItemStatus;
 }
 
-export function parseFormData(request: Request): Promise<ParsedFormData> {
-  return request.formData().then((formData) => {
-    const name = formData.get("name");
-    const imageUrl = formData.get("imageUrl");
-    const productUrl = formData.get("productUrl");
-    const tagsString = formData.get("tags");
-    const memo = formData.get("memo");
-    const status = formData.get("status");
+export interface ItemFormValues {
+  name: string;
+  imageUrl: string;
+  productUrl: string;
+  tags: string;
+  memo: string;
+  status: string;
+}
 
-    if (!name || !imageUrl) {
-      throw new Response("名前と画像URLは必須です", { status: 400 });
-    }
+export interface ItemFormActionData {
+  error: string;
+  fieldErrors?: Partial<Record<keyof ItemFormValues, string>>;
+  values?: ItemFormValues;
+}
 
-    const productUrlValue =
-      typeof productUrl === "string" && productUrl.trim() !== ""
-        ? productUrl.trim()
-        : undefined;
+export class FormValidationError extends Error {
+  constructor(
+    public readonly values: ItemFormValues,
+    public readonly fieldErrors: NonNullable<ItemFormActionData["fieldErrors"]>,
+  ) {
+    super(Object.values(fieldErrors)[0] || "入力内容を確認してください。");
+    this.name = "FormValidationError";
+  }
+}
 
-    // タグ文字列をカンマで分割し、前後の空白を除去
-    const tags =
-      tagsString && typeof tagsString === "string"
-        ? tagsString
-            .split(",")
-            .map((tag: string) => tag.trim())
-            .filter((tag: string) => tag.length > 0)
-        : [];
+export function isHttpUrl(value: string): boolean {
+  try {
+    if (!/^https?:\/\//i.test(value)) return false;
+    if (/\s|[\\\u0000-\u001f\u007f]/u.test(value)) return false;
+    const url = new URL(value);
+    return (
+      (url.protocol === "https:" || url.protocol === "http:") &&
+      !url.username &&
+      !url.password
+    );
+  } catch {
+    return false;
+  }
+}
 
-    const statusValue =
-      status === "purchased" || status === "unpurchased"
-        ? status
-        : DEFAULT_STATUS;
+/** Only uploaded/static image paths or complete HTTP(S) addresses may be rendered. */
+export function isValidImageUrl(value: string): boolean {
+  return (
+    /^\/images\/(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[a-z0-9][a-z0-9._-]*\.(?:png|jpe?g|webp|gif|svg))$/i.test(
+      value,
+    ) || isHttpUrl(value)
+  );
+}
 
-    return {
-      name: String(name),
-      imageUrl: String(imageUrl),
-      productUrl: productUrlValue,
-      tags,
-      memo: String(memo || ""),
-      status: statusValue,
-    };
-  });
+export function toFormValues(value: ParsedFormData): ItemFormValues {
+  return {
+    ...value,
+    productUrl: value.productUrl || "",
+    tags: value.tags.join(", "),
+  };
+}
+
+export async function parseFormData(request: Request): Promise<ParsedFormData> {
+  const formData = await request.formData();
+  const text = (key: string) => {
+    const value = formData.get(key);
+    return typeof value === "string" ? value : "";
+  };
+  const values: ItemFormValues = {
+    name: text("name"),
+    imageUrl: text("imageUrl"),
+    productUrl: text("productUrl"),
+    tags: text("tags"),
+    memo: text("memo"),
+    status: text("status"),
+  };
+  const errors: NonNullable<ItemFormActionData["fieldErrors"]> = {};
+  const imageUrl = values.imageUrl.trim();
+  const productUrl = values.productUrl.trim();
+  const tags = [
+    ...new Set(
+      values.tags
+        .split(/[,、\n]/u)
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    ),
+  ];
+
+  if (!imageUrl)
+    errors.imageUrl = "写真を選ぶか、画像のURLを入力してください。";
+  else if (imageUrl.length > 4000 || !isValidImageUrl(imageUrl)) {
+    errors.imageUrl =
+      "画像には http または https で始まるURLを入力してください。";
+  }
+  if (productUrl && (productUrl.length > 4000 || !isHttpUrl(productUrl))) {
+    errors.productUrl =
+      "商品ページには http または https で始まるURLを入力してください。";
+  }
+  if (values.name.trim().length > 200)
+    errors.name = "名前は200文字以内で入力してください。";
+  if (values.memo.length > 10000)
+    errors.memo = "思い出は10,000文字以内で入力してください。";
+  if (tags.length > 50 || tags.some((tag) => tag.length > 80))
+    errors.tags = "タグは50個まで、ひとつ80文字以内で入力してください。";
+
+  if (Object.keys(errors).length) throw new FormValidationError(values, errors);
+  return {
+    name: values.name.trim() || "名もなき一枚",
+    imageUrl,
+    productUrl: productUrl || undefined,
+    tags,
+    memo: values.memo,
+    status:
+      values.status === "purchased" || values.status === "unpurchased"
+        ? values.status
+        : DEFAULT_STATUS,
+  };
 }

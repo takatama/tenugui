@@ -9,6 +9,11 @@ export default [
       route("items/:itemId", "routes/items.$itemId.tsx"),
       route("items/:itemId/edit", "routes/items.$itemId.edit.tsx"),
       route("settings", "routes/settings.tsx"),
+      route("exhibitions", "routes/exhibitions.tsx"),
+      route(
+        "exhibitions/:exhibitionId",
+        "routes/exhibitions.$exhibitionId.tsx",
+      ),
     ],
   },
   route("api/product-analysis", "routes/api.product-analysis.tsx"),
@@ -17,6 +22,9 @@ export default [
   route("api/item-order", "routes/api.item-order.tsx"),
   route("api/tag-rename", "routes/api.tag-rename.tsx"),
   route("api/auth/me", "routes/api.auth.me.tsx"),
+  route("api/favorites", "routes/api.favorites.tsx"),
+  route("api/images", "routes/api.images.tsx"),
+  route("images/:imageId", "routes/images.$imageId.tsx"),
   route("auth", "routes/auth.tsx"),
   route("auth/callback", "routes/auth.callback.tsx"),
 ] satisfies RouteConfig;
