@@ -84,6 +84,8 @@ npm run preview:cloud
 
 Googleログインには`GOOGLE_CLIENT_ID`・`GOOGLE_CLIENT_SECRET`・`ALLOWED_EMAILS`が必要です。新しいプレビューへ引き継ぐSecretsはPreview Baseへ登録します。
 
+`SESSION_SECRET`は使いません。セッションはランダムなIDと`SESSIONS` KVで管理します。テンプレートの`VALUE_FROM_CLOUDFLARE`も不要です。
+
 ```sh
 npx wrangler preview base-config secret put GOOGLE_CLIENT_ID
 npx wrangler preview base-config secret put GOOGLE_CLIENT_SECRET

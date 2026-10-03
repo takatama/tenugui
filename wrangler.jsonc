@@ -7,9 +7,6 @@
   "name": "tenugui",
   "compatibility_date": "2025-04-04",
   "main": "./workers/app.ts",
-  "vars": {
-    "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
-  },
   "observability": {
     "enabled": true,
   },
@@ -25,9 +22,6 @@
     },
   ],
   "previews": {
-    "vars": {
-      "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
-    },
     "kv_namespaces": [
       {
         "binding": "TENUGUI_KV",
