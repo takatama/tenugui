@@ -157,7 +157,6 @@ export default function Items() {
           </span>
           <h1>
             {favoritesOnly ? "お気に入りの一枚" : "私の手ぬぐい帖"}
-            <span className="collection-title-dot">。</span>
           </h1>
           <p>
             {favoritesOnly
