@@ -3,6 +3,7 @@ import {
   Form,
   data,
   useActionData,
+  useFetcher,
   useLoaderData,
   useNavigation,
   useBlocker,
@@ -20,6 +21,7 @@ import { requireAuth, requireAuthForAction } from "../lib/auth-guard";
 import { usePwaReloadGuard } from "../hooks/usePwaUpdates";
 import { Artwork } from "../components/gallery/Artwork";
 import { Icon } from "../components/gallery/Icon";
+import { CollectionOrderList } from "../components/gallery/CollectionOrderList";
 import "../components/gallery/settings.css";
 
 export function meta() {
@@ -110,13 +112,40 @@ export default function Settings() {
   const { items, allTags, shelved } = useLoaderData<typeof loader>();
   const result = useActionData<typeof action>();
   const navigation = useNavigation();
+  const orderFetcher = useFetcher<typeof action>();
   const [order, setOrder] = useState(items.map((item) => item.id));
   const loadedOrder = useRef(items.map((item) => item.id));
   const [editingTag, setEditingTag] = useState<string | null>(null);
   const [exportMessage, setExportMessage] = useState("");
-  const saving = navigation.state !== "idle";
+  const [dragging, setDragging] = useState(false);
+  const saveBarRef = useRef<HTMLElement>(null);
+  const saving = navigation.state !== "idle" || orderFetcher.state !== "idle";
+  const savingOrder = orderFetcher.state !== "idle";
   const dirty = order.join(",") !== items.map((item) => item.id).join(",");
-  usePwaReloadGuard(dirty || editingTag !== null || saving);
+  const orderResult = orderFetcher.data;
+  const orderError =
+    dirty && !savingOrder && orderResult && "error" in orderResult
+      ? orderResult.error
+      : null;
+  const orderSaved = !dirty && orderResult && "message" in orderResult;
+  usePwaReloadGuard(dirty || dragging || editingTag !== null || saving);
+  useEffect(() => {
+    const bar = saveBarRef.current;
+    if (!bar) return;
+    const root = document.documentElement;
+    const property = "--collection-order-actions-height";
+    const previous = root.style.getPropertyValue(property);
+    const measure = () =>
+      root.style.setProperty(property, `${bar.getBoundingClientRect().height}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(bar);
+    return () => {
+      observer.disconnect();
+      if (previous) root.style.setProperty(property, previous);
+      else root.style.removeProperty(property);
+    };
+  }, [items.length > 0]);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
       dirty && currentLocation.pathname !== nextLocation.pathname,
@@ -151,11 +180,6 @@ export default function Settings() {
       else blocker.reset();
     }
   }, [blocker]);
-  function move(index: number, offset: number) {
-    const next = [...order];
-    [next[index], next[index + offset]] = [next[index + offset], next[index]];
-    setOrder(next);
-  }
   function exportCollection() {
     try {
       const blob = new Blob(
@@ -184,8 +208,14 @@ export default function Settings() {
     }
   }
   const itemMap = new Map(items.map((item) => [item.id, item]));
+  const orderedItems = order.flatMap((id) => {
+    const item = itemMap.get(id);
+    return item ? [item] : [];
+  });
   return (
-    <div className="settings-page">
+    <div
+      className={`settings-page${items.length ? " settings-page-with-save-bar" : ""}`}
+    >
       <header className="settings-intro">
         <span className="eyebrow">MAKE ROOM FOR WHAT YOU LOVE</span>
         <h1>コレクションを整える</h1>
@@ -211,74 +241,37 @@ export default function Settings() {
           </div>
           <span>{items.length}枚</span>
         </div>
-        <p className="settings-description">
-          矢印で一枚ずつ動かして、コレクションの順番を決められます。
-        </p>
-        <Form method="post" data-pwa-managed-form>
+        {items.length > 1 && (
+          <div className="settings-order-guide">
+            <p>最初の一覧の順番を変えられます。</p>
+            <p>右の「移動」をドラッグし、線の位置で離してください。</p>
+            <p>最後に、画面下の「並びを保存」を押してください。</p>
+            <small>「移動」を押すと、番号でも指定できます。</small>
+          </div>
+        )}
+        {items.length === 1 && (
+          <p className="settings-description">
+            二枚目を迎えると、ここで順番を変えられます。
+          </p>
+        )}
+        <orderFetcher.Form
+          id="collection-order-form"
+          method="post"
+          data-pwa-managed-form
+        >
           <input type="hidden" name="intent" value="reorder" />
-          <ol className="settings-order-list">
-            {order.map((id, index) => {
-              const item = itemMap.get(id);
-              return item ? (
-                <li key={id}>
-                  <input type="hidden" name="itemIds" value={id} />
-                  <span className="settings-order-number">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div className="settings-order-art">
-                    <Artwork item={item} />
-                  </div>
-                  <span className="settings-order-name">
-                    {item.name}
-                    <small>{item.tags.slice(0, 3).join(" / ")}</small>
-                  </span>
-                  <div className="settings-order-buttons">
-                    <button
-                      type="button"
-                      className="icon-button"
-                      disabled={saving || index === 0}
-                      onClick={() => move(index, -1)}
-                      aria-label={`${item.name}を前に移動`}
-                    >
-                      <Icon
-                        name="arrow"
-                        size={17}
-                        style={{ transform: "rotate(-90deg)" }}
-                      />
-                    </button>
-                    <button
-                      type="button"
-                      className="icon-button"
-                      disabled={saving || index === order.length - 1}
-                      onClick={() => move(index, 1)}
-                      aria-label={`${item.name}を後に移動`}
-                    >
-                      <Icon
-                        name="arrow"
-                        size={17}
-                        style={{ transform: "rotate(90deg)" }}
-                      />
-                    </button>
-                  </div>
-                </li>
-              ) : null;
-            })}
-          </ol>
+          <CollectionOrderList
+            items={orderedItems}
+            onOrderChange={setOrder}
+            disabled={saving}
+            onDraggingChange={setDragging}
+          />
           {!items.length && (
             <p className="settings-description">
               まだ一枚もありません。新しい一枚を迎えたら、ここで並べましょう。
             </p>
           )}
-          <div className="settings-panel-actions">
-            <span role="status">
-              {dirty ? "並び順はまだ保存していません" : "今の並び順です"}
-            </span>
-            <button className="primary-button" disabled={saving || !dirty}>
-              <Icon name="check" size={16} />
-              {saving ? "保存しています…" : "並びを保存"}
-            </button>
-          </div>
-        </Form>
+        </orderFetcher.Form>
       </section>
       <section className="settings-panel">
         <div className="settings-panel-heading">
@@ -425,6 +418,62 @@ export default function Settings() {
           <p className="settings-description">棚から外した一枚はありません。</p>
         )}
       </section>
+      {!!items.length && (
+        <section
+          ref={saveBarRef}
+          className={`settings-order-save-bar${dirty ? " is-dirty" : ""}${orderError ? " is-error" : ""}`}
+          aria-label="並び順の保存"
+          data-collection-order-actions
+        >
+          <div
+            className="settings-order-save-status"
+            role={orderError ? "alert" : "status"}
+          >
+            <strong>
+              {savingOrder
+                ? "並び順を保存しています…"
+                : orderError
+                  ? "並び順を保存できませんでした"
+                  : dirty
+                    ? "並び順が未保存です"
+                    : orderSaved
+                      ? "並び順を保存しました"
+                      : "今の並び順です"}
+            </strong>
+            <span>
+              {orderError ||
+                (dragging
+                  ? "移動先を決めてください"
+                  : dirty
+                    ? "保存すると最初の一覧に反映されます"
+                    : orderSaved
+                      ? "最初の一覧にもこの順番で表示されます"
+                      : "並べ替えたら、ここで保存")}
+            </span>
+          </div>
+          <div className="settings-order-save-actions">
+            {dirty && (
+              <button
+                type="button"
+                className="text-link"
+                disabled={saving || dragging}
+                onClick={() => setOrder(items.map((item) => item.id))}
+              >
+                元に戻す
+              </button>
+            )}
+            <button
+              type="submit"
+              form="collection-order-form"
+              className="primary-button"
+              disabled={saving || dragging || !dirty}
+            >
+              <Icon name="check" size={16} />
+              {savingOrder ? "保存しています…" : "並びを保存"}
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
