@@ -1,8 +1,9 @@
-const CACHE_NAME = "tenugui-v1";
+const CACHE_NAME = "tenugui-japandi-v2";
 const urlsToCache = [
-  "/",
   "/manifest.json",
-  // アイコンファイルが実際に存在する場合のみ追加
+  "/icons/icon-192x192.png",
+  "/icons/icon-512x512.png",
+  "/icons/favicon.svg",
 ];
 
 self.addEventListener("install", (event) => {
@@ -16,38 +17,47 @@ self.addEventListener("install", (event) => {
             if (result.status === "rejected") {
               console.warn(
                 `Failed to cache ${urlsToCache[index]}:`,
-                result.reason
+                result.reason,
               );
             }
           });
-        }
+        },
       );
-    })
+    }),
   );
 });
 
 self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
 
-  // Share Target検出のログ
+  // Never cache mutable pages, authentication, API responses or uploaded photos.
+  // Static assets remain available offline without replaying stale/private data.
   if (
-    requestUrl.pathname === "/items/new" &&
-    requestUrl.searchParams.has("url")
-  ) {
-    console.log("Share Target activated:", {
-      url: requestUrl.searchParams.get("url"),
-      title: requestUrl.searchParams.get("title"),
-      text: requestUrl.searchParams.get("text"),
-    });
-  }
+    event.request.method !== "GET" ||
+    requestUrl.origin !== self.location.origin ||
+    !(
+      requestUrl.pathname.startsWith("/assets/") ||
+      requestUrl.pathname.startsWith("/icons/") ||
+      requestUrl.pathname === "/manifest.json" ||
+      requestUrl.pathname.startsWith("/images/hero-") ||
+      requestUrl.pathname.endsWith(".svg")
+    )
+  )
+    return;
 
   event.respondWith(
     caches
       .match(event.request)
-      .then((response) => {
-        return response || fetch(event.request);
+      .then(async (cached) => {
+        if (cached) return cached;
+        const response = await fetch(event.request);
+        if (response.ok && response.type === "basic") {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(event.request, response.clone());
+        }
+        return response;
       })
-      .catch(() => fetch(event.request))
+      .catch(() => fetch(event.request)),
   );
 });
 
@@ -59,8 +69,8 @@ self.addEventListener("activate", (event) => {
           if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
-        })
+        }),
       );
-    })
+    }),
   );
 });

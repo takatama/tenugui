@@ -18,6 +18,7 @@
    - **Name**: tenugui-auth
    - **Authorized redirect URI 1**: `https://tenugui.takatama.workers.dev/auth/callback`
    - **Authorized redirect URI 2**: `http://localhost:5173/auth/callback`
+   - **Authorized redirect URI 3（今回のPreview）**: `https://codex-japandi-gallery-tenugui.takatama.workers.dev/auth/callback`
 
 ### 1.3 認証情報の取得
 
@@ -30,8 +31,8 @@
 
 ```bash
 # セッション用のKV namespaceを作成
-npx wrangler kv:namespace create "SESSIONS"
-npx wrangler kv:namespace create "SESSIONS" --preview
+npx wrangler kv namespace create "SESSIONS"
+npx wrangler kv namespace create "SESSIONS" --preview
 ```
 
 ### 2.2 wrangler.jsonc更新
@@ -62,7 +63,6 @@ KV Namespace IDを追加:
 # .dev.vars ファイル
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
-SESSION_SECRET=your-session-secret # node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ALLOWED_EMAILS=your-email@gmail.com,another@gmail.com
 ```
 
@@ -71,30 +71,33 @@ ALLOWED_EMAILS=your-email@gmail.com,another@gmail.com
 ```bash
 # セキュアな値はsecretsで設定
 npx wrangler secret put GOOGLE_CLIENT_SECRET
-npx wrangler secret put SESSION_SECRET
 npx wrangler secret put ALLOWED_EMAILS
 
 # GOOGLE_CLIENT_IDは公開しても安全ですがsecretsでも可
 npx wrangler secret put GOOGLE_CLIENT_ID
 ```
 
-### 3.3 wrangler.jsonc更新（最小限）
-
-```jsonc
-"vars": {
-  "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
-}
-```
-
-### 3.4 SESSION_SECRET生成方法
+### 3.3 PreviewのSecrets設定
 
 ```bash
-# Node.jsで生成（32バイトのランダム文字列）
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# 新しいPreviewに引き継ぐ共通設定
+npx wrangler preview base-config secret put GOOGLE_CLIENT_ID
+npx wrangler preview base-config secret put GOOGLE_CLIENT_SECRET
+npx wrangler preview base-config secret put ALLOWED_EMAILS
 
-# OpenSSLで生成
-openssl rand -hex 32
+# 作成済みの現在のブランチにも個別に登録
+npx wrangler preview secret put GOOGLE_CLIENT_ID
+npx wrangler preview secret put GOOGLE_CLIENT_SECRET
+npx wrangler preview secret put ALLOWED_EMAILS
 ```
+
+Preview BaseのSecrets変更は、新しく作るPreviewだけに反映されます。現在のGitブランチ以外を指定する場合は、個別登録コマンドへ`--name codex/japandi-gallery`のようにPreview名を追加します。実際のPreview URLの`/auth/callback`をGoogle側へ登録してください。
+
+`TENUGUI_KV`・`SESSIONS`はSecretではなくKV bindingです。プレビュー用のKVは`wrangler.jsonc`の`previews.kv_namespaces`に設定済みです。従来の`preview_id`はローカル開発で使う設定で、Worker Previewsのbinding設定とは異なります。
+
+`GEMINI_API_KEY`はAIタグ分析、`OG_API_URL`・`OG_API_KEY`は商品ページからの情報取得を試す場合に追加してください。画像アップロード・手動登録には不要です。
+
+`SESSION_SECRET`とテンプレートの`VALUE_FROM_CLOUDFLARE`は不要です。セッションはランダムなIDを発行し、`SESSIONS` KVで照合します。
 
 ## 4. デプロイ
 
@@ -103,11 +106,13 @@ npm run build
 npm run deploy
 ```
 
+本番を更新せずPreviewを作成・更新する場合は`npm run preview:cloud`を実行します。
+
 ## 5. 動作確認
 
 ### 5.1 基本動作テスト
 
-1. `http://localhost:5173/` にアクセス
+1. 本番またはPreview URLにアクセス
 2. 「手ぬぐい追加」ボタンをクリック
 3. Google認証画面にリダイレクトされる
 4. 許可されたメールアドレスでログイン
@@ -119,20 +124,13 @@ npm run deploy
 2. 開発者ツールのコンソールでログを確認
 3. 正常にログアウトされることを確認
 
-### 5.3 デバッグログの確認
+`npm run dev`では、ローカルのサンプルと編集権限を自動で使います。Googleログインを確認する場合は、本番形式のビルドを使うPreviewで確認してください。
 
-認証関連の問題がある場合、以下のログが出力されます：
+### 5.3 Google Cloud Console設定確認
 
-- `[AUTH] Action: login/logout`
-- `[AUTH] Cookie header: ...`
-- `[AUTH] Extracted sessionId: ...`
-- `[AUTH] Auth state result: ...`
+アクセス中のURLに対応するRedirect URIが設定されているか確認：
 
-### 5.4 Google Cloud Console設定確認
-
-開発環境用のRedirect URIが設定されているか確認：
-
-- `http://localhost:5173/auth/callback`
+- `<本番またはPreview URL>/auth/callback`
 
 ## 機能
 
@@ -157,7 +155,6 @@ npm run deploy
 ### 秘匿すべき情報
 
 - **GOOGLE_CLIENT_SECRET**: 絶対に秘匿（Wrangler Secretsで管理）
-- **SESSION_SECRET**: 絶対に秘匿（セッション署名用）
 - **ALLOWED_EMAILS**: プライバシー保護のため秘匿推奨
 
 ### 推奨設定
@@ -177,4 +174,3 @@ npm run deploy
 ### セッションが保持されない場合
 
 - SESSIONS KV namespaceが正しく設定されているか確認
-- SESSION_SECRETが設定されているか確認

@@ -1,81 +1,120 @@
-# Tenugui コレクション管理アプリ
+# 手ぬぐい帖 / tenugui
 
-Tenugui は、日本の伝統的な布「手ぬぐい」を愛する人のためのコレクション管理アプリです。React Router と Cloudflare Workers を組み合わせたフルスタック構成で、PWA としてスマートフォンからも快適に利用できます。
+**好きな一枚が、私の世界になる。**
 
----
+手元にある一枚も、これから迎えたい一枚も。好きな手ぬぐいを集め、眺め、コレクションをそのまま人に紹介するための手ぬぐい帖です。Japandiの温かな生成り、苔色と余白で、実際の柄を主役にしています。展示を作ったり、並べ替えたりしなくても、集まった一枚一枚が自分の世界になります。
 
-## 主な機能
+[54枚の既存コレクションで確認できるCloudflare Preview](https://codex-japandi-gallery-tenugui.takatama.workers.dev/) / [デザインと改善記録](docs/quality-review.md)
 
-- **手ぬぐいの登録・一覧・詳細表示**: 画像、タグ、メモ、購入リンクなどを保存し管理できます。
-- **AI・OG 情報を活用した分析機能**: Gemini API による画像解析や、OG API による商品ページ解析でタグ自動生成や商品情報取得を補助します。
-- **タグ管理と並び替え**: タグの追加・削除・名前変更、ドラッグ＆ドロップによるアイテム並び替えに対応。
-- **PWA 対応**: サービスワーカーと Web Manifest によってオフライン利用やホーム画面への追加が可能です。
-- **エラー耐性の高い設計**: 汎用・API・画像ロード専用のエラー境界を備え、ユーザー体験を損ないません。
-- **開発者に優しい環境**: TypeScript・Tailwind CSS・Hot Module Replacement (HMR) などを標準装備し、開発がスムーズです。
+## できること
 
----
+- **集める**：写真と手元にある／気になるの選択だけで追加。名前・タグ・思い出は折り畳んだ任意欄から後で記録できます。写真の選択・撮影・ドラッグ、画像URL、商品ページからの情報取得に対応。
+- **眺める**：開くとすぐに実際のコレクションを表示。柄全体を切らずに見せ、写真を押すと大きく鑑賞できます。前後移動・ゆっくり自動再生、詳細からの拡大、お気に入り。探したいときだけ検索・タグ・収集状況を開けます。
+- **自慢する**：コレクションをそのまま共有。端末の共有機能とリンクのコピーに対応し、検索や絞り込み中でもコレクション全体のリンクを渡します。
+- **必要なときに整える**：メニューから展示の作成・順序変更・タグの一括変更・JSONの書き出し・記録の復元を利用できます。展示は選択順・タイトル・紹介・公開停止に対応。
 
-## 技術スタック
+写真は端末で長辺1600px・約2MB以下に縮小してからアップロードします。画像の向きを保ち、柄をトリミングしません。SVGアップロードを拒否し、サーバーでも画像の形式と3MB上限を検証します。
 
-| 技術 | 役割 |
-|------|------|
-| React Router v7 | 画面遷移、SSR、データローディング |
-| Cloudflare Workers / KV | サーバーサイド実行とストレージ |
-| TypeScript | 型安全な実装 |
-| Tailwind CSS | スタイリング |
-| Gemini API / OG API | AI 解析・商品情報取得 |
-| Google OAuth | 認証 |
+## 起動
 
----
+Node.js 24以降とnpmを推奨します。テストはNodeの組込みテストランナーとTypeScriptを使います。
 
-## セットアップ
-
-1. Node.js と npm をインストール
-2. `.dev.vars.example` を参考に必要な環境変数を設定
-3. 依存関係をインストール:
-
-   ```bash
-   npm install
-   ```
-
-4. 開発サーバーを起動:
-
-   ```bash
-   npm run dev
-   ```
-
-   ブラウザで `http://localhost:5173` を開きます。
-
----
-
-## ビルド・プレビュー・デプロイ
-
-| 目的 | コマンド |
-|------|----------|
-| 本番ビルド | `npm run build` |
-| ビルド結果のプレビュー | `npm run preview` |
-| Cloudflare Workers へのデプロイ | `npm run deploy` |
-| プレビュー URL の作成 | `npx wrangler versions upload` |
-| プレビュー版の本番反映 | `npx wrangler versions deploy` |
-
----
-
-## プロジェクト構成（抜粋）
-
-```
-app/
- ├─ components/      UI コンポーネント群
- ├─ routes/          画面および API ルート
- ├─ data/            KV ストレージ操作ロジック
- ├─ config/          設定値とバリデーション
- └─ root.tsx         エントリーポイント & エラー境界
-docs/
- └─ error-boundary-implementation.md  エラー境界の実装詳細
+```sh
+npm ci
+npm run dev
 ```
 
----
+`http://localhost:5173` を開きます。**開発ビルドだけ**ローカルの編集用ユーザーが使えます。ローカルKVに`items`キーが無い場合だけサンプルを表示します。既存の空配列や保存済みデータをサンプルで置き換えず、本番ではサンプルを自動表示せず、開発用認証も働きません。ローカルの変更は本番KVに書き込みません。
 
-## ライセンス
+本番のGoogleログインや商品ページ取得を確認するには、`.dev.vars.example`を参考に`.dev.vars`へ実際の設定を用意します。通常の写真登録にGeminiや商品情報APIは必要ありません。
 
-このプロジェクトは [MIT License](LICENSE) の下で提供されています。
+```sh
+npm test
+npm run typecheck
+npm run build
+```
 
+Rollupは`4.63.6`に固定しています。`4.64.0`ではこのアプリのブラウザ向けビルドの解析に長時間を要するためです。固定版では通常の最適化を保ったままビルドが完了します。
+
+## 本番構成とデータ
+
+React 19 / React Router 7 / TypeScript / Vite / Cloudflare Workers・KVです。`wrangler.jsonc`の既存のWorkers名とKV bindingを維持し、既存の`items`配列、ID、写真URL、タグ、メモ、商品URL、ステータス、並び順を利用します。データ移行・全削除は不要です。
+
+新しいデータは別キーへ保存します。
+
+| キー                           | 保存内容                                             |
+| ------------------------------ | ---------------------------------------------------- |
+| `items`                        | 互換性を保ったコレクション配列                       |
+| `image:<uuid>`                 | アップロード画像のバイナリとMIME metadata            |
+| `exhibition:<uuid>`            | 展示の名前・紹介・選択順・公開設定                   |
+| `favorite:<itemId>`            | ログインした所有者の、端末をまたいで使えるお気に入り |
+| `item-backup:<id>:<timestamp>` | 棚から外した一枚と削除時刻。設定画面から復元         |
+| `item-backup:<id>:before-edit` | 直近の編集前の記録（通常の復元画面には出しません）   |
+
+編集前の記録は一枚につき直近の一件を保持します。復元画面は削除時刻`deletedAt`がある記録だけを対象にし、編集前の記録は自動では戻しません。
+
+ログイン済みの所有者はKVに保存したお気に入りを共有します。再読み込みで保存済みの一覧を取得し、KVの伝播により別端末への反映には時間がかかる場合があります。未ログインの来訪者は、このブラウザのlocalStorageに自分用のお気に入りを保存できます。
+
+Google OAuthはランダムなstateとHttpOnly Cookieでログイン開始元を確認し、確認済みメール・既存の許可リストで編集権限を制限します。stateの期限・再利用・外部戻り先を検証します。Secretsの型は生成ファイルを直接修正せず、`app/types/cloudflare.d.ts`で宣言しています。
+
+### 公開範囲
+
+**元から公開だったコレクションと詳細ページは、従来どおり公開です。** 詳細の思い出メモと商品リンクも従来どおり閲覧できます。新しい展示ページへは、選んだ作品の名前・写真・タグと展示の紹介だけを渡し、メモ・商品リンクは含めません。「非公開の展示」はコレクション全体を非公開にする機能ではありません。
+
+本番の画像はコレクションの公開設計に合わせて、画像URLから閲覧できます。公開済みの写真・リンクを秘密保管に使わないでください。公開停止は展示ページの閲覧を認証必須にしますが、Cloudflare KVの伝播遅延や、既に保存された画像を取り消せません。
+
+コレクションは既存の単一KV配列を維持するため、複数の編集を同時に行うと最後の書き込みが優先される可能性があります。タグ一括更新は一回の読み書きに直し、以前の並列更新で変更が失われる問題を修正しました。多人数の同時編集が必要になった場合は、D1かDurable Objectsへの移行を検討してください。
+
+書き出しJSONは**写真の参照URLと記録**を含みます。写真バイナリのバックアップや、展示の一括書き出しは含みません。今回の閲覧確認用に、本番の`items`をプレビュー専用KVへコピーしました。本番データの変更や自動移行は行っていません。
+
+### PWA
+
+ホーム画面への追加と商品URLの共有先に対応します。Service Workerは静的なアイコン・デザイン素材をキャッシュします。認証・API・コレクション・展示・アップロード画像をキャッシュして古い公開設定を再表示しません。データ閲覧・編集にはネットワーク接続が必要です。
+
+## Cloudflareプレビュー
+
+このプロジェクトのターミナルでWranglerにログインしてから実行します。
+
+```sh
+npx wrangler login
+npm run preview:cloud
+```
+
+現在のGitブランチ名でWorker Previewを作成・更新します。`npm run preview`はローカル確認用です。`wrangler.jsonc`の`previews`には本番とは別のコレクション用・セッション用KVを設定しています。プレビュー間ではこの2つのKVを共有し、実行時に本番KVは参照しません。現在のプレビューには、今回の閲覧確認用に本番の54枚の記録をコピーしています。本番との自動同期は行いません。写真はすべて既存の外部URLを参照し、セッション・Secretsはコピーしていません。開発用サンプルも自動登録しません。
+
+一覧・検索・絞り込み・鑑賞・詳細はログインなしで確認できます。Google OAuth用Secretsは未設定のため、プレビューでのログイン・編集は未確認です。
+
+Googleログインには`GOOGLE_CLIENT_ID`・`GOOGLE_CLIENT_SECRET`・`ALLOWED_EMAILS`が必要です。新しいプレビューへ引き継ぐSecretsはPreview Baseへ登録します。
+
+`SESSION_SECRET`は使いません。セッションはランダムなIDと`SESSIONS` KVで管理します。テンプレートの`VALUE_FROM_CLOUDFLARE`も不要です。
+
+```sh
+npx wrangler preview base-config secret put GOOGLE_CLIENT_ID
+npx wrangler preview base-config secret put GOOGLE_CLIENT_SECRET
+npx wrangler preview base-config secret put ALLOWED_EMAILS
+```
+
+各コマンドの入力欄へ値を入力してください。本番のSecret値を読み出してコピーすることはできません。既存プレビューにはBaseの変更が反映されないため、作成済みのブランチには`npx wrangler preview secret put SECRET_NAME`で個別に登録します。Google側の許可済みリダイレクトURIには、Preview URLの`/auth/callback`を追加してください。商品情報取得・AI分析も試す場合は`OG_API_URL`・`OG_API_KEY`・`GEMINI_API_KEY`を登録します。
+
+Gitから自動生成する場合は、Cloudflareの`Settings > Builds`でGitHub接続と`Enable Preview Builds`を有効にし、Build commandを`npm run build`、Preview commandを`npx wrangler preview`にします。Gitアカウントの切断警告が出る場合は、`Git Repository > Manage`でCloudflare Workers and PagesのGitHub Appにこのリポジトリのアクセス権を再設定してください。WranglerのログインはGit連携の再認可とは別です。
+
+## 検証とリリース
+
+`tests/`では、fake KVとmock HTTPで本番／DEV境界、認証、画像形式・容量、入力保持、保存失敗、バックアップ、タグ一括更新、復元、展示の選択順・公開情報、OAuth、保存名を保持した表示名の短縮を検証します。ブラウザではPC・スマートフォンで追加・鑑賞・検索・共有を確認します。
+
+検証記録とプレビューは[検証記録](docs/verification.md)にまとめています。Pull Requestとmainへのpushでは、GitHub Actionsがテスト・型検査・本番ビルド・依存関係の検査を実行します。
+
+本物のGoogle OAuth、外部の商品情報API、Cloudflare本番KVでの伝播・容量・同時編集、実端末のカメラ撮影・PWAインストールは別途本番設定で確認してください。
+
+```sh
+# 本番設定を確認し、既存データをバックアップしてから実行
+npm run deploy
+```
+
+このリニューアルは独立ブランチで作成しています。本番デプロイとmainへのマージは自動では行いません。
+
+## デザイン素材
+
+一覧の先頭は実際のコレクションです。以前の紹介用イメージ写真は一覧から外しています。ローカルのサンプル柄6点はオリジナルSVGで、奥さまの実物のコレクションではありません。[素材とプロンプト](docs/design-assets.md)を参照してください。
+
+MIT License。

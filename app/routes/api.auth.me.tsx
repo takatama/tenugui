@@ -1,14 +1,13 @@
 import { type LoaderFunctionArgs } from "react-router";
-import { getAuthStateFromRequest } from "../lib/cloudflare-auth";
+import { getAuthStateOptional } from "../lib/auth-guard";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const kv = context.cloudflare.env.SESSIONS;
-
-  const authState = await getAuthStateFromRequest(request, kv);
+  const authState = await getAuthStateOptional(request, context);
 
   return new Response(JSON.stringify(authState), {
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "no-store",
     },
   });
 }

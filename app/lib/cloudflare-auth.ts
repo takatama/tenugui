@@ -19,7 +19,7 @@ export interface SessionData {
 // セッション管理
 export async function createSession(
   user: CloudflareUser,
-  kv: KVNamespace
+  kv: KVNamespace,
 ): Promise<string> {
   const sessionId = crypto.randomUUID();
   const sessionData: SessionData = {
@@ -36,7 +36,7 @@ export async function createSession(
 
 export async function getSession(
   sessionId: string,
-  kv: KVNamespace
+  kv: KVNamespace,
 ): Promise<CloudflareUser | null> {
   if (!sessionId) {
     return null;
@@ -49,8 +49,16 @@ export async function getSession(
 
   try {
     const parsed: SessionData = JSON.parse(sessionData);
+    if (
+      !parsed ||
+      !Number.isFinite(parsed.expires) ||
+      !parsed.user ||
+      typeof parsed.user.email !== "string" ||
+      !parsed.user.email.trim()
+    )
+      return null;
 
-    if (Date.now() > parsed.expires) {
+    if (Date.now() >= parsed.expires) {
       await kv.delete(`session:${sessionId}`);
       return null;
     }
@@ -68,7 +76,7 @@ export async function deleteSession(sessionId: string, kv: KVNamespace) {
 // 認証状態を取得（サーバーサイド）
 export async function getAuthStateFromRequest(
   request: Request,
-  kv: KVNamespace
+  kv: KVNamespace,
 ): Promise<AuthState> {
   const cookieHeader = request.headers.get("Cookie");
   const sessionId = extractSessionId(cookieHeader);
@@ -133,7 +141,7 @@ function extractSessionId(cookieHeader: string | null): string | null {
       acc[name] = value;
       return acc;
     },
-    {} as Record<string, string>
+    {} as Record<string, string>,
   );
 
   return cookies.session || null;
@@ -143,7 +151,7 @@ function extractSessionId(cookieHeader: string | null): string | null {
 export function generateGoogleAuthUrl(
   clientId: string,
   redirectUri: string,
-  state?: string
+  state?: string,
 ): string {
   const params = new URLSearchParams({
     client_id: clientId,

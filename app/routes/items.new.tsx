@@ -1,69 +1,70 @@
-import { createItem, getAllTags } from "../data/items";
 import {
+  data,
   redirect,
   useLoaderData,
-  useSearchParams,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
-} from "react-router-dom";
-import { parseFormData } from "../lib/formUtils";
+} from "react-router";
+import { createItem, getAllTags } from "../data/items";
+import {
+  FormValidationError,
+  parseFormData,
+  toFormValues,
+  type ParsedFormData,
+} from "../lib/formUtils";
 import { ItemForm } from "../components/items/ItemForm";
 import { requireAuth, requireAuthForAction } from "../lib/auth-guard";
 import { extractShareMetadata } from "../lib/urlUtils";
 
+export const meta = () => [{ title: "一枚、仲間入り。 | 手ぬぐい帖" }];
+
 export async function loader({ context, request }: LoaderFunctionArgs) {
-  // 認証チェック（共通化）
   await requireAuth(request, context);
-
-  const kv = context.cloudflare.env.TENUGUI_KV;
-  const existingTags = await getAllTags(kv);
-
-  // Share Target対応: URLパラメータからメタデータを抽出
-  const url = new URL(request.url);
-  const shareData = extractShareMetadata(url.searchParams);
-
-  // デバッグ用ログ
-  console.log("Share Target Debug:", {
-    fullUrl: request.url,
-    searchParams: Object.fromEntries(url.searchParams),
-    shareData,
-  });
-
-  return {
-    existingTags,
-    shareData,
-  };
+  const existingTags = await getAllTags(context.cloudflare.env.TENUGUI_KV);
+  const shareData = extractShareMetadata(new URL(request.url).searchParams);
+  return { existingTags, shareData };
 }
 
 export async function action({ context, request }: ActionFunctionArgs) {
-  // 認証チェック（共通化）
   await requireAuthForAction(request, context);
-
-  const kv = context.cloudflare.env.TENUGUI_KV;
-  const formData = await parseFormData(request);
-
-  const newItem = await createItem(kv, {
-    name: formData.name,
-    imageUrl: formData.imageUrl,
-    productUrl: formData.productUrl,
-    tags: formData.tags,
-    memo: formData.memo,
-    status: formData.status,
-  });
-  return redirect(`/items/${newItem.id}`);
+  let form: ParsedFormData | undefined;
+  try {
+    form = await parseFormData(request);
+    const newItem = await createItem(context.cloudflare.env.TENUGUI_KV, form);
+    return redirect(`/items/${newItem.id}`);
+  } catch (error) {
+    if (error instanceof FormValidationError) {
+      return data(
+        {
+          error: error.message,
+          fieldErrors: error.fieldErrors,
+          values: error.values,
+        },
+        { status: 400 },
+      );
+    }
+    console.error(
+      "Item creation failed",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+    return data(
+      {
+        error:
+          "保存できませんでした。入力内容はそのままです。もう一度お試しください。",
+        values: form ? toFormValues(form) : undefined,
+      },
+      { status: 503 },
+    );
+  }
 }
 
 export default function NewItem() {
   const { existingTags, shareData } = useLoaderData<typeof loader>();
-
-  // デバッグ用：共有データをコンソールに出力
-  console.log("NewItem Component Debug:", { shareData });
-
   return (
     <ItemForm
       existingTags={existingTags}
-      submitLabel="登録する"
-      title="新しい手ぬぐいを登録"
+      submitLabel="この一枚を迎える"
+      title="一枚、仲間入り。"
       initialProductUrl={shareData.url}
     />
   );

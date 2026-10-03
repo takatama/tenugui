@@ -30,8 +30,7 @@ export function hasOgApiConfig(config: AppConfig): boolean {
 export function hasGoogleOAuthConfig(config: AppConfig): boolean {
   return !!(
     config.googleOAuth.clientId &&
-    config.googleOAuth.clientSecret &&
-    config.session.secret
+    config.googleOAuth.clientSecret
   );
 }
 
@@ -57,7 +56,6 @@ export function getAuthConfig(config: AppConfig) {
   return {
     googleClientId: config.googleOAuth.clientId,
     googleClientSecret: config.googleOAuth.clientSecret,
-    sessionSecret: config.session.secret,
     sessionDuration: config.session.duration,
     allowedEmails: config.auth.allowedEmails,
     isAvailable: hasGoogleOAuthConfig(config),

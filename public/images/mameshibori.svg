@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="960" viewBox="0 0 360 960" role="img" aria-labelledby="title desc">
+  <title id="title">藍の豆絞り — サンプルのてぬぐい</title>
+  <desc id="desc">生成りの布地に藍色の小さな絞り模様を並べたオリジナルのサンプル柄。</desc>
+  <defs>
+    <pattern id="beans" width="48" height="52" patternUnits="userSpaceOnUse">
+      <rect width="48" height="52" fill="#f0eadf"/>
+      <path d="M15 10q5-4 10 0q4 4 0 10q-5 4-10 0q-4-6 0-10" fill="#314f67"/>
+      <path d="M17 12q3-2 6 0q2 3 0 6q-3 2-6 0q-2-3 0-6" fill="#eee8dd"/>
+      <path d="M38 35q5-4 10 0q4 4 0 10q-5 4-10 0q-4-6 0-10" fill="#314f67"/>
+      <path d="M40 37q3-2 6 0q2 3 0 6q-3 2-6 0q-2-3 0-6" fill="#eee8dd"/>
+      <path d="M-10 35q5-4 10 0q4 4 0 10q-5 4-10 0q-4-6 0-10" fill="#314f67"/>
+      <path d="M-8 37q3-2 6 0q2 3 0 6q-3 2-6 0q-2-3 0-6" fill="#eee8dd"/>
+    </pattern>
+    <pattern id="weave" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M0 1h5M1 0v5" stroke="#c9bfad" stroke-width=".4" opacity=".2"/></pattern>
+    <linearGradient id="shade"><stop stop-color="#172b41" stop-opacity=".06"/><stop offset=".13" stop-color="#fff" stop-opacity=".08"/><stop offset=".85" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#172b41" stop-opacity=".05"/></linearGradient>
+  </defs>
+  <rect width="360" height="960" fill="url(#beans)"/><rect width="360" height="960" fill="url(#weave)"/><rect width="360" height="960" fill="url(#shade)"/>
+  <path d="M4 3h352M4 957h352" stroke="#d9cebb" stroke-width="2" stroke-dasharray="1 3"/>
+</svg>

@@ -20,7 +20,6 @@ export interface AppConfig {
 
   // セッション設定
   session: {
-    secret?: string;
     duration: number;
   };
 
@@ -54,7 +53,6 @@ export function createAppConfig(env: Cloudflare.Env): AppConfig {
     },
 
     session: {
-      secret: env.SESSION_SECRET,
       duration: SESSION_DURATION,
     },
 
@@ -128,12 +126,6 @@ export function validateGoogleOAuthConfig(config: AppConfig): void {
   if (!config.googleOAuth.clientSecret) {
     throw new ConfigValidationError(
       "GOOGLE_CLIENT_SECRET is required for authentication"
-    );
-  }
-
-  if (!config.session.secret) {
-    throw new ConfigValidationError(
-      "SESSION_SECRET is required for authentication"
     );
   }
 }

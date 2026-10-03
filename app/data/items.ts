@@ -1,5 +1,6 @@
 import type { ItemStatus } from "../types/status";
 import { DEFAULT_STATUS } from "../types/status";
+import { getDemoItems } from "./demo";
 
 export interface Item {
   id: string;
@@ -27,12 +28,19 @@ export interface TagAnalysis {
  * @returns すべての手ぬぐいの配列
  */
 async function getAllItemsFromKV(kv: KVNamespace): Promise<Item[]> {
-  const items: Item[] = (await kv.get("items", "json")) || [];
+  const savedItems = await kv.get<Item[]>("items", "json");
+  // Only local development with an absent key gets examples. Never replace an
+  // existing collection (including an intentionally empty array) or write on read.
+  const items = savedItems ?? (import.meta.env.DEV ? getDemoItems() : []);
   // 既存のアイテムでstatusが未設定の場合は"purchased"をデフォルトとして設定
   return items.map((item) => ({
     ...item,
     status: item.status || DEFAULT_STATUS,
   }));
+}
+
+export async function getIsDemo(kv: KVNamespace): Promise<boolean> {
+  return import.meta.env.DEV && (await kv.get("items")) === null;
 }
 
 /**
@@ -41,7 +49,7 @@ async function getAllItemsFromKV(kv: KVNamespace): Promise<Item[]> {
  */
 export async function getItemById(
   kv: KVNamespace,
-  itemId: string
+  itemId: string,
 ): Promise<Item | undefined> {
   const items = await getAllItemsFromKV(kv);
   return items.find((item) => item.id === itemId);
@@ -70,7 +78,7 @@ export async function createItem(
     tags: string[];
     memo: string;
     status?: ItemStatus;
-  }
+  },
 ): Promise<Item> {
   const items = await getAllItemsFromKV(kv);
 
@@ -97,7 +105,7 @@ export async function createItem(
  */
 export async function deleteItem(
   kv: KVNamespace,
-  itemId: string
+  itemId: string,
 ): Promise<boolean> {
   const items = await getAllItemsFromKV(kv);
   const initialLength = items.length;
@@ -131,7 +139,7 @@ export async function updateItem(
     tags: string[];
     memo: string;
     status?: ItemStatus;
-  }
+  },
 ): Promise<Item | undefined> {
   const items = await getAllItemsFromKV(kv);
   const itemIndex = items.findIndex((item) => item.id === itemId);
@@ -164,7 +172,7 @@ export async function updateItem(
  */
 export async function getItems(
   kv: KVNamespace,
-  tagFilter?: string | null
+  tagFilter?: string | null,
 ): Promise<{
   items: Item[];
   allTags: string[];
@@ -214,7 +222,7 @@ export async function getAllTags(kv: KVNamespace): Promise<string[]> {
  */
 export async function reorderItems(
   kv: KVNamespace,
-  itemIds: string[]
+  itemIds: string[],
 ): Promise<void> {
   const items = await getAllItemsFromKV(kv);
 
