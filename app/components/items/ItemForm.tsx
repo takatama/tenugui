@@ -8,6 +8,7 @@ import {
   useNavigation,
 } from "react-router";
 import type { Item } from "../../data/items";
+import { usePwaReloadGuard } from "../../hooks/usePwaUpdates";
 import { Icon } from "../gallery/Icon";
 import {
   isHttpUrl,
@@ -183,6 +184,7 @@ export function ItemForm({
     memo !== savedValues.current.memo ||
     status !== savedValues.current.status ||
     submittedTags.join(", ") !== savedValues.current.tags;
+  usePwaReloadGuard(unsaved || busy);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
       unsaved &&
@@ -382,6 +384,7 @@ export function ItemForm({
 
       <Form
         method="post"
+        data-pwa-managed-form
         className="item-form-layout"
         noValidate
         aria-busy={busy}

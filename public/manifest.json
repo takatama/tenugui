@@ -1,12 +1,13 @@
 {
-  "version": "0.0.4",
+  "version": "0.0.5",
+  "id": "/",
   "name": "手ぬぐい帖",
   "short_name": "手ぬぐい帖",
   "description": "好きな一枚を集めて、眺めて、分かち合う。私の小さな美術館。",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8f7f3",
-  "theme_color": "#edf0e8",
+  "background_color": "#f6f4ee",
+  "theme_color": "#f6f4ee",
   "orientation": "portrait-primary",
   "categories": ["lifestyle", "productivity"],
   "lang": "ja",
@@ -14,52 +15,64 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/icons/icon-72x72.png?v=hanagara-2",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/icons/icon-96x96.png?v=hanagara-2",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-128x128.png",
+      "src": "/icons/icon-128x128.png?v=hanagara-2",
       "sizes": "128x128",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/icons/icon-144x144.png?v=hanagara-2",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/icons/icon-152x152.png?v=hanagara-2",
       "sizes": "152x152",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/icon-192x192.png?v=hanagara-2",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/icons/icon-384x384.png?v=hanagara-2",
       "sizes": "384x384",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/icon-512x512.png?v=hanagara-2",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png?v=hanagara-2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png?v=hanagara-2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "share_target": {
@@ -80,7 +93,7 @@
       "url": "/items/new",
       "icons": [
         {
-          "src": "/icons/shortcut-add.png",
+          "src": "/icons/shortcut-add.png?v=hanagara-2",
           "sizes": "96x96",
           "type": "image/png"
         }
@@ -93,7 +106,7 @@
       "url": "/",
       "icons": [
         {
-          "src": "/icons/shortcut-list.png",
+          "src": "/icons/shortcut-list.png?v=hanagara-2",
           "sizes": "96x96",
           "type": "image/png"
         }

@@ -8,6 +8,7 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
+import { PwaUpdateNotice } from "./components/PwaUpdateNotice";
 import "./app.css";
 
 export const meta: Route.MetaFunction = () => [
@@ -39,29 +40,29 @@ export const links: Route.LinksFunction = () => [
   },
   // PWA対応
   { rel: "manifest", href: "/manifest.json" },
-  { rel: "apple-touch-icon", href: "/icons/icon-192x192.png" },
+  { rel: "apple-touch-icon", sizes: "180x180", href: "/icons/icon-180x180.png?v=hanagara-2" },
   {
     rel: "icon",
     type: "image/x-icon",
-    href: "/icons/favicon.ico",
+    href: "/icons/favicon.ico?v=hanagara-2",
   },
   {
     rel: "icon",
     type: "image/png",
     sizes: "32x32",
-    href: "/icons/icon-32x32.png",
+    href: "/icons/icon-32x32.png?v=hanagara-2",
   },
   {
     rel: "icon",
     type: "image/png",
     sizes: "16x16",
-    href: "/icons/icon-16x16.png",
+    href: "/icons/icon-16x16.png?v=hanagara-2",
   },
   {
     rel: "icon",
     type: "image/svg+xml",
     sizes: "any",
-    href: "/icons/favicon.svg",
+    href: "/icons/favicon.svg?v=hanagara-2",
   },
 ];
 
@@ -71,11 +72,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#edf0e8" />
+        <meta name="theme-color" content="#f6f4ee" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Tenugui" />
+        <meta name="apple-mobile-web-app-title" content="手ぬぐい帖" />
         <Meta />
         <Links />
       </head>
@@ -83,30 +84,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then((registration) => {
-                      console.log('SW registered: ', registration);
-                    })
-                    .catch((registrationError) => {
-                      console.log('SW registration failed: ', registrationError);
-                    });
-                });
-              }
-            `,
-          }}
-        />
       </body>
     </html>
   );
 }
 
 export default function App() {
-  return <Outlet />;
+  return <><Outlet /><PwaUpdateNotice /></>;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

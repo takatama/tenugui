@@ -1,0 +1,2 @@
+# Keep the Bash icon-generation wrapper runnable after checkout on Windows.
+scripts/*.sh text eol=lf
