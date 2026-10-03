@@ -16,6 +16,7 @@ import {
   type ItemFormValues,
 } from "../../lib/formUtils";
 import "./item-pages.css";
+import "./item-form-refinement.css";
 
 interface ItemFormProps {
   existingTags: string[];
@@ -135,6 +136,7 @@ export function ItemForm({
   const [candidateImages, setCandidateImages] = useState<string[]>([]);
   const [imageFailed, setImageFailed] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [recordOpen, setRecordOpen] = useState(!!initialItem);
   const photoInput = useRef<HTMLInputElement>(null);
   const cameraInput = useRef<HTMLInputElement>(null);
   const errorSummary = useRef<HTMLDivElement>(null);
@@ -207,7 +209,17 @@ export function ItemForm({
     setImageFailed(false);
   }, [imageUrl]);
   useEffect(() => {
-    if (actionData?.error) errorSummary.current?.focus();
+    if (actionData?.error) {
+      if (
+        actionData.fieldErrors?.name ||
+        actionData.fieldErrors?.tags ||
+        actionData.fieldErrors?.memo ||
+        actionData.fieldErrors?.productUrl
+      ) {
+        setRecordOpen(true);
+      }
+      errorSummary.current?.focus();
+    }
   }, [actionData]);
 
   const correctField = (field: keyof ItemFormValues) => {
@@ -332,7 +344,7 @@ export function ItemForm({
         setMessage(
           images.length > 1
             ? "写真の候補を見つけました。お気に入りの一枚を選んでください。"
-            : "商品情報を読み込みました。あなたの言葉で、名前を付けても。",
+            : "写真と名前を読み込みました。このまま追加できます。",
         );
       } else {
         setMessage(
@@ -351,7 +363,7 @@ export function ItemForm({
   };
 
   return (
-    <div className="item-page">
+    <div className="item-page item-form-page">
       <Link to={cancelUrl} className="item-back">
         <Icon name="arrow" size={16} />
         {initialItem ? "一枚の記録に戻る" : "コレクションに戻る"}
@@ -363,8 +375,8 @@ export function ItemForm({
         <h1>{title}</h1>
         <p>
           {initialItem
-            ? "名前も、思い出も。あなたらしい言葉で。"
-            : "心に残った柄を、あなたの棚へ。写真だけでも、仲間入り。"}
+            ? "写真や記録を、ここで整えられます。"
+            : "手元の一枚も、これから迎えたい一枚も。写真かお店のURLから。"}
         </p>
       </header>
 
@@ -378,7 +390,12 @@ export function ItemForm({
           setMessage("");
         }}
       >
-        <aside className="item-form-preview">
+        <aside
+          className={
+            "item-form-preview" +
+            (hasImage || imageFailed ? " is-ready" : " is-empty")
+          }
+        >
           <div className="item-photo-mat">
             {hasImage ? (
               <img
@@ -436,8 +453,8 @@ export function ItemForm({
               {(
                 [
                   ["photo", "写真から"],
+                  ["product", "お店のURLから"],
                   ["image", "画像URLから"],
-                  ["product", "お店のページから"],
                 ] as const
               ).map(([value, label]) => (
                 <button
@@ -473,8 +490,8 @@ export function ItemForm({
                 }}
               >
                 <Icon name="upload" size={28} />
-                <p>お気に入りの柄を、そのまま。</p>
-                <span>写真を選ぶか、ここにドラッグしてください</span>
+                <p>好きな一枚を、ここから。</p>
+                <span>写真を選ぶか、その場で撮影できます。</span>
                 <div className="item-upload-actions">
                   <button
                     type="button"
@@ -512,7 +529,6 @@ export function ItemForm({
                   hidden
                   onChange={selectPhoto}
                 />
-                <small>写真は見やすいサイズに整えて保存します。</small>
               </div>
             )}
 
@@ -554,6 +570,15 @@ export function ItemForm({
                       correctField("productUrl");
                       setProductUrl(event.target.value);
                     }}
+                    onKeyDown={(event) => {
+                      if (
+                        event.key === "Enter" &&
+                        !event.nativeEvent.isComposing
+                      ) {
+                        event.preventDefault();
+                        if (!busy && productUrl.trim()) void analyzeProduct();
+                      }
+                    }}
                     placeholder="https://..."
                     aria-invalid={!!fields.productUrl}
                     aria-describedby={
@@ -567,11 +592,11 @@ export function ItemForm({
                     onClick={analyzeProduct}
                     disabled={busy || !productUrl.trim()}
                   >
-                    {analyzing ? "読み込み中…" : "情報を読み込む"}
+                    {analyzing ? "読み込み中…" : "写真を読み込む"}
                   </button>
                 </div>
                 <small id="product-hint">
-                  名前と写真を探します。読み込んだ内容は自由に変えられます。
+                  お店の写真と名前を読み込みます。
                 </small>
                 {fields.productUrl && (
                   <p className="item-field-error" id="product-error">
@@ -589,6 +614,7 @@ export function ItemForm({
                     className={imageUrl === url ? "is-selected" : ""}
                     aria-pressed={imageUrl === url}
                     aria-label={`写真の候補 ${index + 1}`}
+                    disabled={busy}
                     onClick={() => {
                       correctField("imageUrl");
                       setImageUrl(url);
@@ -612,45 +638,13 @@ export function ItemForm({
             )}
           </section>
 
-          <section
-            className="item-form-section"
-            aria-labelledby="record-heading"
-          >
+          <section className="item-form-section item-collection-status">
             <div className="item-section-heading">
               <span>02</span>
-              <h2 id="record-heading">
-                記録を添える<small>あとからでも</small>
-              </h2>
+              <h2>今は、どちら？</h2>
             </div>
-            <div className="item-field">
-              <label htmlFor="name">
-                この一枚の名前<span>任意</span>
-              </label>
-              <input
-                id="name"
-                name="name"
-                value={name}
-                onChange={(event) => {
-                  correctField("name");
-                  setName(event.target.value);
-                }}
-                placeholder="例：春を待つ、桜の一枚"
-                maxLength={200}
-                aria-invalid={!!fields.name}
-                aria-describedby={fields.name ? "name-error" : "name-hint"}
-              />
-              <small id="name-hint">
-                空欄のままなら「名もなき一枚」として保存します。
-              </small>
-              {fields.name && (
-                <p className="item-field-error" id="name-error">
-                  {fields.name}
-                </p>
-              )}
-            </div>
-
             <fieldset className="item-status-field">
-              <legend>この一枚は</legend>
+              <legend className="sr-only">この一枚の収集状況</legend>
               <label className={status === "purchased" ? "is-selected" : ""}>
                 <input
                   type="radio"
@@ -662,7 +656,6 @@ export function ItemForm({
                     setStatus("purchased");
                   }}
                 />
-                <Icon name="check" size={16} />
                 <span>手元にある</span>
               </label>
               <label className={status === "unpurchased" ? "is-selected" : ""}>
@@ -676,152 +669,202 @@ export function ItemForm({
                     setStatus("unpurchased");
                   }}
                 />
-                <Icon name="eye" size={16} />
                 <span>気になる</span>
               </label>
             </fieldset>
-
-            <div className="item-field">
-              <label htmlFor="new-tags">
-                タグ<span>任意</span>
-              </label>
-              <div className="item-input-action">
-                <input
-                  id="new-tags"
-                  value={tagInput}
-                  onChange={(event) => {
-                    correctField("tags");
-                    setTagInput(event.target.value);
-                  }}
-                  onKeyDown={(event) => {
-                    if (
-                      event.key === "Enter" &&
-                      !event.nativeEvent.isComposing
-                    ) {
-                      event.preventDefault();
-                      addTags();
-                    }
-                  }}
-                  placeholder="桜、旅の思い出、青…"
-                  maxLength={500}
-                  aria-describedby={fields.tags ? "tags-error" : "tags-hint"}
-                />
-                <button
-                  type="button"
-                  className="item-button item-button-quiet"
-                  onClick={addTags}
-                  disabled={!tagInput.trim()}
-                >
-                  追加
-                </button>
-              </div>
-              <small id="tags-hint">
-                季節や色、思い出。好きな言葉でつながります。
-              </small>
-              {tags.length > 0 && (
-                <div className="item-tag-options">
-                  {tags.map((tag) => (
-                    <button
-                      type="button"
-                      className="is-selected"
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      aria-label={`${tag} を外す`}
-                    >
-                      {tag}
-                      <Icon name="close" size={12} />
-                    </button>
-                  ))}
-                </div>
-              )}
-              {existingTags.filter((tag) => !tags.includes(tag)).length > 0 && (
-                <div className="item-existing-tags">
-                  <span>これまでのタグ</span>
-                  <div className="item-tag-options">
-                    {existingTags
-                      .filter((tag) => !tags.includes(tag))
-                      .slice(0, 15)
-                      .map((tag) => (
-                        <button
-                          type="button"
-                          key={tag}
-                          onClick={() => toggleTag(tag)}
-                        >
-                          {tag}
-                          <Icon name="plus" size={12} />
-                        </button>
-                      ))}
-                  </div>
-                </div>
-              )}
-              {fields.tags && (
-                <p className="item-field-error" id="tags-error">
-                  {fields.tags}
-                </p>
-              )}
-            </div>
-
-            <div className="item-field">
-              <label htmlFor="memo">
-                思い出・ひとこと<span>任意</span>
-              </label>
-              <textarea
-                id="memo"
-                name="memo"
-                rows={4}
-                value={memo}
-                onChange={(event) => {
-                  correctField("memo");
-                  setMemo(event.target.value);
-                }}
-                placeholder="出会った場所、好きなところ。この柄を見ると思い出すこと。"
-                maxLength={10000}
-                aria-invalid={!!fields.memo}
-                aria-describedby={fields.memo ? "memo-error" : undefined}
-              />
-              {fields.memo && (
-                <p className="item-field-error" id="memo-error">
-                  {fields.memo}
-                </p>
-              )}
-            </div>
-
-            {mode !== "product" && (
-              <details
-                className="item-product-optional"
-                open={!!fields.productUrl || undefined}
-              >
-                <summary>
-                  見つけたお店のURLを添える<span>任意</span>
-                </summary>
-                <div className="item-field">
-                  <label htmlFor="product-extra" className="sr-only">
-                    商品ページのURL
-                  </label>
-                  <input
-                    id="product-extra"
-                    type="url"
-                    inputMode="url"
-                    value={productUrl}
-                    onChange={(event) => {
-                      correctField("productUrl");
-                      setProductUrl(event.target.value);
-                    }}
-                    placeholder="https://..."
-                    aria-invalid={!!fields.productUrl}
-                  />
-                  {fields.productUrl && (
-                    <p className="item-field-error">{fields.productUrl}</p>
-                  )}
-                </div>
-              </details>
-            )}
           </section>
+
+          <details
+            className="item-record-optional"
+            open={recordOpen}
+            onToggle={(event) => setRecordOpen(event.currentTarget.open)}
+          >
+            <summary>
+              <span>名前・タグ・思い出</span>
+              <small>あとからでも</small>
+              <Icon name="plus" size={16} />
+            </summary>
+            <div className="item-record-content">
+              <div className="item-field">
+                <label htmlFor="name">
+                  この一枚の名前<span>任意</span>
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  value={name}
+                  onChange={(event) => {
+                    correctField("name");
+                    setName(event.target.value);
+                  }}
+                  placeholder="例：春を待つ、桜の一枚"
+                  maxLength={200}
+                  aria-invalid={!!fields.name}
+                  aria-describedby={fields.name ? "name-error" : "name-hint"}
+                />
+                <small id="name-hint">名前を付けなくても追加できます。</small>
+                {fields.name && (
+                  <p className="item-field-error" id="name-error">
+                    {fields.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="item-field">
+                <label htmlFor="new-tags">
+                  タグ<span>任意</span>
+                </label>
+                <div className="item-input-action">
+                  <input
+                    id="new-tags"
+                    value={tagInput}
+                    onChange={(event) => {
+                      correctField("tags");
+                      setTagInput(event.target.value);
+                    }}
+                    onKeyDown={(event) => {
+                      if (
+                        event.key === "Enter" &&
+                        !event.nativeEvent.isComposing
+                      ) {
+                        event.preventDefault();
+                        addTags();
+                      }
+                    }}
+                    placeholder="桜、旅の思い出、青…"
+                    maxLength={500}
+                    aria-invalid={!!fields.tags}
+                    aria-describedby={fields.tags ? "tags-error" : "tags-hint"}
+                  />
+                  <button
+                    type="button"
+                    className="item-button item-button-quiet"
+                    onClick={addTags}
+                    disabled={!tagInput.trim()}
+                  >
+                    追加
+                  </button>
+                </div>
+                <small id="tags-hint">
+                  季節や色、思い出。好きな言葉でつながります。
+                </small>
+                {tags.length > 0 && (
+                  <div className="item-tag-options">
+                    {tags.map((tag) => (
+                      <button
+                        type="button"
+                        className="is-selected"
+                        key={tag}
+                        onClick={() => toggleTag(tag)}
+                        aria-label={`${tag} を外す`}
+                      >
+                        {tag}
+                        <Icon name="close" size={12} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {existingTags.filter((tag) => !tags.includes(tag)).length >
+                  0 && (
+                  <div className="item-existing-tags">
+                    <span>これまでのタグ</span>
+                    <div className="item-tag-options">
+                      {existingTags
+                        .filter((tag) => !tags.includes(tag))
+                        .slice(0, 15)
+                        .map((tag) => (
+                          <button
+                            type="button"
+                            key={tag}
+                            onClick={() => toggleTag(tag)}
+                          >
+                            {tag}
+                            <Icon name="plus" size={12} />
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+                {fields.tags && (
+                  <p className="item-field-error" id="tags-error">
+                    {fields.tags}
+                  </p>
+                )}
+              </div>
+
+              <div className="item-field">
+                <label htmlFor="memo">
+                  思い出・ひとこと<span>任意</span>
+                </label>
+                <textarea
+                  id="memo"
+                  name="memo"
+                  rows={4}
+                  value={memo}
+                  onChange={(event) => {
+                    correctField("memo");
+                    setMemo(event.target.value);
+                  }}
+                  placeholder="出会った場所、好きなところ。この柄を見ると思い出すこと。"
+                  maxLength={10000}
+                  aria-invalid={!!fields.memo}
+                  aria-describedby={fields.memo ? "memo-error" : undefined}
+                />
+                {fields.memo && (
+                  <p className="item-field-error" id="memo-error">
+                    {fields.memo}
+                  </p>
+                )}
+              </div>
+
+              {mode !== "product" && (
+                <details
+                  className="item-product-optional"
+                  open={!!fields.productUrl || undefined}
+                >
+                  <summary>
+                    見つけたお店のURLを添える<span>任意</span>
+                    <Icon name="plus" size={14} />
+                  </summary>
+                  <div className="item-field">
+                    <label htmlFor="product-extra" className="sr-only">
+                      商品ページのURL
+                    </label>
+                    <input
+                      id="product-extra"
+                      type="url"
+                      inputMode="url"
+                      value={productUrl}
+                      onChange={(event) => {
+                        correctField("productUrl");
+                        setProductUrl(event.target.value);
+                      }}
+                      placeholder="https://..."
+                      aria-invalid={!!fields.productUrl}
+                      aria-describedby={
+                        fields.productUrl ? "product-extra-error" : undefined
+                      }
+                    />
+                    {fields.productUrl && (
+                      <p className="item-field-error" id="product-extra-error">
+                        {fields.productUrl}
+                      </p>
+                    )}
+                  </div>
+                </details>
+              )}
+            </div>
+          </details>
 
           <input type="hidden" name="imageUrl" value={imageUrl} />
           <input type="hidden" name="productUrl" value={productUrl} />
           <input type="hidden" name="tags" value={submittedTags.join(", ")} />
           <div className="item-form-submit">
+            {!initialItem && (
+              <p className="item-form-reassurance">
+                写真と収集状況だけで、仲間入り。
+              </p>
+            )}
             <button
               type="submit"
               className="item-button item-button-primary"

@@ -8,6 +8,7 @@ import {
 import { getItemById, deleteItem } from "../data/items";
 import { ItemDetailView } from "../components/items/ItemDetailView";
 import { requireAuthForAction } from "../lib/auth-guard";
+import { getDisplayName } from "../lib/itemPresentation";
 
 export async function loader({ context, params }: LoaderFunctionArgs) {
   if (!params.itemId)
@@ -27,7 +28,7 @@ export const meta = ({
 }) => [
   {
     title: loaderData?.item
-      ? `${loaderData.item.name} | 手ぬぐい帖`
+      ? `${getDisplayName(loaderData.item.name)} | 手ぬぐい帖`
       : "一枚の記録",
   },
   {

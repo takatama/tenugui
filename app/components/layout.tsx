@@ -3,36 +3,38 @@ import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import { useFavorites } from "../hooks/useFavorites";
 import { Icon } from "./gallery/Icon";
+import "./layout-refinement.css";
+
 export default function Layout() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const { favorites } = useFavorites();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const isFavorites =
+    location.pathname === "/" &&
+    new URLSearchParams(location.search).get("view") === "favorites";
+  const collectionActive = location.pathname === "/" && !isFavorites;
+  const closeMenu = () => setMenuOpen(false);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.key]);
+
   useEffect(() => {
     if (!menuOpen) return;
-    const previousFocus =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
+    // The header becomes inert while open, so remember the opener explicitly.
+    const previousFocus = menuButtonRef.current;
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const visibleControls = () =>
-      [
-        menuButtonRef.current,
-        ...Array.from(
-          menuRef.current?.querySelectorAll<HTMLElement>(
-            "a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])",
-          ) || [],
-        ),
-      ].filter(
-        (element): element is HTMLElement =>
-          !!element && element.getClientRects().length > 0,
-      );
-    const firstLink = visibleControls().find(
-      (element) => element !== menuButtonRef.current,
-    );
-    (firstLink || menuButtonRef.current)?.focus();
+      Array.from(
+        menuRef.current?.querySelectorAll<HTMLElement>(
+          "a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])",
+        ) || [],
+      ).filter((element) => element.getClientRects().length > 0);
+    visibleControls()[0]?.focus();
     const keydown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -41,8 +43,8 @@ export default function Layout() {
       }
       if (event.key !== "Tab") return;
       const controls = visibleControls();
-      const first = controls[0],
-        last = controls[controls.length - 1];
+      const first = controls[0];
+      const last = controls[controls.length - 1];
       const current = document.activeElement;
       if (!first || !last) return;
       if (
@@ -59,139 +61,136 @@ export default function Layout() {
         first.focus();
       }
     };
-    const mobile = window.matchMedia("(max-width: 900px)");
-    const resize = () => {
-      if (!mobile.matches) setMenuOpen(false);
-    };
     document.addEventListener("keydown", keydown);
-    mobile.addEventListener("change", resize);
     return () => {
       document.removeEventListener("keydown", keydown);
-      mobile.removeEventListener("change", resize);
       document.body.style.overflow = oldOverflow;
       if (previousFocus?.isConnected && previousFocus.getClientRects().length)
         previousFocus.focus({ preventScroll: true });
     };
   }, [menuOpen]);
-  const location = useLocation();
-  const isFavorites =
-    new URLSearchParams(location.search).get("view") === "favorites";
-  const closeMenu = () => setMenuOpen(false);
+
   return (
     <div className="app-shell">
-      <a className="skip-link" href="#main-content">
+      <a
+        className="skip-link"
+        href="#main-content"
+        tabIndex={menuOpen ? -1 : undefined}
+        aria-hidden={menuOpen || undefined}
+      >
         本文へ移動
       </a>
-      <header className="mobile-header">
-        <Link
-          to="/"
-          className="brand"
-          onClick={closeMenu}
-          tabIndex={menuOpen ? -1 : undefined}
-          aria-hidden={menuOpen || undefined}
-        >
-          <BrandMark />
-          <span>
-            tenugui<span className="brand-japanese">手ぬぐい帖</span>
-          </span>
-        </Link>
-        <button
-          ref={menuButtonRef}
-          className="icon-button"
-          aria-label={menuOpen ? "メニューを閉じる" : "メニューを開く"}
-          aria-expanded={menuOpen}
-          aria-controls="sidebar"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          <Icon name={menuOpen ? "close" : "menu"} />
-        </button>
+      <header
+        className="shell-header"
+        inert={menuOpen || undefined}
+        aria-hidden={menuOpen || undefined}
+      >
+        <div className="shell-header-inner">
+          <Link to="/" className="brand shell-brand">
+            <BrandMark />
+            <span>
+              tenugui<span className="brand-japanese">手ぬぐい帖</span>
+            </span>
+          </Link>
+          <nav className="header-navigation" aria-label="コレクション">
+            <CollectionLinks
+              collectionActive={collectionActive}
+              favoritesActive={isFavorites}
+              favoritesCount={favorites.length}
+            />
+          </nav>
+          <button
+            ref={menuButtonRef}
+            className="icon-button shell-menu-trigger"
+            type="button"
+            aria-label="メニューを開く"
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
+            aria-controls="collection-menu"
+            onClick={() => setMenuOpen(true)}
+          >
+            <Icon name="menu" size={20} />
+          </button>
+        </div>
       </header>
       {menuOpen && (
-        <button
-          className="sidebar-backdrop"
-          aria-label="メニューを閉じる"
-          onClick={closeMenu}
-        />
-      )}
-      <div
-        id="sidebar"
-        role="complementary"
-        ref={menuRef}
-        className={`sidebar ${menuOpen ? "is-open" : ""}`}
-        style={menuOpen ? { overflowY: "auto" } : undefined}
-      >
-        <Link to="/" className="brand desktop-brand" onClick={closeMenu}>
-          <BrandMark />
-          <span>
-            tenugui<span className="brand-japanese">手ぬぐい帖</span>
-          </span>
-        </Link>
-        <div className="sidebar-intro">一枚ずつ、私らしい世界。</div>
-        <span className="sidebar-label">MY LITTLE MUSEUM</span>
-        <nav className="primary-nav" aria-label="メインメニュー">
-          <Link
-            to="/"
-            className={`nav-item ${location.pathname === "/" && !isFavorites ? "active" : ""}`}
-            aria-current={
-              location.pathname === "/" && !isFavorites ? "page" : undefined
-            }
+        <>
+          <button
+            className="collection-menu-backdrop"
+            type="button"
+            tabIndex={-1}
+            aria-label="メニューを閉じる"
+            aria-hidden="true"
             onClick={closeMenu}
+          />
+          <div
+            id="collection-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="collection-menu-title"
+            ref={menuRef}
+            className="collection-menu"
           >
-            <Icon name="grid" size={18} />
-            コレクション
-          </Link>
-          <Link
-            to="/?view=favorites"
-            className={`nav-item ${isFavorites ? "active" : ""}`}
-            aria-current={isFavorites ? "page" : undefined}
-            onClick={closeMenu}
-          >
-            <Icon name="heart" size={18} />
-            お気に入り<span className="nav-count">{favorites.length}</span>
-          </Link>
-          <NavLink to="/exhibitions" className="nav-item" onClick={closeMenu}>
-            <Icon name="book" size={18} />
-            私の展示室
-          </NavLink>
-        </nav>
-        <div className="sidebar-divider" />
-        <span className="sidebar-label">COLLECT A LITTLE JOY</span>
-        <p className="sidebar-note">
-          心にとまった色、柄、季節。
-          <br />
-          好きなものを、少しずつ。
-        </p>
-        <Link to="/items/new" className="sidebar-add" onClick={closeMenu}>
-          <Icon name="plus" size={17} />
-          新しい一枚を迎える
-        </Link>
-        <div className="sidebar-bottom">
-          <div className="sidebar-plant">
-            <Icon name="leaf" size={34} />
-            <p>好きなものと、暮らす。</p>
-            <span>A COLLECTION OF SMALL JOYS</span>
-          </div>
-          <NavLink
-            to="/settings"
-            className="nav-item settings-link"
-            onClick={closeMenu}
-          >
-            <Icon name="settings" size={17} />
-            コレクションを整える
-          </NavLink>
-          <div className="profile">
-            <div className="profile-avatar">
-              {user?.name?.slice(0, 1) || "私"}
+            <div className="collection-menu-heading">
+              <span id="collection-menu-title">手ぬぐい帖</span>
+              <button
+                className="icon-button"
+                type="button"
+                aria-label="メニューを閉じる"
+                onClick={closeMenu}
+              >
+                <Icon name="close" size={20} />
+              </button>
             </div>
-            <div>
+            <p className="collection-menu-note">好きなものと、暮らす。</p>
+            <nav className="drawer-navigation" aria-label="メインメニュー">
+              <CollectionLinks
+                collectionActive={collectionActive}
+                favoritesActive={isFavorites}
+                favoritesCount={favorites.length}
+                onNavigate={closeMenu}
+              />
+              <Link
+                to="/items/new"
+                className="nav-item drawer-add"
+                onClick={closeMenu}
+              >
+                <Icon name="plus" size={19} />
+                一枚を追加
+              </Link>
+            </nav>
+            <div className="drawer-secondary">
+              <NavLink
+                to="/exhibitions"
+                className="drawer-secondary-link"
+                onClick={closeMenu}
+              >
+                <Icon name="book" size={18} />
+                <span>
+                  展示をつくる
+                  <small>選んで並べたいときに</small>
+                </span>
+                <Icon name="chevron" size={15} />
+              </NavLink>
+              <NavLink
+                to="/settings"
+                className="drawer-secondary-link"
+                onClick={closeMenu}
+              >
+                <Icon name="settings" size={18} />
+                <span>設定とバックアップ</span>
+                <Icon name="chevron" size={15} />
+              </NavLink>
+            </div>
+            <div className="drawer-account">
               <span>
                 {isLoading
                   ? "手ぬぐい帖"
                   : isAuthenticated
                     ? import.meta.env.DEV
-                      ? "私のアトリエ"
-                      : user?.name || "私のアトリエ"
-                    : "ようこそ、手ぬぐい帖へ"}
+                      ? "私の手ぬぐい帖"
+                      : user?.name || "私の手ぬぐい帖"
+                    : "あなたの好きな一枚を、ここに。"}
               </span>
               <a
                 href={
@@ -199,45 +198,69 @@ export default function Layout() {
                 }
               >
                 {isAuthenticated ? "ログアウト" : "Googleでログイン"}
+                <Icon name="arrow" size={16} />
               </a>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
       <div
         className="main-shell"
         inert={menuOpen || undefined}
         aria-hidden={menuOpen || undefined}
       >
-        <div className="top-bar">
-          <span>
-            <Icon name="leaf" size={16} />
-            私の小さな美術館
-          </span>
-          <div>
-            <span className="season-note">
-              <Icon name="sun" size={16} />
-              日々の、小さなよろこび
-            </span>
-            <Link to="/items/new" className="top-add">
-              <Icon name="plus" size={16} />
-              一枚を追加
-            </Link>
-          </div>
-        </div>
         <main id="main-content">
           <Outlet />
         </main>
         <footer className="site-footer">
           <span>
-            tenugui <span>— 手ぬぐいと、日々をつづる。</span>
+            tenugui <span>— 好きな一枚と、日々を。</span>
           </span>
-          <span>Made for the things you love.</span>
+          <span>Collected with love.</span>
         </footer>
       </div>
     </div>
   );
 }
+
+function CollectionLinks({
+  collectionActive,
+  favoritesActive,
+  favoritesCount,
+  onNavigate,
+}: {
+  collectionActive: boolean;
+  favoritesActive: boolean;
+  favoritesCount: number;
+  onNavigate?: () => void;
+}) {
+  return (
+    <>
+      <Link
+        to="/"
+        className={`nav-item ${collectionActive ? "active" : ""}`}
+        aria-current={collectionActive ? "page" : undefined}
+        onClick={onNavigate}
+      >
+        <Icon name="grid" size={17} />
+        コレクション
+      </Link>
+      <Link
+        to="/?view=favorites"
+        className={`nav-item ${favoritesActive ? "active" : ""}`}
+        aria-current={favoritesActive ? "page" : undefined}
+        onClick={onNavigate}
+      >
+        <Icon name="heart" size={17} />
+        お気に入り
+        {favoritesCount > 0 && (
+          <span className="nav-count">{favoritesCount}</span>
+        )}
+      </Link>
+    </>
+  );
+}
+
 function BrandMark() {
   return (
     <svg

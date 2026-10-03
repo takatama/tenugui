@@ -4,6 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useFavorites } from "../../hooks/useFavorites";
 import type { Item } from "../../data/items";
 import { isHttpUrl, isValidImageUrl } from "../../lib/formUtils";
+import { getDisplayName } from "../../lib/itemPresentation";
 import { Icon } from "../gallery/Icon";
 import "./item-pages.css";
 
@@ -20,8 +21,10 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
   const [zoomOpen, setZoomOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const photoDialog = useRef<HTMLDialogElement>(null);
+  const photoTrigger = useRef<HTMLElement | null>(null);
   const deleteDialog = useRef<HTMLDialogElement>(null);
   const deleting = navigation.state !== "idle";
+  const displayName = getDisplayName(item.name);
   const hasPhoto = isValidImageUrl(item.imageUrl) && !imageFailed;
   const productUrl =
     item.productUrl && isHttpUrl(item.productUrl) ? item.productUrl : undefined;
@@ -39,6 +42,10 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
   }, [zoomOpen, deleteOpen]);
 
   const openPhoto = () => {
+    photoTrigger.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     photoDialog.current?.showModal();
     setZoomOpen(true);
   };
@@ -50,7 +57,7 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
           <Icon name="arrow" size={16} />
           コレクションに戻る
         </Link>
-        <span className="item-eyebrow">ONE PIECE, ONE STORY</span>
+        <span className="item-eyebrow">A PIECE OF MY WORLD</span>
       </div>
       {actionData?.error && (
         <p className="item-alert" role="alert">
@@ -65,12 +72,15 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
                 type="button"
                 className="item-photo-open"
                 onClick={openPhoto}
-                aria-label={`${item.name} の写真を大きく見る`}
+                aria-label={`${displayName} の写真を大きく見る`}
               >
                 <img
                   src={item.imageUrl}
-                  alt={item.name}
+                  alt={displayName}
                   className="item-detail-image"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
                   onError={() => setImageFailed(true)}
                 />
                 <span className="item-photo-zoom-label">
@@ -125,7 +135,13 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
               />
             </button>
           </div>
-          <h1>{item.name}</h1>
+          <h1>{displayName}</h1>
+          {displayName !== item.name && (
+            <details className="item-original-name">
+              <summary>商品名を見る</summary>
+              <p>{item.name}</p>
+            </details>
+          )}
           <div className="item-detail-rule" />
           {!!item.tags?.length && (
             <div className="item-detail-tags" aria-label="この一枚のタグ">
@@ -137,28 +153,25 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
             </div>
           )}
 
-          <section
-            className="item-detail-memo"
-            aria-labelledby="memory-heading"
-          >
-            <h2 id="memory-heading">
-              <Icon name="book" size={17} />
-              この一枚のこと
-            </h2>
-            {item.memo ? (
+          {item.memo ? (
+            <section
+              className="item-detail-memo"
+              aria-labelledby="memory-heading"
+            >
+              <h2 id="memory-heading">
+                <Icon name="book" size={17} />
+                この一枚のこと
+              </h2>
               <p>{item.memo}</p>
-            ) : (
-              <div className="item-memory-empty">
-                <p>この一枚の思い出は、これから。</p>
-                {isAuthenticated && (
-                  <Link to={`/items/${item.id}/edit#memo`}>
-                    ひとこと書き添える
-                    <Icon name="arrow" size={14} />
-                  </Link>
-                )}
-              </div>
-            )}
-          </section>
+            </section>
+          ) : isAuthenticated ? (
+            <div className="item-memory-empty">
+              <Link to={`/items/${item.id}/edit#memo`}>
+                ひとこと書き添える
+                <Icon name="arrow" size={14} />
+              </Link>
+            </div>
+          ) : null}
 
           {productUrl && (
             <a
@@ -197,37 +210,47 @@ export function ItemDetailView({ item }: ItemDetailViewProps) {
               {favoriteError}
             </p>
           )}
-          <p className="item-detail-footnote">好きな柄と、好きな時間。</p>
         </div>
       </div>
 
       <dialog
         className="item-zoom-dialog"
         ref={photoDialog}
-        aria-label={`${item.name} の写真`}
-        onClose={() => setZoomOpen(false)}
+        aria-label={`${displayName} の写真`}
+        onClose={() => {
+          setZoomOpen(false);
+          if (photoTrigger.current?.isConnected)
+            photoTrigger.current.focus({ preventScroll: true });
+        }}
         onClick={(event) => {
           if (event.target === event.currentTarget)
             photoDialog.current?.close();
         }}
       >
-        <button
-          type="button"
-          className="item-zoom-close"
-          onClick={() => photoDialog.current?.close()}
-          aria-label="写真を閉じる"
-        >
-          <Icon name="close" size={24} />
-        </button>
-        <img
-          src={hasPhoto ? item.imageUrl : undefined}
-          alt={item.name}
-          onError={() => {
-            photoDialog.current?.close();
-            setImageFailed(true);
-          }}
-        />
-        <p>{item.name}</p>
+        <div className="item-zoom-top">
+          <span>柄の全体を、ゆっくり。</span>
+          <button
+            type="button"
+            className="item-zoom-close"
+            onClick={() => photoDialog.current?.close()}
+            aria-label="写真を閉じる"
+          >
+            <Icon name="close" size={24} />
+          </button>
+        </div>
+        <div className="item-zoom-art">
+          {zoomOpen && hasPhoto && (
+            <img
+              src={item.imageUrl}
+              alt={displayName}
+              onError={() => {
+                photoDialog.current?.close();
+                setImageFailed(true);
+              }}
+            />
+          )}
+        </div>
+        <p>{displayName}</p>
       </dialog>
 
       <dialog

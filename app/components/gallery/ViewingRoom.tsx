@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { Item } from "../../data/items";
+import { getDisplayName } from "../../lib/itemPresentation";
 import { Artwork } from "./Artwork";
 import { Icon } from "./Icon";
+import "./viewing-room.css";
 export function ViewingRoom({
   items,
   initialIndex = 0,
@@ -76,69 +78,80 @@ export function ViewingRoom({
         }
       }}
     >
-      <div className="viewing-top">
-        <span className="eyebrow">A MOMENT WITH YOUR COLLECTION</span>
+      <header className="viewing-top">
+        <div className="viewing-context">
+          <span>COLLECTION</span>
+          <p>一枚ずつ、眺める</p>
+        </div>
         <button
-          className="icon-button"
-          aria-label="展示モードを閉じる"
+          type="button"
+          className="viewing-control"
+          aria-label="鑑賞を閉じる"
           onClick={() => dialog.current?.close()}
         >
           <Icon name="close" />
         </button>
-      </div>
+      </header>
       <div className="viewing-content">
         <button
-          className="icon-button viewing-prev"
+          type="button"
+          className="viewing-control viewing-prev"
           aria-label="前の一枚"
           disabled={items.length < 2}
           onClick={() => move(-1)}
         >
           <Icon name="arrow" style={{ transform: "rotate(180deg)" }} />
         </button>
-        <div className="viewing-art">
-          <Artwork item={item} />
-        </div>
+        <figure className="viewing-art">
+          <Artwork item={item} loading="eager" fetchPriority="high" />
+        </figure>
         <button
-          className="icon-button viewing-next"
+          type="button"
+          className="viewing-control viewing-next"
           aria-label="次の一枚"
           disabled={items.length < 2}
           onClick={() => move(1)}
         >
           <Icon name="arrow" />
         </button>
-        <div className="viewing-caption" aria-live="polite">
-          <span className="eyebrow">
-            {String(currentIndex + 1).padStart(2, "0")} /{" "}
-            {String(items.length).padStart(2, "0")}
-          </span>
-          <h2 id="viewing-title">{item.name}</h2>
-          <p>{item.memo || "好きな一枚を、ゆっくりと。"}</p>
-          <div className="viewing-tags">
-            {item.tags.map((tag) => (
-              <span key={tag}>{tag}</span>
-            ))}
-          </div>
-          <Link
-            className="text-link"
-            to={`/items/${item.id}`}
-            onClick={() => dialog.current?.close()}
-          >
-            この一枚の物語 <Icon name="arrow" size={16} />
-          </Link>
-        </div>
       </div>
-      <div className="viewing-bottom">
-        <span>矢印キーでも、次の一枚へ。</span>
+      <div
+        className="viewing-caption"
+        aria-live={playing ? "off" : "polite"}
+        aria-atomic="true"
+      >
+        <h2 id="viewing-title">{getDisplayName(item.name)}</h2>
+        {item.memo && <p>{item.memo}</p>}
+        <Link
+          className="viewing-detail-link"
+          to={`/items/${item.id}`}
+          onClick={() => dialog.current?.close()}
+        >
+          この一枚の記録 <Icon name="arrow" size={14} />
+        </Link>
+      </div>
+      <footer className="viewing-bottom">
+        <div className="viewing-position">
+          <span aria-label={`${currentIndex + 1}枚目、全${items.length}枚`}>
+            {String(currentIndex + 1).padStart(2, "0")}
+            <span aria-hidden="true">
+              {" "}
+              / {String(items.length).padStart(2, "0")}
+            </span>
+          </span>
+          <small>矢印キーでも、次の一枚へ</small>
+        </div>
         <button
-          className="text-link"
+          type="button"
+          className="viewing-play"
           aria-pressed={playing}
           disabled={items.length < 2}
           onClick={() => setPlaying(!playing)}
         >
           <Icon name={playing ? "pause" : "play"} size={15} />
-          {playing ? "自動再生を止める" : "ゆっくり自動再生"}
+          {playing ? "自動再生を止める" : "自動で眺める"}
         </button>
-      </div>
+      </footer>
     </dialog>
   );
 }
