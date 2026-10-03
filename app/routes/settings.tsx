@@ -17,6 +17,7 @@ import {
   restoreShelvedRecord,
 } from "../data/collection-tools";
 import { requireAuth, requireAuthForAction } from "../lib/auth-guard";
+import { usePwaReloadGuard } from "../hooks/usePwaUpdates";
 import { Artwork } from "../components/gallery/Artwork";
 import { Icon } from "../components/gallery/Icon";
 import "../components/gallery/settings.css";
@@ -115,6 +116,7 @@ export default function Settings() {
   const [exportMessage, setExportMessage] = useState("");
   const saving = navigation.state !== "idle";
   const dirty = order.join(",") !== items.map((item) => item.id).join(",");
+  usePwaReloadGuard(dirty || editingTag !== null || saving);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
       dirty && currentLocation.pathname !== nextLocation.pathname,
@@ -212,7 +214,7 @@ export default function Settings() {
         <p className="settings-description">
           矢印で一枚ずつ動かして、コレクションの順番を決められます。
         </p>
-        <Form method="post">
+        <Form method="post" data-pwa-managed-form>
           <input type="hidden" name="intent" value="reorder" />
           <ol className="settings-order-list">
             {order.map((id, index) => {
@@ -292,6 +294,7 @@ export default function Settings() {
               {editingTag === tag ? (
                 <Form
                   method="post"
+                  data-pwa-managed-form
                   onSubmit={() => setEditingTag(null)}
                   className="settings-tag-edit"
                 >
@@ -336,6 +339,7 @@ export default function Settings() {
                   </button>
                   <Form
                     method="post"
+                    data-pwa-managed-form
                     onSubmit={(event) => {
                       if (
                         !window.confirm(
@@ -406,7 +410,7 @@ export default function Settings() {
                   <Artwork item={record.item} />
                 </div>
                 <span>{record.item.name}</span>
-                <Form method="post">
+                <Form method="post" data-pwa-managed-form>
                   <input type="hidden" name="intent" value="restore" />
                   <input type="hidden" name="key" value={record.key} />
                   <button className="outline-button" disabled={saving}>

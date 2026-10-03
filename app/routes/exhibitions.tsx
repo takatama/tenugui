@@ -19,6 +19,7 @@ import {
   type Exhibition,
 } from "../data/exhibitions";
 import { requireAuth, requireAuthForAction } from "../lib/auth-guard";
+import { usePwaReloadGuard } from "../hooks/usePwaUpdates";
 import { Artwork } from "../components/gallery/Artwork";
 import { Icon } from "../components/gallery/Icon";
 import { ShareButton } from "../components/gallery/ShareButton";
@@ -105,14 +106,17 @@ export default function Exhibitions() {
   const navigation = useNavigation();
   const [selected, setSelected] = useState(new Set<string>());
   const [isPublic, setIsPublic] = useState(false);
+  const [hasTextDraft, setHasTextDraft] = useState(false);
   const createForm = useRef<HTMLFormElement>(null);
   useEffect(() => {
     if (!savedId) return;
     createForm.current?.reset();
     setSelected(new Set());
     setIsPublic(false);
+    setHasTextDraft(false);
   }, [savedId]);
   const saving = navigation.state !== "idle";
+  usePwaReloadGuard(saving || selected.size > 0 || isPublic || hasTextDraft);
   const itemMap = new Map(items.map((item) => [item.id, item]));
   const selectedItems = [...selected].flatMap((id) => {
     const item = itemMap.get(id);
@@ -170,7 +174,18 @@ export default function Exhibitions() {
           <Icon name="leaf" size={24} />
         </div>
         {items.length ? (
-          <Form method="post" className="exhibition-form" ref={createForm}>
+          <Form
+            method="post"
+            data-pwa-managed-form
+            className="exhibition-form"
+            ref={createForm}
+            onChange={(event) => {
+              const form = new FormData(event.currentTarget);
+              setHasTextDraft(
+                Boolean(form.get("title") || form.get("description")),
+              );
+            }}
+          >
             <input type="hidden" name="intent" value="create" />
             {[...selected].map((id) => (
               <input key={id} type="hidden" name="itemIds" value={id} />
@@ -390,7 +405,7 @@ export default function Exhibitions() {
                           url={`${origin}/exhibitions/${exhibition.id}`}
                         />
                       )}
-                      <Form method="post">
+                      <Form method="post" data-pwa-managed-form>
                         <input type="hidden" name="intent" value="visibility" />
                         <input
                           type="hidden"
