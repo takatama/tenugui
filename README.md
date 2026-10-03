@@ -71,6 +71,29 @@ Google OAuthはランダムなstateとHttpOnly Cookieでログイン開始元を
 
 ホーム画面への追加と商品URLの共有先に対応します。Service Workerは静的なアイコン・デザイン素材をキャッシュします。認証・API・コレクション・展示・アップロード画像をキャッシュして古い公開設定を再表示しません。データ閲覧・編集にはネットワーク接続が必要です。
 
+## Cloudflareプレビュー
+
+このプロジェクトのターミナルでWranglerにログインしてから実行します。
+
+```sh
+npx wrangler login
+npm run preview:cloud
+```
+
+現在のGitブランチ名でWorker Previewを作成・更新します。`npm run preview`はローカル確認用です。`wrangler.jsonc`の`previews`には本番とは別のコレクション用・セッション用KVを設定しています。プレビュー間ではこの2つのKVを共有し、本番データは参照しません。新しいKVは空で、開発用サンプルは自動登録しません。
+
+Googleログインには`GOOGLE_CLIENT_ID`・`GOOGLE_CLIENT_SECRET`・`ALLOWED_EMAILS`が必要です。新しいプレビューへ引き継ぐSecretsはPreview Baseへ登録します。
+
+```sh
+npx wrangler preview base-config secret put GOOGLE_CLIENT_ID
+npx wrangler preview base-config secret put GOOGLE_CLIENT_SECRET
+npx wrangler preview base-config secret put ALLOWED_EMAILS
+```
+
+各コマンドの入力欄へ値を入力してください。本番のSecret値を読み出してコピーすることはできません。既存プレビューにはBaseの変更が反映されないため、作成済みのブランチには`npx wrangler preview secret put SECRET_NAME`で個別に登録します。Google側の許可済みリダイレクトURIには、Preview URLの`/auth/callback`を追加してください。商品情報取得・AI分析も試す場合は`OG_API_URL`・`OG_API_KEY`・`GEMINI_API_KEY`を登録します。
+
+Gitから自動生成する場合は、Cloudflareの`Settings > Builds`でGitHub接続と`Enable Preview Builds`を有効にし、Build commandを`npm run build`、Preview commandを`npx wrangler preview`にします。Gitアカウントの切断警告が出る場合は、`Git Repository > Manage`でCloudflare Workers and PagesのGitHub Appにこのリポジトリのアクセス権を再設定してください。WranglerのログインはGit連携の再認可とは別です。
+
 ## 検証とリリース
 
 `tests/`では、fake KVとmock HTTPで本番／DEV境界、認証、画像形式・容量、入力保持、保存失敗、バックアップ、タグ一括更新、復元、展示の選択順・公開情報、OAuthを検証します。ブラウザではPC・スマートフォンの登録→鑑賞→展示・共有を確認します。

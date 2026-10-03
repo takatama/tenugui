@@ -9,6 +9,7 @@
     "dev": "react-router dev",
     "postinstall": "npm run cf-typegen",
     "preview": "npm run build && vite preview",
+    "preview:cloud": "npm run build && wrangler preview",
     "test": "node --test --test-isolation=none tests/*.test.mjs",
     "typecheck": "npm run cf-typegen && react-router typegen && tsc -b"
   },

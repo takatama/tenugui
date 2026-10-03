@@ -24,6 +24,21 @@
       "preview_id": "b3c18484211b44c88e754acd1747c683",
     },
   ],
+  "previews": {
+    "vars": {
+      "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare",
+    },
+    "kv_namespaces": [
+      {
+        "binding": "TENUGUI_KV",
+        "id": "8d94189a398c422ebab31fe6c5f9a56d",
+      },
+      {
+        "binding": "SESSIONS",
+        "id": "c6e4bb70c86a4d0588bf5a089c039bb1",
+      },
+    ],
+  },
   /**
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
