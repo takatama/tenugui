@@ -197,7 +197,10 @@ export default function Layout() {
                 onClick={closeMenu}
               >
                 <Icon name="settings" size={18} />
-                <span>設定とバックアップ</span>
+                <span>
+                  並び替えと設定
+                  <small>順番・タグ・バックアップ</small>
+                </span>
                 <Icon name="chevron" size={15} />
               </NavLink>
             </div>

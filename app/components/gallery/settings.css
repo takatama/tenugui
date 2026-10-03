@@ -44,23 +44,6 @@
   line-height: 2;
   margin: 13px 0 20px;
 }
-.settings-order-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.settings-order-list li {
-  display: flex;
-  align-items: center;
-  gap: 17px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
-}
-.settings-order-number {
-  font-family: Georgia, serif;
-  font-size: 10px;
-  color: #8c9582;
-}
 .settings-order-art {
   height: 65px;
   width: 54px;
@@ -68,34 +51,99 @@
   padding: 6px;
   flex-shrink: 0;
 }
-.settings-order-name {
-  font-family: var(--serif);
-  font-size: 13px;
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
+.settings-order-guide {
+  margin: 13px 0 22px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: #eef0e7;
+  font-size: 12px;
+  line-height: 1.9;
 }
-.settings-order-name small {
-  font-family: var(--sans);
+.settings-order-guide p {
+  margin: 0;
+}
+.settings-order-guide p:first-child {
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.settings-order-guide small {
   display: block;
-  font-size: 9px;
   color: var(--muted);
-  margin-top: 6px;
+  font-size: 11px;
+  margin-top: 7px;
 }
-.settings-order-buttons {
-  display: flex;
-  gap: 4px;
+.settings-page-with-save-bar {
+  padding-bottom: calc(var(--collection-order-actions-height, 130px) + 28px + env(safe-area-inset-bottom));
 }
-.settings-panel-actions {
+html:has(.settings-order-save-bar) {
+  scroll-padding-bottom: calc(var(--collection-order-actions-height, 130px) + 28px + env(safe-area-inset-bottom));
+}
+.settings-order-save-bar {
+  position: fixed;
+  left: 50%;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 40;
+  width: min(920px, calc(100% - 32px));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-top: 23px;
+  gap: 18px;
+  padding: 16px 20px;
+  border: 1px solid #c7cebc;
+  border-radius: 6px;
+  background: #faf9f5;
+  box-shadow: 0 5px 26px rgb(46 57 47 / 15%);
 }
-.settings-panel-actions > span {
+.settings-order-save-bar.is-dirty {
+  border-color: #a9813d;
+}
+.settings-order-save-status {
+  min-width: 0;
+  line-height: 1.7;
+}
+.settings-order-save-status strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.settings-order-save-bar.is-dirty .settings-order-save-status strong::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: #a9813d;
+}
+.settings-order-save-status > span {
+  display: block;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.settings-order-save-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.settings-order-save-actions .primary-button {
+  min-width: 150px;
+  min-height: 48px;
+}
+.settings-order-save-actions .text-link {
+  font-size: 11px;
+}
+.settings-order-save-bar.is-error {
+  border-color: #b06b4c;
+}
+.settings-order-save-bar.is-error .settings-order-save-status strong {
+  color: #8d4f38;
+}
+body:has(.settings-order-save-bar) .pwa-update-notice {
+  bottom: calc(var(--collection-order-actions-height, 130px) + 28px + env(safe-area-inset-bottom));
 }
 .settings-tags {
   display: grid;
@@ -185,17 +233,31 @@
   .settings-tags {
     grid-template-columns: 1fr;
   }
-  .settings-panel-actions {
-    flex-wrap: wrap;
+  .settings-order-guide {
+    padding: 12px;
+    font-size: 11px;
   }
-  .settings-order-list li {
+  .settings-order-save-bar {
+    flex-direction: column;
+    align-items: stretch;
     gap: 10px;
+    padding: 12px 14px;
+    width: calc(100% - 24px);
   }
-  .settings-order-buttons {
-    gap: 0;
-  }
-  .settings-order-name {
+  .settings-order-save-status strong {
     font-size: 12px;
+  }
+  .settings-order-save-status > span {
+    font-size: 10px;
+  }
+  .settings-order-save-actions {
+    justify-content: space-between;
+  }
+  .settings-order-save-actions .primary-button {
+    flex: 1;
+  }
+  .settings-order-save-actions .text-link {
+    padding: 0 8px;
   }
   .settings-description {
     font-size: 11px;

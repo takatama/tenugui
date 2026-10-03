@@ -683,6 +683,34 @@ test("settings actions reject stale, partial, duplicate, or foreign item orders 
   assert.equal((await kv.get("items", "json"))[1].memo, oldItem.memo);
 });
 
+test("an unavailable order save leaves the collection intact and the same order can be retried", async () => {
+  const second = { ...oldItem, id: "second" };
+  const kv = new FakeKV({ items: [oldItem, second] });
+  const ctx = authenticatedContext(kv);
+  const form = new URLSearchParams({ intent: "reorder" });
+  [second.id, oldItem.id].forEach((id) => form.append("itemIds", id));
+  const save = () => settingsRoute.action({
+    request: ownerRequest("https://gallery.example/settings", {
+      method: "POST",
+      body: form,
+    }),
+    context: ctx,
+  });
+  const originalPut = kv.put.bind(kv);
+  kv.put = async () => { throw new Error("Storage temporarily unavailable"); };
+  const failed = await save();
+  assert.equal(failed.init.status, 503);
+  assert.match(failed.data.error, /保存できませんでした/);
+  assert.deepEqual(await kv.get("items", "json"), [oldItem, second]);
+  kv.put = originalPut;
+  const saved = await save();
+  assert.match(saved.data.message, /保存しました/);
+  assert.deepEqual(await kv.get("items", "json"), [
+    { ...second, status: "purchased" },
+    { ...oldItem, status: "purchased" },
+  ]);
+});
+
 test("settings management requires production authentication and rejects unsafe restore requests", async () => {
   const kv = new FakeKV({ items: [oldItem] });
   const form = new URLSearchParams({ intent: "restore", key: "items" });
